@@ -6,32 +6,28 @@
   }
 
   .hunt-card {
-    position: relative;
-    min-width:280px;
     width: 100%;
-    height: 200px;
+    height: 100%;
     margin: 8px;
     display: flex;
     gap: 8px;
     padding: 16px;
     border-radius: 8px;
-    box-shadow: 0 0 2px 0 rgb(0, 112, 250);
+    box-shadow: 0 0 8px 0 rgb(0, 158, 250);
     background-color: #badffd2d;
-    color: #0056b3;
-
-    @media (prefers-color-scheme: dark) {
-      color: #00ccff;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      box-shadow: #00ccff;
-    }
 
     .view-profile {
       position: absolute;
       bottom: 10px;
       left: 30px;
     }
+  }
+
+  .hunt-card-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
   }
 
   .hunt-card.time {
@@ -67,19 +63,11 @@
     padding: 10px 20px;
     font-weight: bold;
     transition: background-color 0.3s ease;
-
-    @media (prefers-color-scheme: dark) {
-      background-color: #00ccff;
-    }
   }
 
   .profile-button:hover {
     background-color: #007bff;
     color: white;
-
-    @media (prefers-color-scheme: dark) {
-      background-color: #00ccff;
-    }
   }
 
   .return-to-hunts {
@@ -89,19 +77,11 @@
     font-weight: bold;
     transition: background-color 0.3s ease;
     margin-right: 10px;
-
-    @media (prefers-color-scheme: dark) {
-      background-color: #00ccff;
-    }
   }
 
   .return-to-hunts:hover {
     background-color: #007bff;
     color: white;
-
-    @media (prefers-color-scheme: dark) {
-      background-color: #00ccff;
-    }
   }
 
   .begin-hunt {
@@ -111,19 +91,11 @@
     font-weight: bold;
     transition: background-color 0.3s ease;
     margin-right: 10px;
-
-    @media (prefers-color-scheme: dark) {
-      background-color: #00ccff;
-    }
   }
 
   .begin-hunt:hover {
     background-color: #007bff;
     color: white;
-
-    @media (prefers-color-scheme: dark) {
-      background-color: #00ccff;
-    }
   }
 
   .time-text {
@@ -165,7 +137,4 @@
       margin-bottom: 10px;
     }
 
-    @media (max-width: 600px) {
-      flex-direction: column;
-    }
   }

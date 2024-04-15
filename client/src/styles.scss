@@ -110,12 +110,12 @@ body {
 // This media query detects if the user has dark-mode turned on on their OS or browser
 // If you don't want to apply dark theme automatically,
 // you can also make this a normal class and add it to body or html dynamically.
-@media (prefers-color-scheme: dark) {
-  // Sets up the theming for built in material components with the dark theme
-  @include mat.all-component-colors($dark-theme);
-  // Sets up theming for our custom components with the dark theme
-  @include app-theming($dark-theme);
-}
+// @media (prefers-color-scheme: dark) {
+//   // Sets up the theming for built in material components with the dark theme
+//   @include mat.all-component-colors($dark-theme);
+//   // Sets up theming for our custom components with the dark theme
+//   @include app-theming($dark-theme);
+// }
 
 // Use uppercase text on buttons
 .mat-mdc-button,

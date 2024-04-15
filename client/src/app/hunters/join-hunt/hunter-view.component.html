@@ -16,6 +16,7 @@
         style="display:none"
         accept="image/*"
         (change)="onFileSelected($event, task)"
+        capture="environment"
       />
       <label for="img-{{task._id}}">Upload Image</label>
     </div>

@@ -41,11 +41,6 @@
   border-radius: 8px;
   display: flex;
   justify-content: space-between;
-
-  background-color: #a0c8ff;
-  @media (prefers-color-scheme: dark) {
-    background-color: #00ccff;
-  }
 }
 .header-content {
   display: flex;
