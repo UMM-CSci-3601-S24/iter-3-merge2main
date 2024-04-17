@@ -36,6 +36,7 @@ export class HunterViewComponent implements OnInit, OnDestroy {
     private router: Router,
     public dialog: MatDialog,
     private ng2ImgMax: Ng2ImgMaxService
+
   ) { }
 
   ngOnInit(): void {
@@ -44,22 +45,22 @@ export class HunterViewComponent implements OnInit, OnDestroy {
       switchMap((accessCode: string) => this.hostService.getStartedHunt(accessCode)),
 
       takeUntil(this.ngUnsubscribe)
-      ).subscribe({
-        next: startedHunt => {
-          for (const task of startedHunt.completeHunt.tasks) {
-            task.photos = [];
-          }
-          this.startedHunt = startedHunt;
-          return;
-        },
-        error: _err => {
-          this.error = {
-            help: 'There is an error trying to load the tasks - Please try to run the hunt again',
-            httpResponse: _err.message,
-            message: _err.error?.title,
-          };
+    ).subscribe({
+      next: startedHunt => {
+        for (const task of startedHunt.completeHunt.tasks) {
+          task.photos = [];
         }
-      });
+        this.startedHunt = startedHunt;
+        return;
+      },
+      error: _err => {
+        this.error = {
+          help: 'There is an error trying to load the tasks - Please try to run the hunt again',
+          httpResponse: _err.message,
+          message: _err.error?.title,
+        };
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -70,17 +71,40 @@ export class HunterViewComponent implements OnInit, OnDestroy {
   onFileSelected(event, task: Task): void {
     let file: File = event.target.files[0];
     const fileType = file.type;
+    const maxSize = 1;  //max file size in MB, if over then the photo is compressed before uploading
+
     if (fileType.match(/image\/*/)) {
       if (this.imageUrls[task._id] && !window.confirm('An image has already been uploaded for this task. Are you sure you want to replace it?')) {
         return;
       }
 
-      if (file.size > .2 * 1024 * 1024) {
+      const compressAndUploadImage = () => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event: ProgressEvent<FileReader>) => {
+          this.imageUrls[task._id] = event.target.result.toString();
+        };
+
+        if (file) {
+          if (task.photos.length > 0) {
+            this.replacePhoto(file, task, this.startedHunt._id);
+          }
+          else {
+            this.submitPhoto(file, task, this.startedHunt._id);
+          }
+        }
+      };
+
+      if (file.size > maxSize * 1024 * 1024) {
         console.log('compressing image');
-        this.ng2ImgMax.compressImage(file, .2).subscribe(
+        this.ng2ImgMax.compressImage(file, maxSize).subscribe(
           result => {
-            file = result;  // replace the original file with the compressed one
-            console.log('compressed image');
+            // Get the original file's extension
+            const extension = file.name.split('.').pop();
+
+            // Create a new File object for the compressed file, preserving the original file's extension
+            file = new File([result], `compressed.${extension}`, { type: result.type });
+            compressAndUploadImage();  // compress and upload image
           },
           error => {
             console.error('Error compressing image', error);
@@ -89,22 +113,8 @@ export class HunterViewComponent implements OnInit, OnDestroy {
             });
           }
         );
-      }
-
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (event: ProgressEvent<FileReader>) => {
-        this.imageUrls[task._id] = event.target.result.toString();
-      };
-
-      if (file) {
-        if (task.photos.length > 0) {
-          this.replacePhoto(file, task, this.startedHunt._id);
-        }
-        else {
-          this.submitPhoto(file, task, this.startedHunt._id);
-          console.log('photo submitted');
-        }
+      } else {
+        compressAndUploadImage();  // upload image without compression
       }
     }
   }

@@ -6,6 +6,7 @@ import { HunterViewComponent } from './hunter-view.component';
 import { HostService } from 'src/app/hosts/host.service';
 import { StartedHunt } from 'src/app/startHunt/startedHunt'
 import { Task } from 'src/app/hunts/task';
+import { Ng2ImgMaxService } from 'ng2-img-max';
 
 describe('HunterViewComponent', () => {
   let component: HunterViewComponent;
@@ -13,6 +14,7 @@ describe('HunterViewComponent', () => {
   let mockHostService: jasmine.SpyObj<HostService>;
   let mockRoute: { paramMap: Subject<ParamMap> };
   let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
+  let mockNg2ImgMax: jasmine.SpyObj<Ng2ImgMaxService>;
 
   beforeEach(async () => {
     mockHostService = jasmine.createSpyObj('HostService', ['getStartedHunt', 'submitPhoto', 'replacePhoto']);
@@ -20,13 +22,15 @@ describe('HunterViewComponent', () => {
       paramMap: new Subject<ParamMap>()
     };
     mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
+    mockNg2ImgMax = jasmine.createSpyObj('Ng2ImgMaxService', ['compressImage']);
 
     await TestBed.configureTestingModule({
       imports: [HunterViewComponent],
       providers: [
         { provide: HostService, useValue: mockHostService },
         { provide: ActivatedRoute, useValue: mockRoute },
-        { provide: MatSnackBar, useValue: mockSnackBar }
+        { provide: MatSnackBar, useValue: mockSnackBar },
+        { provide: Ng2ImgMaxService, useValue: mockNg2ImgMax }
       ]
     })
       .compileComponents();
@@ -54,7 +58,7 @@ describe('HunterViewComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should navigate to the right hunt page by access code',() => {
+  it('should navigate to the right hunt page by access code', () => {
     const startedHunt: StartedHunt = {
       _id: '',
       completeHunt: {
@@ -100,7 +104,7 @@ describe('HunterViewComponent', () => {
   });
 
   it('should handle file selected event', () => {
-    const task: Task = { _id: '1', huntId: '1', name: 'Task 1', status: true, photos: []};
+    const task: Task = { _id: '1', huntId: '1', name: 'Task 1', status: true, photos: [] };
     const event = {
       target: {
         files: [
@@ -124,7 +128,7 @@ describe('HunterViewComponent', () => {
   });
 
   it('should not replace image if user choose cancel', () => {
-    const task: Task = { _id: '1', huntId: '1', name: 'Task 1', status: true, photos: []};
+    const task: Task = { _id: '1', huntId: '1', name: 'Task 1', status: true, photos: [] };
     const event = {
       target: {
         files: [
@@ -147,7 +151,7 @@ describe('HunterViewComponent', () => {
   });
 
   it('should replace image if user choose ok', () => {
-    const task: Task = { _id: '1', huntId: '1', name: 'Task 1', status: true, photos: []};
+    const task: Task = { _id: '1', huntId: '1', name: 'Task 1', status: true, photos: [] };
     const event = {
       target: {
         files: [
@@ -174,7 +178,7 @@ describe('HunterViewComponent', () => {
   });
 
   it('should handle error when submitting photo', fakeAsync(() => {
-    const task: Task = { _id: '1', huntId: '1', name: 'Task 1', status: true, photos: []};
+    const task: Task = { _id: '1', huntId: '1', name: 'Task 1', status: true, photos: [] };
     const event = {
       target: {
         files: [
@@ -207,20 +211,20 @@ describe('HunterViewComponent', () => {
     let startedHuntId: string;
 
     beforeEach(() => {
-      task = { _id: '1', huntId: '1', name: 'Task 1', status: true, photos: ['photoId']};
+      task = { _id: '1', huntId: '1', name: 'Task 1', status: true, photos: ['photoId'] };
       file = new File([''], 'photo.jpg', { type: 'image/jpeg' });
       startedHuntId = '';
     });
 
     it('should call replacePhoto when task has photos', () => {
-      task = { _id: '1', huntId: '1', name: 'Task 1', status: true, photos: ['photoId']};
+      task = { _id: '1', huntId: '1', name: 'Task 1', status: true, photos: ['photoId'] };
       spyOn(component, 'replacePhoto');
       component.onFileSelected({ target: { files: [file] } }, task);
       expect(component.replacePhoto).toHaveBeenCalledWith(file, task, startedHuntId);
     });
 
     it('should call submitPhoto when task does not have photos', () => {
-      task = { _id: '1', huntId: '1', name: 'Task 1', status: true, photos: []};
+      task = { _id: '1', huntId: '1', name: 'Task 1', status: true, photos: [] };
       spyOn(component, 'submitPhoto');
       component.onFileSelected({ target: { files: [file] } }, task);
       expect(component.submitPhoto).toHaveBeenCalledWith(file, task, startedHuntId);
@@ -254,5 +258,38 @@ describe('HunterViewComponent', () => {
       expect(mockSnackBar.open).toHaveBeenCalledWith('Error replacing photo. Please try again', 'Close', { duration: 3000 });
     });
   });
+
+
+  describe('Image compression', () => {
+    let file: File;
+    let maxSize: number;
+    let task: Task;
+
+    beforeEach(() => {
+      file = new File([''], 'photo.jpg', { type: 'image/jpeg' });
+      maxSize = 1;
+      task = { _id: '1', huntId: '1', name: 'Task 1', status: true, photos: [] };
+    });
+
+    it('should compress image when file size is larger than max size', () => {
+      const blob = new Blob([new ArrayBuffer(maxSize * 1024 * 1024 + 1)], { type: 'image/jpeg' });
+      file = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
+      const compressedFile = new File([''], 'compressed.jpg', { type: 'image/jpeg' });
+      mockNg2ImgMax.compressImage.and.returnValue(of(compressedFile));
+      mockHostService.submitPhoto.and.returnValue(of('photoId'));  // Mock hostService.submitPhoto here
+      component.onFileSelected({ target: { files: [file] } }, task);
+      expect(mockNg2ImgMax.compressImage).toHaveBeenCalledWith(file, maxSize);
+    });
+
+    it('should display error message when image compression fails', () => {
+      const blob = new Blob([new ArrayBuffer(maxSize * 1024 * 1024 + 1)], { type: 'image/jpeg' });
+      file = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
+      mockNg2ImgMax.compressImage.and.returnValue(throwError('Error message'));
+      component.onFileSelected({ target: { files: [file] } }, task);
+      expect(mockSnackBar.open).toHaveBeenCalledWith('Error compressing image. Please try again', 'Close', { duration: 3000 });
+    });
+  });
+
+
 });
 
