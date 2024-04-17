@@ -11,6 +11,7 @@ import { HuntCardComponent } from 'src/app/hunts/hunt-card.component';
 import { HostService } from 'src/app/hosts/host.service';
 import { CommonModule } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
+import { Ng2ImgMaxService } from 'ng2-img-max';
 
 
 @Component({
@@ -34,6 +35,7 @@ export class HunterViewComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private router: Router,
     public dialog: MatDialog,
+    private ng2ImgMax: Ng2ImgMaxService
   ) { }
 
   ngOnInit(): void {
@@ -66,11 +68,27 @@ export class HunterViewComponent implements OnInit, OnDestroy {
   }
 
   onFileSelected(event, task: Task): void {
-    const file: File = event.target.files[0];
+    let file: File = event.target.files[0];
     const fileType = file.type;
     if (fileType.match(/image\/*/)) {
       if (this.imageUrls[task._id] && !window.confirm('An image has already been uploaded for this task. Are you sure you want to replace it?')) {
         return;
+      }
+
+      if (file.size > .2 * 1024 * 1024) {
+        console.log('compressing image');
+        this.ng2ImgMax.compressImage(file, .2).subscribe(
+          result => {
+            file = result;  // replace the original file with the compressed one
+            console.log('compressed image');
+          },
+          error => {
+            console.error('Error compressing image', error);
+            this.snackBar.open('Error compressing image. Please try again', 'Close', {
+              duration: 3000
+            });
+          }
+        );
       }
 
       const reader = new FileReader();
@@ -85,6 +103,7 @@ export class HunterViewComponent implements OnInit, OnDestroy {
         }
         else {
           this.submitPhoto(file, task, this.startedHunt._id);
+          console.log('photo submitted');
         }
       }
     }
