@@ -99,4 +99,20 @@ export class BeginHuntPage {
   getTeamCard() {
     return cy.get(this.teamCard);
   }
+
+  /**
+   * Get a started hunt's id
+   *
+   * @returns the id of the started hunt
+   */
+  getStartedHuntId(accessCode: string) {
+    return cy.request('GET', `http://localhost:4200/api/startedHunts/${accessCode}`).its('body').then((startedHunt) => {
+      console.log(startedHunt);
+      if (startedHunt && startedHunt._id) {
+        return startedHunt._id;
+      } else {
+        throw new Error('No started hunt found');
+      }
+    });
+  }
 }
