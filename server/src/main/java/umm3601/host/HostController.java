@@ -5,6 +5,7 @@ import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
+import io.javalin.websocket.WsContext;
 import umm3601.Controller;
 
 import static com.mongodb.client.model.Filters.and;
@@ -18,12 +19,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
+
+import javax.swing.text.html.HTMLDocument.Iterator;
 
 import org.bson.Document;
 import org.bson.UuidRepresentation;
@@ -69,6 +73,8 @@ public class HostController implements Controller {
   private final JacksonMongoCollection<Hunt> huntCollection;
   private final JacksonMongoCollection<Task> taskCollection;
   private final JacksonMongoCollection<StartedHunt> startedHuntCollection;
+
+  private HashSet<WsContext> connectedContexts = new HashSet<>();
 
   public HostController(MongoDatabase database) {
     hostCollection = JacksonMongoCollection.builder().build(
@@ -525,6 +531,21 @@ public class HostController implements Controller {
     return encodedPhotos;
   }
 
+  private void updateListeners(String event, String data) {
+    Map<String, String> events = Map.of(event, data, "photos", );
+    System.err.println("Updating listeners with " + events);
+    Iterator<WsContext> iterator = connectedContexts.iterator();
+    while (iterator.hasNext()) {
+      WsContext ws = iterator.next();
+      if (ws.session.isOpen()) {
+        System.err.println("Sending events to client" + ws);
+        ws.send(events);
+      } else {
+        System.err.println("Removing closed context" + ws);
+        iterator.remove();
+      }
+    }
+
   @Override
   public void addRoutes(Javalin server) {
     server.get(API_HOST, this::getHunts);
@@ -542,5 +563,17 @@ public class HostController implements Controller {
     server.get(API_ENDED_HUNT, this::getEndedHunt);
     server.get(API_ENDED_HUNTS, this::getEndedHunts);
     server.delete(API_DELETE_HUNT, this::deleteStartedHunt);
+
+    server.ws("/ws/host", ws -> {
+      ws.onConnect(ctx -> {
+        System.out.println("A client connected");
+        System.err.println("Adding context to connected contexts" + ctx);
+        connectedContexts.add(ctx);
+        // I think we may want the simpler one, and just have the service
+        // reconnect when it gets disconnected.
+        ctx.enableAutomaticPings(5, TimeUnit.SECONDS);
+        // ctx.enableAutomaticPings();
+      });
+    });
   }
 }
