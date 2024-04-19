@@ -12,7 +12,7 @@
             <mat-card-title class="task-list-name"> {{ this.getTaskName(task.taskId) }} </mat-card-title>
             <div class="finishedTask-photos">
               @for (photo of task.photos; track photo) {
-                <img src="{{ photo }}" alt="Task Photo" class="task-photo">
+                <img src="{{ photo }}" alt="Task Photo" class="task-photo" (click)="openDialog(photo, task.photos)" (keyup.enter)="openDialog(photo, task.photos)" tabindex="0">
               }
             </div>
           }

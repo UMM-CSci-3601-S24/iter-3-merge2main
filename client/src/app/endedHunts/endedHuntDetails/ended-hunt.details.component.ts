@@ -12,6 +12,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, ParamMap, Router, RouterLink } from '@angular/router';
 import { HostService } from 'src/app/hosts/host.service';
 import { CommonModule } from '@angular/common';
+import { PhotoDialogComponent } from './photo-dialog/photo-dialog.component';
 
 @Component({
   selector: 'app-ended-hunt-details',
@@ -41,7 +42,8 @@ export class EndedHuntDetailsComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private hostService: HostService,
     private router: Router,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+
   ) {}
 
   ngOnInit(): void {
@@ -71,11 +73,20 @@ export class EndedHuntDetailsComponent implements OnInit, OnDestroy {
   getTaskName(taskId: string): string {
     return this.endedHunt.startedHunt.completeHunt.tasks.find(
       (task) => task._id === taskId
-    ).name;
+    )?.name;
   }
 
   ngOnDestroy(): void {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+  }
+
+  openDialog(photo: string, photos: string[]): void {
+    this.dialog.open(PhotoDialogComponent, {
+      data: {
+        currentPhoto: photo,
+        photos: photos
+      }
+    });
   }
 }
