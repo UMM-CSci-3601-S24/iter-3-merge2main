@@ -1,6 +1,7 @@
 .task-list {
   font-size: 18px;
   font-weight: bold;
+  line-height: 2;
 }
 
 .task-list li {
@@ -9,9 +10,15 @@
 }
 
 .tasks-title {
-  font-size: 24px;
-  font-weight: bold;
+  font-size: 30px;
+  width: 200px;
   margin-bottom: 10px;
+  border: 1px solid rgb(0, 158, 250);
+  text-align: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border-radius: 5px;
+  box-shadow: 0 0 8px rgb(0, 158, 250);
 }
 
 .flex-row {
@@ -74,5 +81,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  
 }
 

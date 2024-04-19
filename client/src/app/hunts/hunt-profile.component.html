@@ -5,7 +5,7 @@
       <app-hunt-card [hunt]="this.completeHunt.hunt" [simple]="false">
       </app-hunt-card>
       <ol class="task-list">
-        <mat-card-title class="tasks-title">Tasks</mat-card-title>
+        <mat-card-title class="tasks-title">Tasks:</mat-card-title>
         @for (task of this.completeHunt.tasks; track task._id) {
           <div class="task-line">
           <li matListItemTitle mat-line class="task-list-name"> {{task.name}} </li>
