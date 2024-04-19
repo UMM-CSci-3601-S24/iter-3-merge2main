@@ -20,14 +20,16 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
-import javax.swing.text.html.HTMLDocument.Iterator;
+
 
 import org.bson.Document;
 import org.bson.UuidRepresentation;
@@ -399,6 +401,7 @@ public class HostController implements Controller {
 
           Files.copy(in, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
           ctx.status(HttpStatus.OK);
+          updateListeners("photo-uploaded", id + "." + extension);
           return id + "." + extension;
         } catch (IOException e) {
           System.err.println("Error copying the uploaded file: " + e);
@@ -532,7 +535,7 @@ public class HostController implements Controller {
   }
 
   private void updateListeners(String event, String data) {
-    Map<String, String> events = Map.of(event, data, "photos", );
+    Map<String, String> events = Map.of(event, data, "timestamp", new Date().toString());
     System.err.println("Updating listeners with " + events);
     Iterator<WsContext> iterator = connectedContexts.iterator();
     while (iterator.hasNext()) {
@@ -544,6 +547,7 @@ public class HostController implements Controller {
         System.err.println("Removing closed context" + ws);
         iterator.remove();
       }
+    }
     }
 
   @Override

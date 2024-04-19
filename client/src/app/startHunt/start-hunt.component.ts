@@ -2,13 +2,14 @@ import { Component, OnDestroy, OnInit } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { ActivatedRoute, Router, ParamMap } from "@angular/router";
-import { Subject, map, switchMap, takeUntil } from "rxjs";
+import { Subject, Subscription, map, switchMap, takeUntil } from "rxjs";
 import { HostService } from "../hosts/host.service";
 import { StartedHunt } from "./startedHunt";
 import { MatCard, MatCardActions, MatCardContent } from "@angular/material/card";
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { WebSocketService } from '../web-socket.service';
 
 
 @Component({
@@ -27,9 +28,16 @@ export class StartHuntComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe = new Subject<void>();
 
-  constructor(private snackBar: MatSnackBar, private route: ActivatedRoute, private hostService: HostService, private router: Router, public dialog: MatDialog) { }
+  private photoUploadSubscription: Subscription;
+
+  constructor(private snackBar: MatSnackBar, private route: ActivatedRoute, private hostService: HostService, private router: Router, public dialog: MatDialog, private webSocketService: WebSocketService) { }
 
   ngOnInit(): void {
+    this.photoUploadSubscription = this.webSocketService.onMessage()
+    .subscribe((message: StartedHunt) => {
+      console.log('Received message from websocket: ' + JSON.stringify(message));
+      this.snackBar.open(message['added-user'] + ' event', 'OK', { duration: 3000 });
+    });
 
     this.route.paramMap.pipe(
 
