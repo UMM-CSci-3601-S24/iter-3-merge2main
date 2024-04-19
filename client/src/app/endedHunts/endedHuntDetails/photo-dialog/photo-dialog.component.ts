@@ -3,11 +3,8 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-photo-dialog',
-  template: `
-    <img [src]="data.currentPhoto" alt="Enlarged Photo" class="enlarged-photo">
-    <button (click)="previousPhoto()">Previous</button>
-    <button (click)="nextPhoto()">Next</button>
-  `
+  templateUrl: './photo-dialog.component.html',
+  styleUrls: ['./photo-dialog.component.scss'],
 })
 export class PhotoDialogComponent {
   currentPhotoIndex: number;

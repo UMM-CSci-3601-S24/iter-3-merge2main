@@ -1,6 +1,6 @@
 .enlarged-photo {
   width: 100%;
-  height: 100%;
+  height: 90vh;
   object-fit: contain;
 }
 
@@ -8,4 +8,27 @@
   max-width: 90%;
   max-height: 90%;
   overflow: auto;
+  object-fit: contain;
+}
+
+.photo-container {
+  position: relative;
+}
+
+.arrow {
+  position: absolute;
+  top: 90%;
+  font-size: 2em;
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 10px;
+  cursor: pointer;
+}
+
+.left-arrow {
+  left: 10px;
+}
+
+.right-arrow {
+  right: 10px;
 }

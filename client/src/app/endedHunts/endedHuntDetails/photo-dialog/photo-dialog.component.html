@@ -1,0 +1,5 @@
+<div class="photo-container">
+  <img [src]="data.currentPhoto" alt="Enlarged Photo" class="enlarged-photo">
+  <div class="arrow left-arrow" (click)="previousPhoto()" (keyup.enter)="previousPhoto()" tabindex="0">&#8592;</div>
+  <div class="arrow right-arrow" (click)="nextPhoto()" (keyup.enter)="nextPhoto()" tabindex="0">&#8594;</div>
+</div>
