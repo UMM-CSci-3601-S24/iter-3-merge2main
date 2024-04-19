@@ -2,45 +2,47 @@
   <div class="flex-1">
     <mat-card class="background">
       @if (endedHunt) {
-        <mat-card class= "top-name-card">
-          <mat-card-title class="hunt-name">{{ this.endedHunt.startedHunt.completeHunt.hunt.name }}</mat-card-title>
-          <mat-card-subtitle class="end-date">Ended on: {{ this.endedHunt.startedHunt.endDate | date: 'medium' }}</mat-card-subtitle>
-        </mat-card>
-        <mat-card-title class="tasks-title">Tasks and Photos</mat-card-title>
-        <div class="task-photos-container">
-          @for (task of this.endedHunt.finishedTasks; track task.taskId) {
-            <mat-card-title class="task-list-name"> {{ this.getTaskName(task.taskId) }} </mat-card-title>
-            <div class="finishedTask-photos">
-              @for (photo of task.photos; track photo) {
-                <img src="{{ photo }}" alt="Task Photo" class="task-photo">
-              }
-            </div>
+      <mat-card class="top-name-card">
+        <mat-card-title class="hunt-name">{{ this.endedHunt.startedHunt.completeHunt.hunt.name }}</mat-card-title>
+        <mat-card-subtitle class="end-date">Ended on: {{ this.endedHunt.startedHunt.endDate | date: 'medium'
+          }}</mat-card-subtitle>
+      </mat-card>
+      <mat-card-title class="tasks-title">Tasks and Photos</mat-card-title>
+      <div class="task-photos-container">
+        @for (task of this.endedHunt.finishedTasks; track task.taskId) {
+        <mat-card-title class="task-list-name"> {{ this.getTaskName(task.taskId) }} </mat-card-title>
+        <div class="finishedTask-photos">
+          @for (photo of task.photos; track photo) {
+          <img src="{{ photo }}" alt="Task Photo" class="task-photo" (click)="openDialog(photo, task.photos)"
+            (keyup.enter)="openDialog(photo, task.photos)" tabindex="0">
           }
         </div>
-        <button color=primary mat-raised-button class="hunts-return-button" routerLink="/hosts">Back to Hunts</button>
+        }
+      </div>
+      <button color=primary mat-raised-button class="hunts-return-button" routerLink="/hosts">Back to Hunts</button>
       } @else if (error) {
-        <mat-card class="error-card">
-          <mat-card-content>
-            <h2>
-              {{ error.help }}
-            </h2>
-            <p>
-              {{ error.message }}
-            </p>
-            <p>
-              {{ error.httpResponse }}
-            </p>
-          </mat-card-content>
-          <mat-card-actions>
-            <button color=primary mat-raised-button routerLink="/hunts">Back to Hunts</button>
-          </mat-card-actions>
-        </mat-card>
+      <mat-card class="error-card">
+        <mat-card-content>
+          <h2>
+            {{ error.help }}
+          </h2>
+          <p>
+            {{ error.message }}
+          </p>
+          <p>
+            {{ error.httpResponse }}
+          </p>
+        </mat-card-content>
+        <mat-card-actions>
+          <button color=primary mat-raised-button routerLink="/hunts">Back to Hunts</button>
+        </mat-card-actions>
+      </mat-card>
       } @else {
-        <mat-card>
-          <mat-card-content>
-            <p>Loading Hunt Profile data...</p>
-          </mat-card-content>
-        </mat-card>
+      <mat-card>
+        <mat-card-content>
+          <p>Loading Hunt Profile data...</p>
+        </mat-card-content>
+      </mat-card>
       }
     </mat-card>
   </div>
