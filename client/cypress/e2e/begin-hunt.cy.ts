@@ -48,21 +48,24 @@ describe('Begin Hunt', () => {
     page.getTeamCard().should('exist');
   })
 
-  it('should click End Hunt, navigate to the host page and show message', () => {
+  it('should click End Hunt, navigate to the ended hunt details page', () => {
     page.beginHuntButton().should('exist');
     page.beginHuntButton().click();
     cy.wait(2000);
     page.getAccessCode().then((accessCode) => {
-      cy.wait(1000);
-      cy.url().should('eq', `http://localhost:4200/startedHunts/${accessCode}`);
+      page.getStartedHuntId(accessCode).then((id) => {
+        const startedHuntId = id;
+        cy.wait(1000);
+        cy.url().should('eq', `http://localhost:4200/startedHunts/${accessCode}`);
+        page.clickSecondBeginHuntButton();
+
+        // start the hunt before end it
+
+        page.clickEndHuntButton();
+        cy.url().should('eq', `http://localhost:4200/endedHunts/${startedHuntId}`);
+        cy.on('window:confirm', () => true);
+      });
     });
-    page.clickSecondBeginHuntButton();
-
-    // start the hunt before end it
-
-    page.clickEndHuntButton();
-    cy.url().should('eq', 'http://localhost:4200/hosts');
-    cy.on('window:confirm', () => true);
-  })
+  });
 
 })

@@ -2,12 +2,12 @@
 <mat-card class="container">
   <mat-card-title class="title">Type Invite Code</mat-card-title>
   <div class="input-container">
-    <input type="text" maxlength="1" (keyup)="onKeyUp($event, 1)" (keydown)="onKeyDown($event, 1)" (keypress)="numericOnly($event)" (paste)="onPaste($event)" #input1>
-    <input type="text" maxlength="1" (keyup)="onKeyUp($event, 2)" (keydown)="onKeyDown($event, 2)" (keypress)="numericOnly($event)" (paste)="onPaste($event)" #input2>
-    <input type="text" maxlength="1" (keyup)="onKeyUp($event, 3)" (keydown)="onKeyDown($event, 3)" (keypress)="numericOnly($event)" (paste)="onPaste($event)" #input3>
-    <input type="text" maxlength="1" (keyup)="onKeyUp($event, 4)" (keydown)="onKeyDown($event, 4)" (keypress)="numericOnly($event)" (paste)="onPaste($event)" #input4>
-    <input type="text" maxlength="1" (keyup)="onKeyUp($event, 5)" (keydown)="onKeyDown($event, 5)" (keypress)="numericOnly($event)" (paste)="onPaste($event)" #input5>
-    <input type="text" maxlength="1" (keyup)="onKeyUp($event, 6)" (keydown)="onKeyDown($event, 6)" (keypress)="numericOnly($event)" (paste)="onPaste($event)" #input6>
+    <input type="tel" inputmode="numeric" pattern="\d*" maxlength="1" (keyup)="onKeyUp($event, 1)" (keydown)="onKeyDown($event, 1)" (keypress)="numericOnly($event)" (paste)="onPaste($event)" #input1>
+    <input type="tel" inputmode="numeric" pattern="\d*" maxlength="1" (keyup)="onKeyUp($event, 2)" (keydown)="onKeyDown($event, 2)" (keypress)="numericOnly($event)" (paste)="onPaste($event)" #input2>
+    <input type="tel" inputmode="numeric" pattern="\d*" maxlength="1" (keyup)="onKeyUp($event, 3)" (keydown)="onKeyDown($event, 3)" (keypress)="numericOnly($event)" (paste)="onPaste($event)" #input3>
+    <input type="tel" inputmode="numeric" pattern="\d*" maxlength="1" (keyup)="onKeyUp($event, 4)" (keydown)="onKeyDown($event, 4)" (keypress)="numericOnly($event)" (paste)="onPaste($event)" #input4>
+    <input type="tel" inputmode="numeric" pattern="\d*" maxlength="1" (keyup)="onKeyUp($event, 5)" (keydown)="onKeyDown($event, 5)" (keypress)="numericOnly($event)" (paste)="onPaste($event)" #input5>
+    <input type="tel" inputmode="numeric" pattern="\d*" maxlength="1" (keyup)="onKeyUp($event, 6)" (keydown)="onKeyDown($event, 6)" (keypress)="numericOnly($event)" (paste)="onPaste($event)" #input6>
   </div>
 
     <a mat-raised-button [ngClass]="{'join-button-enabled': isAccessCodeValid}" class="link-button center-button" name="join-button" [routerLink]="['/hunter-view', this.accessCode]"
