@@ -60,7 +60,10 @@ public class Main {
       // the `Controller` interface.
       //
       // You can also remove this UserController once you don't need it.
-      new HostController(database)
+      new HostController(database),
+      new HuntController(database),
+      new TaskController(database),
+      new StartedHuntController(database)
     };
     return controllers;
   }
