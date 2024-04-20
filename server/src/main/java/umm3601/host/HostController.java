@@ -29,8 +29,6 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-
-
 import org.bson.Document;
 import org.bson.UuidRepresentation;
 import org.bson.conversions.Bson;
@@ -57,6 +55,7 @@ public class HostController implements Controller {
   private static final String API_DELETE_HUNT = "/api/endedHunts/{id}";
   private static final String API_PHOTO_UPLOAD = "/api/startedHunt/{startedHuntId}/tasks/{taskId}/photo";
   private static final String API_PHOTO_REPLACE = "/api/startedHunt/{startedHuntId}/tasks/{taskId}/photo/{photoId}";
+  private static final String WEBSOCKET_HOST = "/ws/host";
 
   static final String HOST_KEY = "hostId";
   static final String HUNT_KEY = "huntId";
@@ -105,10 +104,10 @@ public class HostController implements Controller {
 
     File directory = new File("photos");
     if (!directory.exists()) {
-        directory.mkdir();
+      directory.mkdir();
     }
-        // If you require it to make the entire directory path including parents,
-        // use directory.mkdirs(); here instead.
+    // If you require it to make the entire directory path including parents,
+    // use directory.mkdirs(); here instead.
 
   }
 
@@ -199,13 +198,13 @@ public class HostController implements Controller {
 
   public void addNewHunt(Context ctx) {
     Hunt newHunt = ctx.bodyValidator(Hunt.class)
-    .check(hunt -> hunt.hostId != null && hunt.hostId.length() > 0, "Invalid hostId")
-    .check(hunt -> hunt.name.length() <= REASONABLE_NAME_LENGTH_HUNT, "Name must be less than 50 characters")
-    .check(hunt -> hunt.name.length() > 0, "Name must be at least 1 character")
-    .check(hunt -> hunt.description.length() <= REASONABLE_DESCRIPTION_LENGTH_HUNT,
-     "Description must be less than 200 characters")
-    .check(hunt -> hunt.est <= REASONABLE_EST_LENGTH_HUNT, "Estimated time must be less than 4 hours")
-    .get();
+        .check(hunt -> hunt.hostId != null && hunt.hostId.length() > 0, "Invalid hostId")
+        .check(hunt -> hunt.name.length() <= REASONABLE_NAME_LENGTH_HUNT, "Name must be less than 50 characters")
+        .check(hunt -> hunt.name.length() > 0, "Name must be at least 1 character")
+        .check(hunt -> hunt.description.length() <= REASONABLE_DESCRIPTION_LENGTH_HUNT,
+            "Description must be less than 200 characters")
+        .check(hunt -> hunt.est <= REASONABLE_EST_LENGTH_HUNT, "Estimated time must be less than 4 hours")
+        .get();
 
     huntCollection.insertOne(newHunt);
     ctx.json(Map.of("id", newHunt._id));
@@ -214,10 +213,10 @@ public class HostController implements Controller {
 
   public void addNewTask(Context ctx) {
     Task newTask = ctx.bodyValidator(Task.class)
-    .check(task -> task.huntId != null && task.huntId.length() > 0, "Invalid huntId")
-    .check(task -> task.name.length() <= REASONABLE_NAME_LENGTH_TASK, "Name must be less than 150 characters")
-    .check(task -> task.name.length() > 0, "Name must be at least 1 character")
-    .get();
+        .check(task -> task.huntId != null && task.huntId.length() > 0, "Invalid huntId")
+        .check(task -> task.name.length() <= REASONABLE_NAME_LENGTH_TASK, "Name must be less than 150 characters")
+        .check(task -> task.name.length() > 0, "Name must be at least 1 character")
+        .get();
 
     newTask.photos = new ArrayList<String>();
 
@@ -361,7 +360,7 @@ public class HostController implements Controller {
           "Was unable to delete ID "
               + id
               + "; perhaps illegal ID or an ID for an item not in the system?");
-     }
+    }
     ctx.status(HttpStatus.OK);
 
     for (Task task : startedHunt.completeHunt.tasks) {
@@ -450,7 +449,7 @@ public class HostController implements Controller {
     if (!Files.exists(filePath)) {
       ctx.status(HttpStatus.NOT_FOUND);
       throw new BadRequestResponse("Photo with ID " + id + " does not exist");
-  }
+    }
 
     try {
       Files.delete(filePath);
@@ -548,7 +547,11 @@ public class HostController implements Controller {
         iterator.remove();
       }
     }
-    }
+  }
+
+  public void addConnectedContext(WsContext context) {
+    this.connectedContexts.add(context);
+  }
 
   @Override
   public void addRoutes(Javalin server) {
@@ -568,11 +571,11 @@ public class HostController implements Controller {
     server.get(API_ENDED_HUNTS, this::getEndedHunts);
     server.delete(API_DELETE_HUNT, this::deleteStartedHunt);
 
-    server.ws("/ws/host", ws -> {
+    server.ws(WEBSOCKET_HOST, ws -> {
       ws.onConnect(ctx -> {
         System.out.println("A client connected");
         System.err.println("Adding context to connected contexts" + ctx);
-        connectedContexts.add(ctx);
+        addConnectedContext(ctx);
         // I think we may want the simpler one, and just have the service
         // reconnect when it gets disconnected.
         ctx.enableAutomaticPings(5, TimeUnit.SECONDS);
