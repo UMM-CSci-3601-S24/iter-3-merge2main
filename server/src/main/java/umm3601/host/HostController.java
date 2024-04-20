@@ -70,6 +70,8 @@ public class HostController implements Controller {
   private static final int ACCESS_CODE_RANGE = 900000;
   private static final int ACCESS_CODE_LENGTH = 6;
 
+  private static final int WEB_SOCKET_PING_INTERVAL = 5;
+
   private final JacksonMongoCollection<Host> hostCollection;
   private final JacksonMongoCollection<Hunt> huntCollection;
   private final JacksonMongoCollection<Task> taskCollection;
@@ -582,7 +584,7 @@ public class HostController implements Controller {
         addConnectedContext(ctx);
         // I think we may want the simpler one, and just have the service
         // reconnect when it gets disconnected.
-        ctx.enableAutomaticPings(5, TimeUnit.SECONDS);
+        ctx.enableAutomaticPings(WEB_SOCKET_PING_INTERVAL, TimeUnit.SECONDS);
         // ctx.enableAutomaticPings();
       });
     });

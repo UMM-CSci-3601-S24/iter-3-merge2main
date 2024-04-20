@@ -1390,6 +1390,7 @@ class HostControllerSpec {
     hostController.addConnectedContext(mockContext);
 
     // Assert
-    assertTrue(hostController.getConnectedContexts().contains(mockContext), "Connected contexts should contain the added context");
+    String message = "Connected contexts should contain the added context";
+    assertTrue(hostController.getConnectedContexts().contains(mockContext), message);
   }
 }
