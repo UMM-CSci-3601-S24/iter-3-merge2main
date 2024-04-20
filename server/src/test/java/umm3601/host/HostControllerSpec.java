@@ -60,6 +60,7 @@ import io.javalin.json.JavalinJackson;
 import io.javalin.validation.BodyValidator;
 import io.javalin.validation.ValidationException;
 import io.javalin.validation.Validator;
+import io.javalin.websocket.WsContext;
 
 @SuppressWarnings({ "MagicNumber" })
 class HostControllerSpec {
@@ -269,6 +270,7 @@ class HostControllerSpec {
     Javalin mockServer = mock(Javalin.class);
     hostController.addRoutes(mockServer);
     verify(mockServer, Mockito.atLeast(1)).get(any(), any());
+    verify(mockServer, Mockito.atLeast(1)).ws(any(), any());
   }
 
   @Test
@@ -1379,4 +1381,15 @@ class HostControllerSpec {
     assertEquals(taskDocuments.get(2).get("_id").toString(), finishedHunt.finishedTasks.get(2).taskId);
   }
 
+  @Test
+  void testAddConnectedContext() {
+    // Arrange
+    WsContext mockContext = Mockito.mock(WsContext.class);
+
+    // Act
+    hostController.addConnectedContext(mockContext);
+
+    // Assert
+    assertTrue(hostController.getConnectedContexts().contains(mockContext), "Connected contexts should contain the added context");
+  }
 }

@@ -553,6 +553,10 @@ public class HostController implements Controller {
     this.connectedContexts.add(context);
   }
 
+  public ArrayList<WsContext> getConnectedContexts() {
+    return new ArrayList<>(this.connectedContexts);
+  }
+
   @Override
   public void addRoutes(Javalin server) {
     server.get(API_HOST, this::getHunts);
