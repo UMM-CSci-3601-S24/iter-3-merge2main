@@ -402,7 +402,9 @@ public class HostController implements Controller {
 
           Files.copy(in, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
           ctx.status(HttpStatus.OK);
-          updateListeners("photo-uploaded", id + "." + extension);
+
+          createAndSendEvent("photo-uploaded", id + "." + extension);
+
           return id + "." + extension;
         } catch (IOException e) {
           System.err.println("Error copying the uploaded file: " + e);
@@ -535,17 +537,17 @@ public class HostController implements Controller {
     return encodedPhotos;
   }
 
-  private void updateListeners(String event, String data) {
-    Map<String, String> events = Map.of(event, data, "timestamp", new Date().toString());
-    System.err.println("Updating listeners with " + events);
+  public Map<String, String> createEvent(String event, String data) {
+    return Map.of(event, data, "timestamp", new Date().toString());
+  }
+
+  public void updateListeners(Map<String, String> events) {
     Iterator<WsContext> iterator = connectedContexts.iterator();
     while (iterator.hasNext()) {
       WsContext ws = iterator.next();
       if (ws.session.isOpen()) {
-        System.err.println("Sending events to client" + ws);
         ws.send(events);
       } else {
-        System.err.println("Removing closed context" + ws);
         iterator.remove();
       }
     }
@@ -557,6 +559,20 @@ public class HostController implements Controller {
 
   public ArrayList<WsContext> getConnectedContexts() {
     return new ArrayList<>(this.connectedContexts);
+  }
+
+  public void createAndSendEvent(String event, String data) {
+    Map<String, String> events = createEvent(event, data);
+    updateListeners(events);
+  }
+
+  public void handleWebSocketConnections(Javalin server) {
+    server.ws(WEBSOCKET_HOST, ws -> {
+      ws.onConnect(ctx -> {
+        addConnectedContext(ctx);
+        ctx.enableAutomaticPings(WEB_SOCKET_PING_INTERVAL, TimeUnit.SECONDS);
+      });
+    });
   }
 
   @Override
@@ -577,16 +593,6 @@ public class HostController implements Controller {
     server.get(API_ENDED_HUNTS, this::getEndedHunts);
     server.delete(API_DELETE_HUNT, this::deleteStartedHunt);
 
-    server.ws(WEBSOCKET_HOST, ws -> {
-      ws.onConnect(ctx -> {
-        System.out.println("A client connected");
-        System.err.println("Adding context to connected contexts" + ctx);
-        addConnectedContext(ctx);
-        // I think we may want the simpler one, and just have the service
-        // reconnect when it gets disconnected.
-        ctx.enableAutomaticPings(WEB_SOCKET_PING_INTERVAL, TimeUnit.SECONDS);
-        // ctx.enableAutomaticPings();
-      });
-    });
+    handleWebSocketConnections(server);
   }
 }

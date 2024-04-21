@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -1393,4 +1394,33 @@ class HostControllerSpec {
     String message = "Connected contexts should contain the added context";
     assertTrue(hostController.getConnectedContexts().contains(mockContext), message);
   }
+
+  @Test
+  void testCreateEvent() {
+    // Act
+    Map<String, String> event = hostController.createEvent("testEvent", "testData");
+
+    // Assert
+    assertEquals("testData", event.get("testEvent"), "Event data should match");
+    assertNotNull(event.get("timestamp"), "Timestamp should not be null");
+  }
+
+  @Test
+  void testCreateAndSendEvent() {
+    // Arrange
+    String event = "testEvent";
+    String data = "testData";
+    Map<String, String> expectedEvent = Map.of(event, data, "timestamp", new Date().toString());
+
+    // Mock the updateListeners method
+    HostController spyController = Mockito.spy(hostController);
+    doNothing().when(spyController).updateListeners(any());
+
+    // Act
+    spyController.createAndSendEvent(event, data);
+
+    // Assert
+    verify(spyController, times(1)).updateListeners(expectedEvent);
+  }
+
 }
