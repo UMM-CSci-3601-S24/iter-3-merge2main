@@ -20,9 +20,16 @@
       <div class="flex-row header-row">
         <div class="flex-1"> Tasks For Hunter </div>
       </div>
-      <div class="flex-row" *ngFor="let task of startedHunt?.completeHunt?.tasks">
-        <div class="task-list">{{ task.name }}</div>
-      </div>
+      @for (task of startedHunt?.completeHunt?.tasks; track task._id) {
+        <div class="task-container">
+          <h3 class="task-list">{{ task.name }}</h3>
+          <div class="photos">
+            @for (photo of task.photos; track photo) {
+              <img src="{{ photo }}" alt="Task Photo" class="task-photo">
+            }
+          </div>
+        </div>
+      }
 
       <div class="flex-row header-row">
         <div class="flex-2"> Hunter Team and Their Progress </div>
@@ -51,11 +58,4 @@
       <button mat-raised-button class = "end-hunt-button" (click)="onEndHuntClick($event)">End Hunt</button>
     </mat-card-actions>
   </mat-card>
-}
-@for (task of startedHunt?.completeHunt?.tasks; track task._id) {
-  <div class="finishedTask-photos">
-    @for (photo of task.photos; track photo) {
-      <img src="{{ photo }}" alt="Task Photo" class="task-photo">
-    }
-  </div>
 }
