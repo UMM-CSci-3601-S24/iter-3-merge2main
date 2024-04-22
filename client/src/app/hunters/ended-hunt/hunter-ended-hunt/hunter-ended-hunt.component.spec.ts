@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { EndedHuntComponent } from './ended-hunt.component';
+import { HunterEndedHuntComponent } from './hunter-ended-hunt.component';
 
-describe('EndedHuntComponent', () => {
-  let component: EndedHuntComponent;
-  let fixture: ComponentFixture<EndedHuntComponent>;
+describe('HunterEndedHuntComponent', () => {
+  let component: HunterEndedHuntComponent;
+  let fixture: ComponentFixture<HunterEndedHuntComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EndedHuntComponent]
+      imports: [HunterEndedHuntComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(EndedHuntComponent);
+    fixture = TestBed.createComponent(HunterEndedHuntComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
