@@ -5,12 +5,12 @@ import { ActivatedRoute, Router, ParamMap } from "@angular/router";
 import { Subject, Subscription, map, switchMap, takeUntil } from "rxjs";
 import { HostService } from "../hosts/host.service";
 import { StartedHunt } from "./startedHunt";
-import { MatCard, MatCardActions, MatCardContent } from "@angular/material/card";
+import { MatCard, MatCardActions, MatCardContent, MatCardTitle } from "@angular/material/card";
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { WebSocketService } from '../web-socket.service';
-
+import { Task } from "../hunts/task";
 
 @Component({
   selector: 'app-start-hunt-component',
@@ -18,7 +18,7 @@ import { WebSocketService } from '../web-socket.service';
   styleUrls: ['./start-hunt.component.scss'],
   providers: [],
   standalone: true,
-  imports: [MatCard, MatCardContent, MatCardActions, MatIconModule, CommonModule, MatProgressBarModule]
+  imports: [MatCard, MatCardContent, MatCardActions, MatIconModule, CommonModule, MatProgressBarModule, MatCardTitle, Task]
 })
 
 export class StartHuntComponent implements OnInit, OnDestroy {
@@ -36,7 +36,7 @@ export class StartHuntComponent implements OnInit, OnDestroy {
     this.photoUploadSubscription = this.webSocketService.onMessage()
     .subscribe((message: StartedHunt) => {
       console.log('Received message from websocket: ' + JSON.stringify(message));
-      this.snackBar.open(message['added-user'] + ' event', 'OK', { duration: 3000 });
+      this.snackBar.open(message['photo-uploaded'] + ' event', 'OK', { duration: 3000 });
     });
 
     this.route.paramMap.pipe(
@@ -62,6 +62,18 @@ export class StartHuntComponent implements OnInit, OnDestroy {
     });
   }
 
+  getTaskName(taskId: string): string {
+    return this.startedHunt.completeHunt.tasks.find(
+      (task) => task._id === taskId
+    ).name;
+  }
+
+  getPhotoUrl(photoId: string): string {
+    return this.startedHunt.completeHunt.photo.find(
+      (photo) => photo._id === photoId
+    ).url;
+  }
+
   beginHunt() {
     this.huntBegun = true;
   }
@@ -76,6 +88,7 @@ export class StartHuntComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+    this.photoUploadSubscription.unsubscribe();
   }
 
   endHunt(): void {
