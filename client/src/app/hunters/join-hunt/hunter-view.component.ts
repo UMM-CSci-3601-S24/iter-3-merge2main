@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatButton } from '@angular/material/button';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { map, switchMap, takeUntil } from 'rxjs/operators';
@@ -17,7 +18,7 @@ import { Ng2ImgMaxService } from 'ng2-img-max';
 @Component({
   selector: 'app-hunter-view',
   standalone: true,
-  imports: [HuntCardComponent, CommonModule, MatCardModule, MatIconModule],
+  imports: [HuntCardComponent, CommonModule, MatCardModule, MatIconModule, MatButton],
   templateUrl: './hunter-view.component.html',
   styleUrl: './hunter-view.component.scss'
 })
@@ -152,5 +153,9 @@ export class HunterViewComponent implements OnInit, OnDestroy {
         });
       },
     });
+  }
+
+  allTasksCompleted(): boolean {
+    return this.tasks.every(task => task.status);
   }
 }
