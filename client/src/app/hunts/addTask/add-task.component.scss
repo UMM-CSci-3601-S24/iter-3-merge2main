@@ -18,3 +18,17 @@
   font-size: 24px;
   margin-bottom: 20px;
 }
+
+.flex-1 {
+  position: relative;
+}
+
+.add-task-card {
+  position: absolute;
+  width: 500px;
+  border: 1px dashed black;
+  box-shadow: 0 0 8px 0 rgb(0, 158, 250);
+  top: 50px;
+
+
+}
