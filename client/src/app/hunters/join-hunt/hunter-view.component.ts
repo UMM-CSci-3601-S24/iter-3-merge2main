@@ -3,7 +3,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatButton } from '@angular/material/button';
-import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { ActivatedRoute, ParamMap, Router, RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { map, switchMap, takeUntil } from 'rxjs/operators';
 import { StartedHunt } from 'src/app/startHunt/startedHunt';
@@ -18,7 +18,7 @@ import { Ng2ImgMaxService } from 'ng2-img-max';
 @Component({
   selector: 'app-hunter-view',
   standalone: true,
-  imports: [HuntCardComponent, CommonModule, MatCardModule, MatIconModule, MatButton],
+  imports: [HuntCardComponent, CommonModule, MatCardModule, MatIconModule, MatButton, RouterLink],
   templateUrl: './hunter-view.component.html',
   styleUrl: './hunter-view.component.scss'
 })

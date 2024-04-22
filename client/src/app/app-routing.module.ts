@@ -9,6 +9,7 @@ import { AddHuntComponent } from './hunts/addHunt/add-hunt.component';
 import { JoinHuntComponent } from './hunters/join-hunt/join-hunt.component';
 import { StartHuntComponent } from './startHunt/start-hunt.component';
 import { EndedHuntDetailsComponent } from './endedHunts/endedHuntDetails/ended-hunt.details.component';
+import { EndedHuntComponent } from './hunters/ended-hunt/ended-hunt/ended-hunt.component';
 
 // Note that the 'users/new' route needs to come before 'users/:id'.
 // If 'users/:id' came first, it would accidentally catch requests to
@@ -20,6 +21,7 @@ const routes: Routes = [
   {path: 'hunts/:id', component: HuntProfileComponent, title: 'Hunts Profile'},
   {path: 'hunts', component: HuntCardComponent, title: 'Hunts'},
   {path: 'hunters', component: JoinHuntComponent, title: 'Join Hunt'},
+  {path: 'hunter-view/1', component: EndedHuntComponent, title: 'Ended Hunt View'},
   {path: 'hunter-view/:accessCode', component: HunterViewComponent},
   {path: 'startedHunts/:accessCode', component: StartHuntComponent, title: 'Started Hunt'},
   {path: 'endedHunts/:id', component: EndedHuntDetailsComponent, title: 'Ended Hunt Details'},
