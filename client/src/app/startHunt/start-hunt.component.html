@@ -52,9 +52,7 @@
     </mat-card-actions>
   </mat-card>
 }
-
-@for (task of startedHunt?.completeHunt?.tasks; track task.taskId) {
-  <mat-card-title class="task-list-name"> {{ this.getTaskName(task.taskId) }} </mat-card-title>
+@for (task of startedHunt?.completeHunt?.tasks; track task._id) {
   <div class="finishedTask-photos">
     @for (photo of task.photos; track photo) {
       <img src="{{ photo }}" alt="Task Photo" class="task-photo">

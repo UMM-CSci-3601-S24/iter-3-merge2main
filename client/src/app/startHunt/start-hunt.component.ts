@@ -18,7 +18,7 @@ import { Task } from "../hunts/task";
   styleUrls: ['./start-hunt.component.scss'],
   providers: [],
   standalone: true,
-  imports: [MatCard, MatCardContent, MatCardActions, MatIconModule, CommonModule, MatProgressBarModule, MatCardTitle, Task]
+  imports: [MatCard, MatCardContent, MatCardActions, MatIconModule, CommonModule, MatProgressBarModule, MatCardTitle,]
 })
 
 export class StartHuntComponent implements OnInit, OnDestroy {
@@ -37,6 +37,7 @@ export class StartHuntComponent implements OnInit, OnDestroy {
     .subscribe((message: StartedHunt) => {
       console.log('Received message from websocket: ' + JSON.stringify(message));
       this.snackBar.open(message['photo-uploaded'] + ' event', 'OK', { duration: 3000 });
+      this.updatePhotos();
     });
 
     this.route.paramMap.pipe(
@@ -62,16 +63,26 @@ export class StartHuntComponent implements OnInit, OnDestroy {
     });
   }
 
+  updatePhotos() {
+    this.hostService.getStartedHunt(this.startedHunt.accessCode)
+    .subscribe({
+      next: startedHunt => {
+        this.startedHunt = startedHunt;
+      },
+      error: _err => {
+        this.error = {
+          help: 'There was a problem updating the hunt – try again.',
+          httpResponse: _err.message,
+          message: _err.error?.title,
+        };
+      }
+    });
+  }
+
   getTaskName(taskId: string): string {
     return this.startedHunt.completeHunt.tasks.find(
       (task) => task._id === taskId
     ).name;
-  }
-
-  getPhotoUrl(photoId: string): string {
-    return this.startedHunt.completeHunt.photo.find(
-      (photo) => photo._id === photoId
-    ).url;
   }
 
   beginHunt() {
