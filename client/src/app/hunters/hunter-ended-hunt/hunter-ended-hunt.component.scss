@@ -1,0 +1,21 @@
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.completion-card {
+  margin: 0 auto;
+  text-align: center;
+  padding: 30px;
+}
+
+.completion-actions {
+  justify-content: center;
+}
+
+.return-button {
+  justify-content: center;
+}

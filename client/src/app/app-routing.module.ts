@@ -9,7 +9,7 @@ import { AddHuntComponent } from './hunts/addHunt/add-hunt.component';
 import { JoinHuntComponent } from './hunters/join-hunt/join-hunt.component';
 import { StartHuntComponent } from './startHunt/start-hunt.component';
 import { EndedHuntDetailsComponent } from './endedHunts/endedHuntDetails/ended-hunt.details.component';
-import { HunterEndedHuntComponent } from './hunters/ended-hunt/hunter-ended-hunt/hunter-ended-hunt.component';
+import { HunterEndedHuntComponent } from './hunters/hunter-ended-hunt/hunter-ended-hunt.component';
 // Note that the 'users/new' route needs to come before 'users/:id'.
 // If 'users/:id' came first, it would accidentally catch requests to
 // 'users/new'; the router would just think that the string 'new' is a user ID.
