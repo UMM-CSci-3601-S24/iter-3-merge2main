@@ -12,6 +12,8 @@ import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -56,6 +58,8 @@ public class HostController implements Controller {
   private static final String API_PHOTO_UPLOAD = "/api/startedHunt/{startedHuntId}/tasks/{taskId}/photo";
   private static final String API_PHOTO_REPLACE = "/api/startedHunt/{startedHuntId}/tasks/{taskId}/photo/{photoId}";
   private static final String WEBSOCKET_HOST = "/ws/host";
+  private static final String API_PHOTO = "/api/photo/{filename}";
+
 
   static final String HOST_KEY = "hostId";
   static final String HUNT_KEY = "huntId";
@@ -197,6 +201,21 @@ public class HostController implements Controller {
     Bson sortingOrder = Sorts.ascending(sortBy);
     return sortingOrder;
   }
+
+  public void getPhoto(Context ctx) {
+  String filename = ctx.pathParam("filename");
+  File file = new File("photos/" + filename);
+  if (file.exists()) {
+    try {
+      ctx.result(new FileInputStream(file));
+    } catch (FileNotFoundException e) {
+      ctx.status(500).result("Error reading file: " + e.getMessage());
+    }
+  } else {
+    ctx.status(404).result("Photo not found");
+  }
+}
+
 
   public void addNewHunt(Context ctx) {
     Hunt newHunt = ctx.bodyValidator(Hunt.class)
@@ -592,6 +611,8 @@ public class HostController implements Controller {
     server.get(API_ENDED_HUNT, this::getEndedHunt);
     server.get(API_ENDED_HUNTS, this::getEndedHunts);
     server.delete(API_DELETE_HUNT, this::deleteStartedHunt);
+    server.get(API_PHOTO, this::getPhoto);
+
 
     handleWebSocketConnections(server);
   }
