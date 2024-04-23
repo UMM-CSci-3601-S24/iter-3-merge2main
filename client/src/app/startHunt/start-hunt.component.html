@@ -25,7 +25,7 @@
           <h3 class="task-list">{{ task.name }}</h3>
           <div class="photos">
             @for (photo of task.photos; track photo) {
-              <img src="{{ photo }}" alt="Task Photo" class="task-photo">
+              <img src="api/photo/{{ photo }}" alt="Task Photo" class="task-photo">
             }
           </div>
         </div>
