@@ -137,6 +137,24 @@ export class HunterViewComponent implements OnInit, OnDestroy {
     });
   }
 
+  deletePhoto(task: Task, startedHuntId: string): void {
+    this.hostService.deletePhoto(startedHuntId, task._id, task.photos[0]).subscribe({
+      next: () => {
+        task.status = false;
+        task.photos = [];
+        this.snackBar.open('Photo deleted successfully', 'Close', {
+          duration: 3000
+        });
+      },
+      error: (error: Error) => {
+        console.error('Error deleting photo', error);
+        this.snackBar.open('Error deleting photo. Please try again', 'Close', {
+          duration: 3000
+        });
+      },
+    });
+  }
+
   replacePhoto(file: File, task: Task, startedHuntId: string): void {
     this.hostService.replacePhoto(startedHuntId, task._id, task.photos[0], file).subscribe({
       next: (photoId: string) => {
