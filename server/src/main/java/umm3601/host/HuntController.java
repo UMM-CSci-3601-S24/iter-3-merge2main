@@ -1,29 +1,12 @@
 package umm3601.host;
 
-import io.javalin.Javalin;
-import io.javalin.http.BadRequestResponse;
-import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
-import io.javalin.http.NotFoundResponse;
-import umm3601.Controller;
-
-import static com.mongodb.client.model.Filters.and;
-import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.*;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
-import java.util.UUID;
 
 import org.bson.Document;
 import org.bson.UuidRepresentation;
@@ -34,12 +17,22 @@ import org.mongojack.JacksonMongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Sorts;
 import com.mongodb.client.result.DeleteResult;
-import java.util.Base64;
+
+import io.javalin.Javalin;
+import io.javalin.http.BadRequestResponse;
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
+import io.javalin.http.NotFoundResponse;
+import umm3601.Controller;
 
 public class HuntController implements Controller {
 
   private static final String API_HUNT = "/api/hunts/{id}";
   private static final String API_HUNTS = "/api/hunts";
+  private static final String API_HOST = "/api/hosts/{id}";
+  private static final String API_TASK = "/api/tasks/{id}";
+  private static final String API_TASKS = "/api/tasks";
+
 
   static final String HOST_KEY = "hostId";
   static final String HUNT_KEY = "huntId";
@@ -177,5 +170,42 @@ public class HuntController implements Controller {
   public void deleteTasks(Context ctx) {
     String huntId = ctx.pathParam("id");
     taskCollection.deleteMany(eq("huntId", huntId));
+  }
+
+  public void getCompleteHunt(Context ctx) {
+    CompleteHunt completeHunt = new CompleteHunt();
+    completeHunt.hunt = getHunt(ctx);
+    completeHunt.tasks = getTasks(ctx);
+
+    ctx.json(completeHunt);
+    ctx.status(HttpStatus.OK);
+  }
+
+  public ArrayList<Task> getTasks(Context ctx) {
+    Bson sortingOrder = constructSortingOrderTasks(ctx);
+
+    String targetHunt = ctx.pathParam("id");
+
+    ArrayList<Task> matchingTasks = taskCollection
+        .find(eq(HUNT_KEY, targetHunt))
+        .sort(sortingOrder)
+        .into(new ArrayList<>());
+
+    return matchingTasks;
+  }
+
+  private Bson constructSortingOrderTasks(Context ctx) {
+    String sortBy = Objects.requireNonNullElse(ctx.queryParam("sortby"), "name");
+    Bson sortingOrder = Sorts.ascending(sortBy);
+    return sortingOrder;
+  }
+
+  @Override
+  public void addRoutes(Javalin server) {
+    server.get(API_HOST, this::getHunts);
+    server.post(API_HUNTS, this::addNewHunt);
+    server.get(API_TASKS, this::getTasks);
+    server.delete(API_HUNT, this::deleteHunt);
+    server.delete(API_TASK, this::deleteTask);
   }
 }
