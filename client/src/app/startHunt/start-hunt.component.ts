@@ -36,7 +36,7 @@ export class StartHuntComponent implements OnInit, OnDestroy {
     this.photoUploadSubscription = this.webSocketService.onMessage()
     .subscribe((message: StartedHunt) => {
       console.log('Received message from websocket: ' + JSON.stringify(message));
-      this.snackBar.open(message['photo-uploaded'] + ' event', 'OK', { duration: 3000 });
+      this.snackBar.open(message['photo-uploaded'] + ' uploaded', 'OK', { duration: 3000 });
       this.updatePhotos();
     });
 
@@ -64,19 +64,21 @@ export class StartHuntComponent implements OnInit, OnDestroy {
   }
 
   updatePhotos() {
-    this.hostService.getStartedHunt(this.startedHunt.accessCode)
-    .subscribe({
-      next: startedHunt => {
-        this.startedHunt = startedHunt;
-      },
-      error: _err => {
-        this.error = {
-          help: 'There was a problem updating the hunt – try again.',
-          httpResponse: _err.message,
-          message: _err.error?.title,
-        };
-      }
-    });
+    setTimeout(() => {
+      this.hostService.getStartedHunt(this.startedHunt.accessCode)
+      .subscribe({
+        next: startedHunt => {
+          this.startedHunt = startedHunt;
+        },
+        error: _err => {
+          this.error = {
+            help: 'There was a problem updating the hunt – try again.',
+            httpResponse: _err.message,
+            message: _err.error?.title,
+          };
+        }
+      });
+    }, 2000);
   }
 
   getTaskName(taskId: string): string {
