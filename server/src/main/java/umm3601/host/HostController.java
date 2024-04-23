@@ -358,7 +358,7 @@ public class HostController implements Controller {
 
     for (Task task : startedHunt.completeHunt.tasks) {
       for (String photo : task.photos) {
-        deletePhoto(ctx);
+        deletePhoto(photo, ctx);
       }
     }
   }
@@ -431,9 +431,26 @@ public class HostController implements Controller {
     String startedHuntId = ctx.pathParam("startedHuntId");
     String taskId = ctx.pathParam("taskId");
     String photoId = ctx.pathParam("photoId");
-    deletePhoto(ctx);
+    deletePhoto(photoId, ctx);
     removePhotoPathFromTask(ctx, taskId, startedHuntId, photoId);
     addPhoto(ctx);
+  }
+
+  public void deletePhoto(String id, Context ctx) {
+    Path filePath = Path.of("photos/" + id);
+    if (!Files.exists(filePath)) {
+      ctx.status(HttpStatus.NOT_FOUND);
+      throw new BadRequestResponse("Photo with ID " + id + " does not exist");
+  }
+
+    try {
+      Files.delete(filePath);
+
+      ctx.status(HttpStatus.OK);
+    } catch (IOException e) {
+      ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new BadRequestResponse("Error deleting the photo: " + e.getMessage());
+    }
   }
 
   public void deletePhoto(Context ctx) {
