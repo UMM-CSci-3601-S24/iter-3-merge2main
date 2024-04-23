@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { RouterTestingModule } from '@angular/router/testing';
 import { HunterEndedHuntComponent } from './hunter-ended-hunt.component';
 
 describe('HunterEndedHuntComponent', () => {
@@ -8,10 +8,12 @@ describe('HunterEndedHuntComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HunterEndedHuntComponent]
+      imports: [RouterTestingModule, HunterEndedHuntComponent]
     })
     .compileComponents();
-    
+  });
+
+  beforeEach(() => {
     fixture = TestBed.createComponent(HunterEndedHuntComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
