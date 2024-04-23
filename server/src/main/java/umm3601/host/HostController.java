@@ -409,33 +409,37 @@ public class HostController implements Controller {
 
   public String uploadPhoto(Context ctx) {
     try {
-      var uploadedFile = ctx.uploadedFile("photo");
-      if (uploadedFile != null) {
-        try (InputStream in = uploadedFile.content()) {
+        var uploadedFile = ctx.uploadedFile("photo");
+        if (uploadedFile != null) {
+            try (InputStream in = uploadedFile.content()) {
 
-          String id = UUID.randomUUID().toString();
+                String id = UUID.randomUUID().toString();
 
-          String extension = getFileExtension(uploadedFile.filename());
-          File file = Path.of("photos", id + "." + extension).toFile();
-          System.err.println("The path was " + file.toPath());
+                String extension = getFileExtension(uploadedFile.filename());
+                File file = Path.of("photos", id + "." + extension).toFile();
+                System.err.println("The path was " + file.toPath());
 
-          Files.copy(in, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-          ctx.status(HttpStatus.OK);
+                Files.copy(in, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                ctx.status(HttpStatus.OK);
 
-          createAndSendEvent("photo-uploaded", id + "." + extension);
+                // Encode the photo to a Base64 string
+                byte[] bytes = Files.readAllBytes(file.toPath());
+                String encodedPhoto = "data:image/" + extension + ";base64," + Base64.getEncoder().encodeToString(bytes);
 
-          return id + "." + extension;
-        } catch (IOException e) {
-          System.err.println("Error copying the uploaded file: " + e);
-          throw new BadRequestResponse("Error handling the uploaded file: " + e.getMessage());
+                createAndSendEvent("photo-uploaded", encodedPhoto);
+
+                return encodedPhoto;
+            } catch (IOException e) {
+                System.err.println("Error copying the uploaded file: " + e);
+                throw new BadRequestResponse("Error handling the uploaded file: " + e.getMessage());
+            }
+        } else {
+            throw new BadRequestResponse("No photo uploaded");
         }
-      } else {
-        throw new BadRequestResponse("No photo uploaded");
-      }
     } catch (Exception e) {
-      throw new BadRequestResponse("Unexpected error during photo upload: " + e.getMessage());
+        throw new BadRequestResponse("Unexpected error during photo upload: " + e.getMessage());
     }
-  }
+}
 
   public void addPhotoPathToTask(Context ctx, String photoPath) {
     String taskId = ctx.pathParam("taskId");
@@ -533,28 +537,28 @@ public class HostController implements Controller {
     for (Task task : tasks) {
       finishedTask = new FinishedTask();
       finishedTask.taskId = task._id;
-      finishedTask.photos = getPhotosFromTask(task);
+      finishedTask.photos = task.photos;
       finishedTasks.add(finishedTask);
     }
     return finishedTasks;
   }
 
-  public List<String> getPhotosFromTask(Task task) {
-    List<String> encodedPhotos = new ArrayList<>();
-    for (String photoPath : task.photos) {
-      File photo = new File("photos/" + photoPath);
-      if (photo.exists()) {
-        try {
-          byte[] bytes = Files.readAllBytes(Paths.get(photo.getPath()));
-          String encoded = "data:image/png;base64," + Base64.getEncoder().encodeToString(bytes);
-          encodedPhotos.add(encoded);
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      }
-    }
-    return encodedPhotos;
-  }
+  // public List<String> getPhotosFromTask(Task task) {
+  //   List<String> encodedPhotos = new ArrayList<>();
+  //   for (String photoPath : task.photos) {
+  //     File photo = new File("photos/" + photoPath);
+  //     if (photo.exists()) {
+  //       try {
+  //         byte[] bytes = Files.readAllBytes(Paths.get(photo.getPath()));
+  //         String encoded = "data:image/png;base64," + Base64.getEncoder().encodeToString(bytes);
+  //         encodedPhotos.add(encoded);
+  //       } catch (IOException e) {
+  //         e.printStackTrace();
+  //       }
+  //     }
+  //   }
+  //   return encodedPhotos;
+  // }
 
   public Map<String, String> createEvent(String event, String data) {
     return Map.of(event, data, "timestamp", new Date().toString());
