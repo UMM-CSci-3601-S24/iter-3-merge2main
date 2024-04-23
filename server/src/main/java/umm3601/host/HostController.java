@@ -421,6 +421,7 @@ public class HostController implements Controller {
 
           Files.copy(in, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
           ctx.status(HttpStatus.OK);
+          createAndSendEvent("photo-uploaded", id + "." + extension);
           return id + "." + extension;
         } catch (IOException e) {
           System.err.println("Error copying the uploaded file: " + e);
