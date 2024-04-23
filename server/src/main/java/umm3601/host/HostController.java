@@ -431,8 +431,10 @@ public class HostController implements Controller {
     String startedHuntId = ctx.pathParam("startedHuntId");
     String taskId = ctx.pathParam("taskId");
     String photoId = ctx.pathParam("photoId");
-    deletePhoto(photoId, ctx);
-    removePhotoPathFromTask(ctx, taskId, startedHuntId, photoId);
+    if (photoId != null) {
+      deletePhoto(photoId, ctx);
+      removePhotoPathFromTask(ctx, taskId, startedHuntId, photoId);
+    }
     addPhoto(ctx);
   }
 
