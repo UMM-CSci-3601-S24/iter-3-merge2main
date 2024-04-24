@@ -1,26 +1,30 @@
 <mat-card class="hunt-information-card">
-    <mat-card-title class="hunt-title">You are in {{ startedHunt?.completeHunt?.hunt?.name }}</mat-card-title>
+  <mat-card-title class="hunt-title">You are in {{ startedHunt?.completeHunt?.hunt?.name }}</mat-card-title>
 </mat-card>
 
 <div class="task-table">
-  <div class="flex-row header-row">
-    <div class="flex-1"> Your Picture </div>
-    <div class="flex-2"> Your Task </div>
-  </div>
-  <div class="flex-row" *ngFor="let task of startedHunt?.completeHunt?.tasks">
-    <div class="image-upload">
-      <label for="img-{{task._id}}">
-      <img class="image" [src]="imageUrls[task._id] || 'assets/icons8-upload-picture-64.png'" alt="Upload Picture" title="Upload Picture"/>
-      <input
-        type="file"
-        id="img-{{task._id}}"
-        accept="image/*"
-        capture="environment"
-        (change)="onFileSelected($event, task)"
-      />
-      <div class="upload-text">Upload Image</div>
-    </label>
-    </div>
-    <div class="task-list" [ngClass]="{'task-completed': task.status}">{{ task.name }}</div>
-  </div>
+<div class="flex-row header-row">
+  <div class="flex-1"> Your Picture </div>
+  <div class="flex-2"> Your Task </div>
 </div>
+<div class="flex-row" *ngFor="let task of startedHunt?.completeHunt?.tasks">
+  <div class="image-upload">
+    <label for="img-{{task._id}}">
+    <img class="image" [src]="imageUrls[task._id] || 'assets/icons8-upload-picture-64.png'" alt="Upload Picture" title="Upload Picture"/>
+    <input
+      type="file"
+      id="img-{{task._id}}"
+      accept="image/*"
+      capture="environment"
+      (change)="onFileSelected($event, task)"
+    />
+    <div class="upload-text">Upload Image</div>
+  </label>
+  </div>
+  <div class="task-list" [ngClass]="{'task-completed': task.status}">{{ task.name }}</div>
+</div>
+</div>
+
+<!-- <div class="end-button-container">
+  <button mat-raised-button color="primary" class="end-button"[disabled]="!allTasksCompleted()" routerLink="/hunter-view/1">Complete Hunt</button>
+</div> -->
