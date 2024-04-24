@@ -5,12 +5,15 @@ import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
+import io.javalin.websocket.WsContext;
 import umm3601.Controller;
 
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -18,12 +21,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.bson.Document;
 import org.bson.UuidRepresentation;
@@ -51,6 +57,9 @@ public class HostController implements Controller {
   private static final String API_DELETE_HUNT = "/api/endedHunts/{id}";
   private static final String API_PHOTO_UPLOAD = "/api/startedHunt/{startedHuntId}/tasks/{taskId}/photo";
   private static final String API_PHOTO_REPLACE = "/api/startedHunt/{startedHuntId}/tasks/{taskId}/photo/{photoId}";
+  private static final String WEBSOCKET_HOST = "/ws/host";
+  private static final String API_PHOTO = "/api/photo/{filename}";
+
 
   static final String HOST_KEY = "hostId";
   static final String HUNT_KEY = "huntId";
@@ -65,10 +74,14 @@ public class HostController implements Controller {
   private static final int ACCESS_CODE_RANGE = 900000;
   private static final int ACCESS_CODE_LENGTH = 6;
 
+  private static final int WEB_SOCKET_PING_INTERVAL = 5;
+
   private final JacksonMongoCollection<Host> hostCollection;
   private final JacksonMongoCollection<Hunt> huntCollection;
   private final JacksonMongoCollection<Task> taskCollection;
   private final JacksonMongoCollection<StartedHunt> startedHuntCollection;
+
+  private HashSet<WsContext> connectedContexts = new HashSet<>();
 
   public HostController(MongoDatabase database) {
     hostCollection = JacksonMongoCollection.builder().build(
@@ -97,10 +110,10 @@ public class HostController implements Controller {
 
     File directory = new File("photos");
     if (!directory.exists()) {
-        directory.mkdir();
+      directory.mkdir();
     }
-        // If you require it to make the entire directory path including parents,
-        // use directory.mkdirs(); here instead.
+    // If you require it to make the entire directory path including parents,
+    // use directory.mkdirs(); here instead.
 
   }
 
@@ -189,15 +202,30 @@ public class HostController implements Controller {
     return sortingOrder;
   }
 
+  public void getPhoto(Context ctx) {
+  String filename = ctx.pathParam("filename");
+  File file = new File("photos/" + filename);
+  if (file.exists()) {
+    try {
+      ctx.result(new FileInputStream(file));
+    } catch (FileNotFoundException e) {
+      ctx.status(500).result("Error reading file: " + e.getMessage());
+    }
+  } else {
+    ctx.status(404).result("Photo not found");
+  }
+}
+
+
   public void addNewHunt(Context ctx) {
     Hunt newHunt = ctx.bodyValidator(Hunt.class)
-    .check(hunt -> hunt.hostId != null && hunt.hostId.length() > 0, "Invalid hostId")
-    .check(hunt -> hunt.name.length() <= REASONABLE_NAME_LENGTH_HUNT, "Name must be less than 50 characters")
-    .check(hunt -> hunt.name.length() > 0, "Name must be at least 1 character")
-    .check(hunt -> hunt.description.length() <= REASONABLE_DESCRIPTION_LENGTH_HUNT,
-     "Description must be less than 200 characters")
-    .check(hunt -> hunt.est <= REASONABLE_EST_LENGTH_HUNT, "Estimated time must be less than 4 hours")
-    .get();
+        .check(hunt -> hunt.hostId != null && hunt.hostId.length() > 0, "Invalid hostId")
+        .check(hunt -> hunt.name.length() <= REASONABLE_NAME_LENGTH_HUNT, "Name must be less than 50 characters")
+        .check(hunt -> hunt.name.length() > 0, "Name must be at least 1 character")
+        .check(hunt -> hunt.description.length() <= REASONABLE_DESCRIPTION_LENGTH_HUNT,
+            "Description must be less than 200 characters")
+        .check(hunt -> hunt.est <= REASONABLE_EST_LENGTH_HUNT, "Estimated time must be less than 4 hours")
+        .get();
 
     huntCollection.insertOne(newHunt);
     ctx.json(Map.of("id", newHunt._id));
@@ -206,10 +234,10 @@ public class HostController implements Controller {
 
   public void addNewTask(Context ctx) {
     Task newTask = ctx.bodyValidator(Task.class)
-    .check(task -> task.huntId != null && task.huntId.length() > 0, "Invalid huntId")
-    .check(task -> task.name.length() <= REASONABLE_NAME_LENGTH_TASK, "Name must be less than 150 characters")
-    .check(task -> task.name.length() > 0, "Name must be at least 1 character")
-    .get();
+        .check(task -> task.huntId != null && task.huntId.length() > 0, "Invalid huntId")
+        .check(task -> task.name.length() <= REASONABLE_NAME_LENGTH_TASK, "Name must be less than 150 characters")
+        .check(task -> task.name.length() > 0, "Name must be at least 1 character")
+        .get();
 
     newTask.photos = new ArrayList<String>();
 
@@ -353,7 +381,7 @@ public class HostController implements Controller {
           "Was unable to delete ID "
               + id
               + "; perhaps illegal ID or an ID for an item not in the system?");
-     }
+    }
     ctx.status(HttpStatus.OK);
 
     for (Task task : startedHunt.completeHunt.tasks) {
@@ -381,30 +409,37 @@ public class HostController implements Controller {
 
   public String uploadPhoto(Context ctx) {
     try {
-      var uploadedFile = ctx.uploadedFile("photo");
-      if (uploadedFile != null) {
-        try (InputStream in = uploadedFile.content()) {
+        var uploadedFile = ctx.uploadedFile("photo");
+        if (uploadedFile != null) {
+            try (InputStream in = uploadedFile.content()) {
 
-          String id = UUID.randomUUID().toString();
+                String id = UUID.randomUUID().toString();
 
-          String extension = getFileExtension(uploadedFile.filename());
-          File file = Path.of("photos", id + "." + extension).toFile();
-          System.err.println("The path was " + file.toPath());
+                String extension = getFileExtension(uploadedFile.filename());
+                File file = Path.of("photos", id + "." + extension).toFile();
+                System.err.println("The path was " + file.toPath());
 
-          Files.copy(in, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-          ctx.status(HttpStatus.OK);
-          return id + "." + extension;
-        } catch (IOException e) {
-          System.err.println("Error copying the uploaded file: " + e);
-          throw new BadRequestResponse("Error handling the uploaded file: " + e.getMessage());
+                Files.copy(in, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                ctx.status(HttpStatus.OK);
+
+                // Encode the photo to a Base64 string
+                byte[] bytes = Files.readAllBytes(file.toPath());
+                String encodedPhoto = "data:image/" + extension + ";base64," + Base64.getEncoder().encodeToString(bytes);
+
+                createAndSendEvent("photo-uploaded", encodedPhoto);
+
+                return encodedPhoto;
+            } catch (IOException e) {
+                System.err.println("Error copying the uploaded file: " + e);
+                throw new BadRequestResponse("Error handling the uploaded file: " + e.getMessage());
+            }
+        } else {
+            throw new BadRequestResponse("No photo uploaded");
         }
-      } else {
-        throw new BadRequestResponse("No photo uploaded");
-      }
     } catch (Exception e) {
-      throw new BadRequestResponse("Unexpected error during photo upload: " + e.getMessage());
+        throw new BadRequestResponse("Unexpected error during photo upload: " + e.getMessage());
     }
-  }
+}
 
   public void addPhotoPathToTask(Context ctx, String photoPath) {
     String taskId = ctx.pathParam("taskId");
@@ -441,7 +476,7 @@ public class HostController implements Controller {
     if (!Files.exists(filePath)) {
       ctx.status(HttpStatus.NOT_FOUND);
       throw new BadRequestResponse("Photo with ID " + id + " does not exist");
-  }
+    }
 
     try {
       Files.delete(filePath);
@@ -502,27 +537,65 @@ public class HostController implements Controller {
     for (Task task : tasks) {
       finishedTask = new FinishedTask();
       finishedTask.taskId = task._id;
-      finishedTask.photos = getPhotosFromTask(task);
+      finishedTask.photos = task.photos;
       finishedTasks.add(finishedTask);
     }
     return finishedTasks;
   }
 
-  public List<String> getPhotosFromTask(Task task) {
-    List<String> encodedPhotos = new ArrayList<>();
-    for (String photoPath : task.photos) {
-      File photo = new File("photos/" + photoPath);
-      if (photo.exists()) {
-        try {
-          byte[] bytes = Files.readAllBytes(Paths.get(photo.getPath()));
-          String encoded = "data:image/png;base64," + Base64.getEncoder().encodeToString(bytes);
-          encodedPhotos.add(encoded);
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
+  // public List<String> getPhotosFromTask(Task task) {
+  //   List<String> encodedPhotos = new ArrayList<>();
+  //   for (String photoPath : task.photos) {
+  //     File photo = new File("photos/" + photoPath);
+  //     if (photo.exists()) {
+  //       try {
+  //         byte[] bytes = Files.readAllBytes(Paths.get(photo.getPath()));
+  //         String encoded = "data:image/png;base64," + Base64.getEncoder().encodeToString(bytes);
+  //         encodedPhotos.add(encoded);
+  //       } catch (IOException e) {
+  //         e.printStackTrace();
+  //       }
+  //     }
+  //   }
+  //   return encodedPhotos;
+  // }
+
+  public Map<String, String> createEvent(String event, String data) {
+    return Map.of(event, data, "timestamp", new Date().toString());
+  }
+
+  public void updateListeners(Map<String, String> events) {
+    Iterator<WsContext> iterator = connectedContexts.iterator();
+    while (iterator.hasNext()) {
+      WsContext ws = iterator.next();
+      if (ws.session.isOpen()) {
+        ws.send(events);
+      } else {
+        iterator.remove();
       }
     }
-    return encodedPhotos;
+  }
+
+  public void addConnectedContext(WsContext context) {
+    this.connectedContexts.add(context);
+  }
+
+  public ArrayList<WsContext> getConnectedContexts() {
+    return new ArrayList<>(this.connectedContexts);
+  }
+
+  public void createAndSendEvent(String event, String data) {
+    Map<String, String> events = createEvent(event, data);
+    updateListeners(events);
+  }
+
+  public void handleWebSocketConnections(Javalin server) {
+    server.ws(WEBSOCKET_HOST, ws -> {
+      ws.onConnect(ctx -> {
+        addConnectedContext(ctx);
+        ctx.enableAutomaticPings(WEB_SOCKET_PING_INTERVAL, TimeUnit.SECONDS);
+      });
+    });
   }
 
   @Override
@@ -542,5 +615,9 @@ public class HostController implements Controller {
     server.get(API_ENDED_HUNT, this::getEndedHunt);
     server.get(API_ENDED_HUNTS, this::getEndedHunts);
     server.delete(API_DELETE_HUNT, this::deleteStartedHunt);
+    server.get(API_PHOTO, this::getPhoto);
+
+
+    handleWebSocketConnections(server);
   }
 }

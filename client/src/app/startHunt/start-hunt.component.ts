@@ -2,14 +2,15 @@ import { Component, OnDestroy, OnInit } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { ActivatedRoute, Router, ParamMap } from "@angular/router";
-import { Subject, map, switchMap, takeUntil } from "rxjs";
+import { Subject, Subscription, map, switchMap, takeUntil } from "rxjs";
 import { HostService } from "../hosts/host.service";
 import { StartedHunt } from "./startedHunt";
-import { MatCard, MatCardActions, MatCardContent } from "@angular/material/card";
+import { MatCard, MatCardActions, MatCardContent, MatCardTitle } from "@angular/material/card";
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-
+import { WebSocketService } from '../web-socket.service';
+import { Task } from "../hunts/task";
 
 @Component({
   selector: 'app-start-hunt-component',
@@ -17,7 +18,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
   styleUrls: ['./start-hunt.component.scss'],
   providers: [],
   standalone: true,
-  imports: [MatCard, MatCardContent, MatCardActions, MatIconModule, CommonModule, MatProgressBarModule]
+  imports: [MatCard, MatCardContent, MatCardActions, MatIconModule, CommonModule, MatProgressBarModule, MatCardTitle,]
 })
 
 export class StartHuntComponent implements OnInit, OnDestroy {
@@ -27,9 +28,17 @@ export class StartHuntComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe = new Subject<void>();
 
-  constructor(private snackBar: MatSnackBar, private route: ActivatedRoute, private hostService: HostService, private router: Router, public dialog: MatDialog) { }
+  private photoUploadSubscription: Subscription;
+
+  constructor(private snackBar: MatSnackBar, private route: ActivatedRoute, private hostService: HostService, private router: Router, public dialog: MatDialog, private webSocketService: WebSocketService) { }
 
   ngOnInit(): void {
+    this.photoUploadSubscription = this.webSocketService.onMessage()
+    .subscribe((message: StartedHunt) => {
+      console.log('Received message from websocket: ' + JSON.stringify(message));
+      this.snackBar.open(message['photo-uploaded'] + ' event', 'OK', { duration: 3000 });
+      this.updatePhotos();
+    });
 
     this.route.paramMap.pipe(
 
@@ -54,6 +63,28 @@ export class StartHuntComponent implements OnInit, OnDestroy {
     });
   }
 
+  updatePhotos() {
+    this.hostService.getStartedHunt(this.startedHunt.accessCode)
+    .subscribe({
+      next: startedHunt => {
+        this.startedHunt = startedHunt;
+      },
+      error: _err => {
+        this.error = {
+          help: 'There was a problem updating the hunt – try again.',
+          httpResponse: _err.message,
+          message: _err.error?.title,
+        };
+      }
+    });
+  }
+
+  getTaskName(taskId: string): string {
+    return this.startedHunt.completeHunt.tasks.find(
+      (task) => task._id === taskId
+    ).name;
+  }
+
   beginHunt() {
     this.huntBegun = true;
   }
@@ -68,6 +99,7 @@ export class StartHuntComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+    this.photoUploadSubscription.unsubscribe();
   }
 
   endHunt(): void {

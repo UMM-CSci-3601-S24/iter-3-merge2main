@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -60,6 +61,7 @@ import io.javalin.json.JavalinJackson;
 import io.javalin.validation.BodyValidator;
 import io.javalin.validation.ValidationException;
 import io.javalin.validation.Validator;
+import io.javalin.websocket.WsContext;
 
 @SuppressWarnings({ "MagicNumber" })
 class HostControllerSpec {
@@ -269,6 +271,7 @@ class HostControllerSpec {
     Javalin mockServer = mock(Javalin.class);
     hostController.addRoutes(mockServer);
     verify(mockServer, Mockito.atLeast(1)).get(any(), any());
+    verify(mockServer, Mockito.atLeast(1)).ws(any(), any());
   }
 
   @Test
@@ -1377,6 +1380,47 @@ class HostControllerSpec {
     assertEquals(taskDocuments.get(0).get("_id").toString(), finishedHunt.finishedTasks.get(0).taskId);
     assertEquals(taskDocuments.get(1).get("_id").toString(), finishedHunt.finishedTasks.get(1).taskId);
     assertEquals(taskDocuments.get(2).get("_id").toString(), finishedHunt.finishedTasks.get(2).taskId);
+  }
+
+  @Test
+  void testAddConnectedContext() {
+    // Arrange
+    WsContext mockContext = Mockito.mock(WsContext.class);
+
+    // Act
+    hostController.addConnectedContext(mockContext);
+
+    // Assert
+    String message = "Connected contexts should contain the added context";
+    assertTrue(hostController.getConnectedContexts().contains(mockContext), message);
+  }
+
+  @Test
+  void testCreateEvent() {
+    // Act
+    Map<String, String> event = hostController.createEvent("testEvent", "testData");
+
+    // Assert
+    assertEquals("testData", event.get("testEvent"), "Event data should match");
+    assertNotNull(event.get("timestamp"), "Timestamp should not be null");
+  }
+
+  @Test
+  void testCreateAndSendEvent() {
+    // Arrange
+    String event = "testEvent";
+    String data = "testData";
+    Map<String, String> expectedEvent = Map.of(event, data, "timestamp", new Date().toString());
+
+    // Mock the updateListeners method
+    HostController spyController = Mockito.spy(hostController);
+    doNothing().when(spyController).updateListeners(any());
+
+    // Act
+    spyController.createAndSendEvent(event, data);
+
+    // Assert
+    verify(spyController, times(1)).updateListeners(expectedEvent);
   }
 
 }
