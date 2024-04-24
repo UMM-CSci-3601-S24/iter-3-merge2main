@@ -54,6 +54,18 @@ public class StartedHuntController implements Controller {
         StartedHunt.class,
         UuidRepresentation.STANDARD);
 
+    huntCollection = JacksonMongoCollection.builder().build(
+        database,
+        "hunts",
+        Hunt.class,
+        UuidRepresentation.STANDARD);
+
+    taskCollection = JacksonMongoCollection.builder().build(
+        database,
+        "tasks",
+        Task.class,
+        UuidRepresentation.STANDARD);
+
     File directory = new File("photos");
     if (!directory.exists()) {
         directory.mkdir();
@@ -114,6 +126,37 @@ public class StartedHuntController implements Controller {
     return sortingOrder;
   }
 
+  public void getCompleteHunt(Context ctx) {
+    CompleteHunt completeHunt = new CompleteHunt();
+    completeHunt.hunt = getHunt(ctx);
+    completeHunt.tasks = getTasks(ctx);
+
+    ctx.json(completeHunt);
+    ctx.status(HttpStatus.OK);
+  }
+
+  public StartedHunt getStartedHunt(Context ctx) {
+    String accessCode = ctx.pathParam("accessCode");
+    StartedHunt startedHunt;
+
+    // Validate the access code
+    if (accessCode.length() != ACCESS_CODE_LENGTH || !accessCode.matches("\\d+")) {
+      throw new BadRequestResponse("The requested access code is not a valid access code.");
+    }
+
+    startedHunt = startedHuntCollection.find(eq("accessCode", accessCode)).first();
+
+    if (startedHunt == null) {
+      throw new NotFoundResponse("The requested access code was not found.");
+    } else if (!startedHunt.status) {
+      throw new BadRequestResponse("The requested hunt is no longer joinable.");
+    } else {
+      ctx.json(startedHunt);
+      ctx.status(HttpStatus.OK);
+      return startedHunt;
+    }
+  }
+
   public void getEndedHunts(Context ctx) {
     List<StartedHunt> endedHunts = startedHuntCollection.find(eq("status", false)).into(new ArrayList<>());
     ctx.json(endedHunts);
@@ -172,13 +215,29 @@ public class StartedHuntController implements Controller {
     }
   }
 
+  public StartedHunt getStartedHuntById(Context ctx) {
+    String id = ctx.pathParam("id");
+    StartedHunt startedHunt;
+
+    try {
+      startedHunt = startedHuntCollection.find(eq("_id", new ObjectId(id))).first();
+    } catch (IllegalArgumentException e) {
+      throw new BadRequestResponse("The requested started hunt id wasn't a legal Mongo Object ID.");
+    }
+    if (startedHunt == null) {
+      throw new NotFoundResponse("The requested started hunt was not found");
+    } else {
+      return startedHunt;
+    }
+  }
+
   @Override
   public void addRoutes(Javalin server) {
     server.get(API_HUNT, this::getCompleteHunt);
     server.get(API_START_HUNT, this::startHunt);
     server.get(API_STARTED_HUNT, this::getStartedHunt);
     server.put(API_END_HUNT, this::endStartedHunt);
-    server.get(API_ENDED_HUNTS, this::getEndedHunts);
+    server.get(API_ENDED_HUNT, this::getEndedHunts);
     server.delete(API_DELETE_HUNT, this::deleteStartedHunt);
   }
 }

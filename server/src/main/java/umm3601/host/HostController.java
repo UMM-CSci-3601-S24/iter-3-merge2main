@@ -1,14 +1,6 @@
 package umm3601.host;
 
-import io.javalin.Javalin;
-import io.javalin.http.BadRequestResponse;
-import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
-import io.javalin.http.NotFoundResponse;
-import umm3601.Controller;
-
-import static com.mongodb.client.model.Filters.and;
-import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,38 +9,28 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Date;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
 import java.util.UUID;
 
-import org.bson.Document;
 import org.bson.UuidRepresentation;
-import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.mongojack.JacksonMongoCollection;
 
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Sorts;
-import com.mongodb.client.result.DeleteResult;
-import java.util.Base64;
+
+import io.javalin.Javalin;
+import io.javalin.http.BadRequestResponse;
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
+import io.javalin.http.NotFoundResponse;
+import umm3601.Controller;
 
 public class HostController implements Controller {
 
-  private static final String API_HOST = "/api/hosts/{id}";
-  private static final String API_HUNT = "/api/hunts/{id}";
-  private static final String API_HUNTS = "/api/hunts";
-  private static final String API_TASK = "/api/tasks/{id}";
-  private static final String API_TASKS = "/api/tasks";
-  private static final String API_START_HUNT = "/api/startHunt/{id}";
-  private static final String API_STARTED_HUNT = "/api/startedHunts/{accessCode}";
-  private static final String API_END_HUNT = "/api/endHunt/{id}";
   private static final String API_ENDED_HUNT = "/api/endedHunts/{id}";
-  private static final String API_ENDED_HUNTS = "/api/hosts/{id}/endedHunts";
-  private static final String API_DELETE_HUNT = "/api/endedHunts/{id}";
   private static final String API_PHOTO_UPLOAD = "/api/startedHunt/{startedHuntId}/tasks/{taskId}/photo";
   private static final String API_PHOTO_REPLACE = "/api/startedHunt/{startedHuntId}/tasks/{taskId}/photo/{photoId}";
 
@@ -57,17 +39,10 @@ public class HostController implements Controller {
 
   static final int REASONABLE_NAME_LENGTH_HUNT = 50;
   static final int REASONABLE_DESCRIPTION_LENGTH_HUNT = 200;
-  private static final int REASONABLE_EST_LENGTH_HUNT = 240;
 
   static final int REASONABLE_NAME_LENGTH_TASK = 150;
 
-  private static final int ACCESS_CODE_MIN = 100000;
-  private static final int ACCESS_CODE_RANGE = 900000;
-  private static final int ACCESS_CODE_LENGTH = 6;
-
   private final JacksonMongoCollection<Host> hostCollection;
-  private final JacksonMongoCollection<Hunt> huntCollection;
-  private final JacksonMongoCollection<Task> taskCollection;
   private final JacksonMongoCollection<StartedHunt> startedHuntCollection;
 
   public HostController(MongoDatabase database) {
@@ -75,18 +50,6 @@ public class HostController implements Controller {
         database,
         "hosts",
         Host.class,
-        UuidRepresentation.STANDARD);
-
-    huntCollection = JacksonMongoCollection.builder().build(
-        database,
-        "hunts",
-        Hunt.class,
-        UuidRepresentation.STANDARD);
-
-    taskCollection = JacksonMongoCollection.builder().build(
-        database,
-        "tasks",
-        Task.class,
         UuidRepresentation.STANDARD);
 
     startedHuntCollection = JacksonMongoCollection.builder().build(
@@ -170,24 +133,24 @@ public class HostController implements Controller {
   //   return sortingOrder;
   // }
 
-  public ArrayList<Task> getTasks(Context ctx) {
-    Bson sortingOrder = constructSortingOrderTasks(ctx);
+  // public ArrayList<Task> getTasks(Context ctx) {
+  //   Bson sortingOrder = constructSortingOrderTasks(ctx);
 
-    String targetHunt = ctx.pathParam("id");
+  //   String targetHunt = ctx.pathParam("id");
 
-    ArrayList<Task> matchingTasks = taskCollection
-        .find(eq(HUNT_KEY, targetHunt))
-        .sort(sortingOrder)
-        .into(new ArrayList<>());
+  //   ArrayList<Task> matchingTasks = taskCollection
+  //       .find(eq(HUNT_KEY, targetHunt))
+  //       .sort(sortingOrder)
+  //       .into(new ArrayList<>());
 
-    return matchingTasks;
-  }
+  //   return matchingTasks;
+  // }
 
-  private Bson constructSortingOrderTasks(Context ctx) {
-    String sortBy = Objects.requireNonNullElse(ctx.queryParam("sortby"), "name");
-    Bson sortingOrder = Sorts.ascending(sortBy);
-    return sortingOrder;
-  }
+  // private Bson constructSortingOrderTasks(Context ctx) {
+  //   String sortBy = Objects.requireNonNullElse(ctx.queryParam("sortby"), "name");
+  //   Bson sortingOrder = Sorts.ascending(sortBy);
+  //   return sortingOrder;
+  // }
 
   // public void addNewHunt(Context ctx) {
   //   Hunt newHunt = ctx.bodyValidator(Hunt.class)
@@ -204,29 +167,29 @@ public class HostController implements Controller {
   //   ctx.status(HttpStatus.CREATED);
   // }
 
-  public void addNewTask(Context ctx) {
-    Task newTask = ctx.bodyValidator(Task.class)
-    .check(task -> task.huntId != null && task.huntId.length() > 0, "Invalid huntId")
-    .check(task -> task.name.length() <= REASONABLE_NAME_LENGTH_TASK, "Name must be less than 150 characters")
-    .check(task -> task.name.length() > 0, "Name must be at least 1 character")
-    .get();
+  // public void addNewTask(Context ctx) {
+  //   Task newTask = ctx.bodyValidator(Task.class)
+  //   .check(task -> task.huntId != null && task.huntId.length() > 0, "Invalid huntId")
+  //   .check(task -> task.name.length() <= REASONABLE_NAME_LENGTH_TASK, "Name must be less than 150 characters")
+  //   .check(task -> task.name.length() > 0, "Name must be at least 1 character")
+  //   .get();
 
-    newTask.photos = new ArrayList<String>();
+  //   newTask.photos = new ArrayList<String>();
 
-    taskCollection.insertOne(newTask);
-    increaseTaskCount(newTask.huntId);
-    ctx.json(Map.of("id", newTask._id));
-    ctx.status(HttpStatus.CREATED);
-  }
+  //   taskCollection.insertOne(newTask);
+  //   increaseTaskCount(newTask.huntId);
+  //   ctx.json(Map.of("id", newTask._id));
+  //   ctx.status(HttpStatus.CREATED);
+  // }
 
-  public void increaseTaskCount(String huntId) {
-    try {
-      huntCollection.findOneAndUpdate(eq("_id", new ObjectId(huntId)),
-          new Document("$inc", new Document("numberOfTasks", 1)));
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
+  // public void increaseTaskCount(String huntId) {
+  //   try {
+  //     huntCollection.findOneAndUpdate(eq("_id", new ObjectId(huntId)),
+  //         new Document("$inc", new Document("numberOfTasks", 1)));
+  //   } catch (Exception e) {
+  //     e.printStackTrace();
+  //   }
+  // }
 
   // public void deleteHunt(Context ctx) {
   //   String id = ctx.pathParam("id");
@@ -272,96 +235,96 @@ public class HostController implements Controller {
   //   taskCollection.deleteMany(eq("huntId", huntId));
   // }
 
-  public void getCompleteHunt(Context ctx) {
-    CompleteHunt completeHunt = new CompleteHunt();
-    completeHunt.hunt = getHunt(ctx);
-    completeHunt.tasks = getTasks(ctx);
+  // public void getCompleteHunt(Context ctx) {
+  //   CompleteHunt completeHunt = new CompleteHunt();
+  //   completeHunt.hunt = getHunt(ctx);
+  //   completeHunt.tasks = getTasks(ctx);
 
-    ctx.json(completeHunt);
-    ctx.status(HttpStatus.OK);
-  }
+  //   ctx.json(completeHunt);
+  //   ctx.status(HttpStatus.OK);
+  // }
 
-  public void startHunt(Context ctx) {
-    CompleteHunt completeHunt = new CompleteHunt();
-    completeHunt.hunt = getHunt(ctx);
-    completeHunt.tasks = getTasks(ctx);
+  // public void startHunt(Context ctx) {
+  //   CompleteHunt completeHunt = new CompleteHunt();
+  //   completeHunt.hunt = getHunt(ctx);
+  //   completeHunt.tasks = getTasks(ctx);
 
-    StartedHunt startedHunt = new StartedHunt();
-    Random random = new Random();
-    int accessCode = ACCESS_CODE_MIN + random.nextInt(ACCESS_CODE_RANGE); // Generate a random 6-digit number
-    startedHunt.accessCode = String.format("%06d", accessCode); // Convert the number to a string
-    startedHunt.completeHunt = completeHunt; // Assign the completeHunt to the startedHunt
-    startedHunt.status = true; // true means the hunt is active
-    startedHunt.endDate = null; // null endDate until the hunt is ended
-    // Insert the StartedHunt into the startedHunt collection
-    startedHuntCollection.insertOne(startedHunt);
+  //   StartedHunt startedHunt = new StartedHunt();
+  //   Random random = new Random();
+  //   int accessCode = ACCESS_CODE_MIN + random.nextInt(ACCESS_CODE_RANGE); // Generate a random 6-digit number
+  //   startedHunt.accessCode = String.format("%06d", accessCode); // Convert the number to a string
+  //   startedHunt.completeHunt = completeHunt; // Assign the completeHunt to the startedHunt
+  //   startedHunt.status = true; // true means the hunt is active
+  //   startedHunt.endDate = null; // null endDate until the hunt is ended
+  //   // Insert the StartedHunt into the startedHunt collection
+  //   startedHuntCollection.insertOne(startedHunt);
 
-    ctx.json(startedHunt.accessCode);
-    ctx.status(HttpStatus.CREATED);
-  }
+  //   ctx.json(startedHunt.accessCode);
+  //   ctx.status(HttpStatus.CREATED);
+  // }
 
-  public StartedHunt getStartedHunt(Context ctx) {
-    String accessCode = ctx.pathParam("accessCode");
-    StartedHunt startedHunt;
+  // public StartedHunt getStartedHunt(Context ctx) {
+  //   String accessCode = ctx.pathParam("accessCode");
+  //   StartedHunt startedHunt;
 
-    // Validate the access code
-    if (accessCode.length() != ACCESS_CODE_LENGTH || !accessCode.matches("\\d+")) {
-      throw new BadRequestResponse("The requested access code is not a valid access code.");
-    }
+  //   // Validate the access code
+  //   if (accessCode.length() != ACCESS_CODE_LENGTH || !accessCode.matches("\\d+")) {
+  //     throw new BadRequestResponse("The requested access code is not a valid access code.");
+  //   }
 
-    startedHunt = startedHuntCollection.find(eq("accessCode", accessCode)).first();
+  //   startedHunt = startedHuntCollection.find(eq("accessCode", accessCode)).first();
 
-    if (startedHunt == null) {
-      throw new NotFoundResponse("The requested access code was not found.");
-    } else if (!startedHunt.status) {
-      throw new BadRequestResponse("The requested hunt is no longer joinable.");
-    } else {
-      ctx.json(startedHunt);
-      ctx.status(HttpStatus.OK);
-      return startedHunt;
-    }
-  }
+  //   if (startedHunt == null) {
+  //     throw new NotFoundResponse("The requested access code was not found.");
+  //   } else if (!startedHunt.status) {
+  //     throw new BadRequestResponse("The requested hunt is no longer joinable.");
+  //   } else {
+  //     ctx.json(startedHunt);
+  //     ctx.status(HttpStatus.OK);
+  //     return startedHunt;
+  //   }
+  // }
 
-  public void getEndedHunts(Context ctx) {
-    List<StartedHunt> endedHunts = startedHuntCollection.find(eq("status", false)).into(new ArrayList<>());
-    ctx.json(endedHunts);
-    ctx.status(HttpStatus.OK);
-  }
+  // public void getEndedHunts(Context ctx) {
+  //   List<StartedHunt> endedHunts = startedHuntCollection.find(eq("status", false)).into(new ArrayList<>());
+  //   ctx.json(endedHunts);
+  //   ctx.status(HttpStatus.OK);
+  // }
 
-  public void endStartedHunt(Context ctx) {
-    String id = ctx.pathParam("id");
-    StartedHunt startedHunt = startedHuntCollection.find(eq("_id", new ObjectId(id))).first();
+  // public void endStartedHunt(Context ctx) {
+  //   String id = ctx.pathParam("id");
+  //   StartedHunt startedHunt = startedHuntCollection.find(eq("_id", new ObjectId(id))).first();
 
-    if (startedHunt == null) {
-      throw new NotFoundResponse("The requested started hunt was not found.");
-    } else {
-      startedHunt.status = false;
-      startedHunt.accessCode = "1";
-      startedHunt.endDate = new Date();
-      startedHuntCollection.save(startedHunt);
-      ctx.status(HttpStatus.OK);
-    }
-  }
+  //   if (startedHunt == null) {
+  //     throw new NotFoundResponse("The requested started hunt was not found.");
+  //   } else {
+  //     startedHunt.status = false;
+  //     startedHunt.accessCode = "1";
+  //     startedHunt.endDate = new Date();
+  //     startedHuntCollection.save(startedHunt);
+  //     ctx.status(HttpStatus.OK);
+  //   }
+  // }
 
-  public void deleteStartedHunt(Context ctx) {
-    String id = ctx.pathParam("id");
-    StartedHunt startedHunt = startedHuntCollection.find(eq("_id", new ObjectId(id))).first();
-    DeleteResult deleteResult = startedHuntCollection.deleteOne(eq("_id", new ObjectId(id)));
-    if (deleteResult.getDeletedCount() != 1) {
-      ctx.status(HttpStatus.NOT_FOUND);
-      throw new NotFoundResponse(
-          "Was unable to delete ID "
-              + id
-              + "; perhaps illegal ID or an ID for an item not in the system?");
-     }
-    ctx.status(HttpStatus.OK);
+  // public void deleteStartedHunt(Context ctx) {
+  //   String id = ctx.pathParam("id");
+  //   StartedHunt startedHunt = startedHuntCollection.find(eq("_id", new ObjectId(id))).first();
+  //   DeleteResult deleteResult = startedHuntCollection.deleteOne(eq("_id", new ObjectId(id)));
+  //   if (deleteResult.getDeletedCount() != 1) {
+  //     ctx.status(HttpStatus.NOT_FOUND);
+  //     throw new NotFoundResponse(
+  //         "Was unable to delete ID "
+  //             + id
+  //             + "; perhaps illegal ID or an ID for an item not in the system?");
+  //    }
+  //   ctx.status(HttpStatus.OK);
 
-    for (Task task : startedHunt.completeHunt.tasks) {
-      for (String photo : task.photos) {
-        deletePhoto(photo, ctx);
-      }
-    }
-  }
+  //   for (Task task : startedHunt.completeHunt.tasks) {
+  //     for (String photo : task.photos) {
+  //       deletePhoto(photo, ctx);
+  //     }
+  //   }
+  // }
 
   public void addPhoto(Context ctx) {
     String id = uploadPhoto(ctx);
@@ -527,20 +490,8 @@ public class HostController implements Controller {
 
   @Override
   public void addRoutes(Javalin server) {
-    server.get(API_HOST, this::getHunts);
-    server.get(API_HUNT, this::getCompleteHunt);
-    server.post(API_HUNTS, this::addNewHunt);
-    server.get(API_TASKS, this::getTasks);
-    server.post(API_TASKS, this::addNewTask);
-    server.delete(API_HUNT, this::deleteHunt);
-    server.delete(API_TASK, this::deleteTask);
-    server.get(API_START_HUNT, this::startHunt);
-    server.get(API_STARTED_HUNT, this::getStartedHunt);
-    server.put(API_END_HUNT, this::endStartedHunt);
     server.post(API_PHOTO_UPLOAD, this::addPhoto);
     server.put(API_PHOTO_REPLACE, this::replacePhoto);
     server.get(API_ENDED_HUNT, this::getEndedHunt);
-    server.get(API_ENDED_HUNTS, this::getEndedHunts);
-    server.delete(API_DELETE_HUNT, this::deleteStartedHunt);
   }
 }
