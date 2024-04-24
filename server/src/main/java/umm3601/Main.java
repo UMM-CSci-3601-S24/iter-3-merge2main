@@ -4,6 +4,9 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 
 import umm3601.host.HostController;
+import umm3601.host.HuntController;
+import umm3601.host.StartedHuntController;
+import umm3601.host.TaskController;
 
 public class Main {
 

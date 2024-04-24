@@ -122,7 +122,7 @@ public class TaskController implements Controller {
   public void deleteTasks(Context ctx) {
     String huntId = ctx.pathParam("id");
     taskCollection.deleteMany(eq("huntId", huntId));
-  //
+  }
 
   @Override
   public void addRoutes(Javalin server) {

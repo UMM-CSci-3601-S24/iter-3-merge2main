@@ -41,10 +41,8 @@ import io.javalin.validation.ValidationException;
 @SuppressWarnings({ "MagicNumber" })
 class TaskControllerSpec {
   private TaskController taskController;
-  private ObjectId frysId;
   private ObjectId huntId;
   private ObjectId taskId;
-  private ObjectId startedHuntId;
 
   private static MongoClient mongoClient;
   private static MongoDatabase db;
