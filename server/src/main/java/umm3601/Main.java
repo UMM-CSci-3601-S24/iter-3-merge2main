@@ -6,7 +6,6 @@ import com.mongodb.client.MongoDatabase;
 import umm3601.host.HostController;
 import umm3601.host.HuntController;
 import umm3601.host.StartedHuntController;
-import umm3601.host.TaskController;
 
 public class Main {
 
@@ -65,7 +64,6 @@ public class Main {
       // You can also remove this UserController once you don't need it.
       new HostController(database),
       new HuntController(database),
-      new TaskController(database),
       new StartedHuntController(database)
     };
     return controllers;
