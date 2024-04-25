@@ -3,6 +3,7 @@ package umm3601.teams;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
@@ -12,11 +13,13 @@ import org.mongojack.JacksonMongoCollection;
 
 import com.mongodb.client.MongoDatabase;
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.in;
 
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import umm3601.Controller;
+import umm3601.host.StartedHunt;
 
 public class SubmissionController implements Controller {
 
@@ -28,6 +31,7 @@ public class SubmissionController implements Controller {
   private static final String API_SUBMISSION_GET_PHOTO = "/api/submissions/{id}/photo";
 
   private final JacksonMongoCollection<Submission> submissionCollection;
+  private final JacksonMongoCollection<StartedHunt> startedHuntCollection;
 
   public SubmissionController(MongoDatabase database) {
 
@@ -36,19 +40,47 @@ public class SubmissionController implements Controller {
         "submissions",
         Submission.class,
         UuidRepresentation.STANDARD);
+
+    startedHuntCollection = JacksonMongoCollection.builder().build(
+        database,
+        "startedHunts",
+        StartedHunt.class,
+        UuidRepresentation.STANDARD);
   }
 
   /**
-   * Retrieves a Submission from the database.
+   * Creates a new Submission and inserts it into the submission collection.
+   *
+   * @param taskId    The ID of the task for the submission.
+   * @param teamId    The ID of the team making the submission.
+   * @param photoPath The path to the photo for the submission.
+   * @return The newly created Submission object.
+   */
+  public Submission createSubmission(String taskId, String teamId, String photoPath) {
+    Submission submission = new Submission();
+    submission.taskId = taskId;
+    submission.teamId = teamId;
+    submission.photoPath = photoPath;
+    submission.submitTime = new java.util.Date();
+    submissionCollection.insertOne(submission);
+    return submission;
+  }
+
+  /**
+   * Retrieves a Submission from the database and sends it as a JSON response.
    *
    * @param ctx a Javalin Context object containing the HTTP request information.
    *            Expects an "id" path parameter.
-   * @return the Submission object with the matching ID, or null if no such
-   *         Submission exists.
+   *            If a Submission with the matching ID is found, it is sent as a
+   *            JSON response with a status of 200 OK.
    */
-  public Submission getSubmission(Context ctx) {
+  public void getSubmission(Context ctx) {
     String id = ctx.pathParam("id");
-    return submissionCollection.find(eq("_id", new ObjectId(id))).first();
+    Submission submission = submissionCollection.find(eq("_id", new ObjectId(id))).first();
+    if (submission != null) {
+      ctx.status(HttpStatus.OK);
+      ctx.json(submission);
+    }
   }
 
   /**
@@ -61,23 +93,25 @@ public class SubmissionController implements Controller {
    */
   public void getSubmissionsByTeam(Context ctx) {
     String teamId = ctx.pathParam("teamId");
-    List<Submission> teamSubmissions = submissionCollection.find(eq("teamId", teamId)).into(new ArrayList<>());
+    ArrayList<Submission> teamSubmissions = submissionCollection.find(eq("teamId", teamId)).into(new ArrayList<>());
     ctx.json(teamSubmissions);
     ctx.status(HttpStatus.OK);
   }
 
   /**
-   * Retrieves the first Submission associated with a specific task from the
+   * Retrieves all Submissions associated with a specific task from the
    * database.
    *
    * @param ctx a Javalin Context object containing the HTTP request information.
    *            Expects a "taskId" path parameter.
-   * @return the first Submission object with the matching taskId, or null if no
-   *         such Submission exists.
+   *            Outputs a JSON array of Submission objects and sets the HTTP
+   *            status to OK (200).
    */
-  public Submission getSubmissionsByTask(Context ctx) {
+  public void getSubmissionsByTask(Context ctx) {
     String taskId = ctx.pathParam("taskId");
-    return submissionCollection.find(eq("taskId", taskId)).first();
+    List<Submission> taskSubmissions = submissionCollection.find(eq("taskId", taskId)).into(new ArrayList<>());
+    ctx.json(taskSubmissions);
+    ctx.status(HttpStatus.OK);
   }
 
   /**
@@ -86,29 +120,60 @@ public class SubmissionController implements Controller {
    *
    * @param ctx a Javalin Context object containing the HTTP request information.
    *            Expects "teamId" and "taskId" path parameters.
-   * @return the first Submission object with the matching teamId and taskId, or
-   *         null if no such Submission exists.
+   *            Outputs a JSON object of the first Submission with the matching
+   *            teamId and taskId,
+   *            or sets the HTTP status to NOT_FOUND (404) if no such Submission
+   *            exists.
    */
-  public Submission getSubmissionsByTeamAndTask(Context ctx) {
+  public void getSubmissionByTeamAndTask(Context ctx) {
     String teamId = ctx.pathParam("teamId");
     String taskId = ctx.pathParam("taskId");
 
-    return submissionCollection.find(eq("teamId", teamId)).filter(eq("taskId", taskId)).first();
+    Submission submission = submissionCollection.find(eq("teamId", teamId)).filter(eq("taskId", taskId)).first();
+    if (submission != null) {
+      ctx.json(submission);
+      ctx.status(HttpStatus.OK);
+    } else {
+      ctx.status(HttpStatus.NOT_FOUND);
+    }
   }
 
   /**
-   * Retrieves the first Submission associated with a specific started hunt from
+   * Retrieves all Submissions associated with a specific started hunt from
    * the database.
    *
    * @param ctx a Javalin Context object containing the HTTP request information.
    *            Expects a "startedHuntId" path parameter.
-   * @return the first Submission object with the matching startedHuntId, or null
-   *         if no such Submission exists.
+   *            Outputs a JSON array of Submission objects with the matching
+   *            startedHuntId,
+   *            or an empty array if no such Submissions exist.
    */
-  public Submission getSubmissionsByStartedHunt(Context ctx) {
+  public void getSubmissionsByStartedHunt(Context ctx) {
     String startedHuntId = ctx.pathParam("startedHuntId");
 
-    return submissionCollection.find(eq("startedHuntId", startedHuntId)).first();
+    // Check if the startedHuntId is valid
+    if (!ObjectId.isValid(startedHuntId)) {
+      throw new IllegalArgumentException("Invalid startedHuntId: " + startedHuntId);
+    }
+
+    // Fetch the startedHunt object
+    StartedHunt startedHunt = startedHuntCollection.find(eq("_id", new ObjectId(startedHuntId))).first();
+
+    if (startedHunt == null) {
+      ctx.json(new ArrayList<>());
+      ctx.status(HttpStatus.OK);
+    } else {
+      // Get the list of submissionIds from the startedHunt
+      List<String> submissionIds = startedHunt.getSubmissionIds();
+
+      // Fetch all submissions with those IDs
+      List<Submission> submissions = submissionCollection
+          .find(in("_id", submissionIds.stream().map(ObjectId::new).collect(Collectors.toList())))
+          .into(new ArrayList<>());
+
+      ctx.json(submissions);
+      ctx.status(HttpStatus.OK);
+    }
   }
 
   /**
@@ -136,8 +201,9 @@ public class SubmissionController implements Controller {
     if (photo.exists()) {
       try {
         ctx.result(new FileInputStream(photo));
+        ctx.status(HttpStatus.OK);
       } catch (FileNotFoundException e) {
-        ctx.status(500).result("Error reading file: " + e.getMessage());
+        ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error reading file: " + e.getMessage());
       }
     } else {
       System.out.println("Server: No photo found for submissionId: " + submissionId);
@@ -150,7 +216,7 @@ public class SubmissionController implements Controller {
     server.get(API_SUBMISSION, this::getSubmission);
     server.get(API_SUBMISSIONS_BY_TEAM, this::getSubmissionsByTeam);
     server.get(API_SUBMISSIONS_BY_TASK, this::getSubmissionsByTask);
-    server.get(API_SUBMISSIONS_BY_TEAM_AND_TASK, this::getSubmissionsByTeamAndTask);
+    server.get(API_SUBMISSIONS_BY_TEAM_AND_TASK, this::getSubmissionByTeamAndTask);
     server.get(API_SUBMISSIONS_BY_STARTEDHUNT, this::getSubmissionsByStartedHunt);
     server.get(API_SUBMISSION_GET_PHOTO, this::getPhotoFromSubmission);
   }
