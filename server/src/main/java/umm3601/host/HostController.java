@@ -1,6 +1,6 @@
 package umm3601.host;
 
-import static com.mongodb.client.model.Filters.*;
+import static com.mongodb.client.model.Filters.eq;
 
 import org.bson.UuidRepresentation;
 import org.bson.types.ObjectId;
