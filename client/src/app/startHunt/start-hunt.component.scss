@@ -14,6 +14,13 @@
   display: flex;
   flex-direction: column;
   align-items: center; /* This will center the child elements horizontally */
+  border: 1px solid black;
+  border-radius: 10px;
+  margin-top: 20px;
+  margin-bottom: 50px;
+  box-shadow: 0 0 15px grey;
+
+
 }
 
 .photos {
@@ -24,12 +31,13 @@
 }
 
 .task-photo {
-  width: 100px;
-  height: 100px;
+  width: 300px;
+  height: 300px;
+  padding: 5px;
   justify-content: center;
   object-fit: cover;
   border-radius: 5px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid black;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
 }
@@ -127,6 +135,7 @@
   border-radius: 10px;
   padding: 20px 40px;
   font-size: 2em;
+  cursor: pointer;
   font-weight: bold;
   transition: background-color 0.3s ease;
 
@@ -136,7 +145,8 @@
 }
 
 .end-hunt-button:hover {
-  background-color: #0056b3;
+  background-color: red;
+  color: white;
 
   @media (prefers-color-scheme: dark) {
     background-color: #00ccff;
@@ -162,6 +172,7 @@
   justify-content: center;
   align-items: center;
   border: 1px solid black;
+  border-radius: 5px;
   padding: 10px;
   white-space: normal;
   overflow: auto;
@@ -173,7 +184,6 @@
 .task-list {
   flex: 5;
   font-size: 30px;
-  border: 1px solid black;
   line-height: 1.5;
   color: black;
   display: flex;
