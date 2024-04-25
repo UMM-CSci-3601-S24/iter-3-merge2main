@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import org.bson.UuidRepresentation;
 import org.bson.types.ObjectId;
@@ -199,11 +200,13 @@ public class SubmissionController implements Controller {
 
     File photo = new File("photos/" + submission.photoPath);
     if (photo.exists()) {
-      try {
-        ctx.result(new FileInputStream(photo));
+      try (FileInputStream fis = new FileInputStream(photo)) {
+        ctx.result(fis);
         ctx.status(HttpStatus.OK);
       } catch (FileNotFoundException e) {
         ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error reading file: " + e.getMessage());
+      } catch (IOException e) {
+        ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error closing file: " + e.getMessage());
       }
     } else {
       System.out.println("Server: No photo found for submissionId: " + submissionId);
