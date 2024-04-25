@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.bson.UuidRepresentation;
@@ -178,19 +177,21 @@ public class SubmissionController implements Controller {
   }
 
   /**
-   * Retrieves a photo associated with a specific submission.
+   * Retrieves a photo associated with a specific submission from the server.
    *
-   * @param ctx a Javalin Context object containing the HTTP request information.
-   *            Expects an "id" path parameter representing the submissionId.
+   * @param ctx a Javalin HTTP context
    *
-   *            The method first retrieves the Submission object associated with
-   *            the provided submissionId from the database. It then attempts to
-   *            locate a photo file using the photoPath attribute of the
-   *            Submission object.
-   *            If the photo file exists, it sets a FileInputStream of the photo
-   *            as the result of the context.
-   *            If the photo file does not exist, it sets an empty string as the
-   *            result of the context.
+   *            This method takes a Javalin HTTP context as input, which should
+   *            contain a path parameter 'id' representing the submission ID.
+   *            It attempts to find a submission with the given ID in the
+   *            submission collection, and if found, it tries to retrieve the
+   *            associated photo file from the 'photos/' directory.
+   *            If the photo file exists, it sends the file as a result with an
+   *            HTTP status of OK.
+   *            If the photo file does not exist, it sends an empty result with an
+   *            HTTP status of NOT FOUND.
+   *            If there's an error while accessing the file, it sends an error
+   *            message as a result with an HTTP status of INTERNAL SERVER ERROR.
    */
   public void getPhotoFromSubmission(Context ctx) {
     String submissionId = ctx.pathParam("id");
@@ -203,10 +204,8 @@ public class SubmissionController implements Controller {
       try (FileInputStream fis = new FileInputStream(photo)) {
         ctx.result(fis);
         ctx.status(HttpStatus.OK);
-      } catch (FileNotFoundException e) {
-        ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error reading file: " + e.getMessage());
       } catch (IOException e) {
-        ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error closing file: " + e.getMessage());
+        ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error accessing file: " + e.getMessage());
       }
     } else {
       System.out.println("Server: No photo found for submissionId: " + submissionId);

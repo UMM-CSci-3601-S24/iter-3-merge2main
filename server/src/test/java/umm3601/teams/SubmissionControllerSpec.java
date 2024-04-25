@@ -327,4 +327,16 @@ public class SubmissionControllerSpec {
     verify(ctx).result("");
     verify(ctx).status(HttpStatus.NOT_FOUND);
   }
+
+  @Test
+  void testGetSubmissionByTeamAndTaskNoSubmissionFound() {
+    when(ctx.pathParam("teamId")).thenReturn("NonExistentTeam");
+    when(ctx.pathParam("taskId")).thenReturn("NonExistentTask");
+
+    submissionController.getSubmissionByTeamAndTask(ctx);
+
+    verify(ctx).status(HttpStatus.NOT_FOUND);
+
+    verify(ctx, Mockito.never()).json(any());
+  }
 }
