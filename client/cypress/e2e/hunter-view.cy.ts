@@ -146,7 +146,7 @@ describe('Hunter View', () => {
     page.clickUploadImage();
   })
 
-  it('should be able to delete the uploaded image', () => {
+  it('should be able to delete the uploaded image and upload a new image in it\'s space', () => {
     page.getHostButton().click();
     page.getHuntCards().first().then(() => {
       page.clickViewProfile(page.getHuntCards().first());/// <reference types="cypress-file-upload" />
@@ -224,4 +224,5 @@ describe('Hunter View', () => {
 
     page.getDeleteImageButton().should('not.exist');
   })
+
 });
