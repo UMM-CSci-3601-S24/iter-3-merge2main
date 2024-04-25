@@ -167,13 +167,13 @@ public class SubmissionControllerSpec {
 
   @Test
   public void testCreateSubmission() {
-    SubmissionController submissionController = new SubmissionController(db);
+    SubmissionController mockSubmissionController = new SubmissionController(db);
 
     String taskId = "task1";
     String teamId = "team1";
     String photoPath = "/path/to/photo.jpg";
 
-    Submission submission = submissionController.createSubmission(taskId, teamId, photoPath);
+    Submission submission = mockSubmissionController.createSubmission(taskId, teamId, photoPath);
 
     assertNotNull(submission);
     assertEquals(taskId, submission.taskId);
