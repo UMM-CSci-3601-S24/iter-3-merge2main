@@ -74,7 +74,7 @@ public class HostController implements Controller {
   private static final int ACCESS_CODE_RANGE = 900000;
   private static final int ACCESS_CODE_LENGTH = 6;
 
-  private static final int WEB_SOCKET_PING_INTERVAL = 5;
+  private static final int WEB_SOCKET_PING_INTERVAL = 15;
 
   private final JacksonMongoCollection<Host> hostCollection;
   private final JacksonMongoCollection<Hunt> huntCollection;
@@ -577,9 +577,9 @@ public class HostController implements Controller {
   public ArrayList<WsContext> getConnectedContexts() {
     return new ArrayList<>(this.connectedContexts);
   }
-
   public void createAndSendEvent(String event, String data) {
     Map<String, String> events = createEvent(event, data);
+    System.out.println("Sending event: " + events);
     updateListeners(events);
   }
 

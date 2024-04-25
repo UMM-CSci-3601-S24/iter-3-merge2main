@@ -78,7 +78,7 @@ export class StartHuntComponent implements OnInit, OnDestroy {
           };
         }
       });
-    }, 2000);
+    }, 500);
   }
 
   getTaskName(taskId: string): string {
