@@ -8,7 +8,7 @@ export class WebSocketService {
   private socket$: WebSocketSubject<unknown>;
 
   constructor() {
-    this.socket$ = new WebSocketSubject('ws://' + window.location.hostname + '/ws/host');
+    this.socket$ = new WebSocketSubject(this.socket$ = new WebSocketSubject('ws://' + window.location.hostname + ':' + window.location.port + '/ws/host'););
   }
   // use this when testing 'ws://' + window.location.hostname + ':4567/ws/host'
 
