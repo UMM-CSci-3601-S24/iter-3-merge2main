@@ -5,6 +5,7 @@ import java.util.Date;
 import org.mongojack.Id;
 import org.mongojack.ObjectId;
 
+@SuppressWarnings({ "VisibilityModifier" })
 public class Submission {
 
   @ObjectId
