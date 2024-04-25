@@ -21,7 +21,7 @@ import umm3601.Controller;
 
 public class TeamController implements Controller {
 
-  private static final String API_SINGLE_TEAM = "/api/teams/{teamName}";
+  private static final String API_SINGLE_TEAM = "/api/teams";
   private static final String API_TEAM = "/api/teams/{id}";
   private static final String API_TEAMS = "/api/teams";
   private static final String API_CREATE_TEAMS = "/api/teams/create";
@@ -42,14 +42,15 @@ public class TeamController implements Controller {
   }
 
   /**
-   * Creates a new team.
+   * Creates a new team and inserts it into the database.
    *
    * @param ctx a Javalin Context object containing the HTTP request information.
-   *            Expects a request body that can be validated as a Team object.
-   *            The team name is required and must be non-empty.
+   *            The request body should be a valid Team object with a non-null and
+   *            non-empty team name,
+   *            and a non-null started hunt ID.
    *
-   *            The method creates a new Team object from the request body and
-   *            inserts it into the team collection in the database.
+   *            The method validates the request body, creates a new Team object,
+   *            and inserts it into the team collection in the database.
    *            It then responds with a JSON object containing the ID of the newly
    *            created team and sets the HTTP status to 201 (Created).
    */
@@ -57,6 +58,7 @@ public class TeamController implements Controller {
     Team newTeam = ctx.bodyValidator(Team.class)
         .check(team -> team.teamName != null, "Team name cannot be null")
         .check(team -> !team.teamName.isEmpty(), "Team name cannot be empty")
+        .check(team -> team.startedHuntId != null, "Started Hunt ID cannot be null") // Add this line
         .get();
 
     teamCollection.insertOne(newTeam);
