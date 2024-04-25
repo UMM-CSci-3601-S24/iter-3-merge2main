@@ -211,6 +211,7 @@ public class SubmissionController implements Controller {
     } else {
       System.out.println("Server: No photo found for submissionId: " + submissionId);
       ctx.result("");
+      ctx.status(HttpStatus.NOT_FOUND);
     }
   }
 

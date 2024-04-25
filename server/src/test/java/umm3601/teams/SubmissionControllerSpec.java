@@ -109,8 +109,17 @@ public class SubmissionControllerSpec {
         .append("photoPath", "test.png")
         .append("submitTime", new Date());
 
+    newSubmissionId = new ObjectId();
+    Document newSubmission = new Document()
+        .append("_id", newSubmissionId)
+        .append("taskId", "Task 9")
+        .append("teamId", "Team 9")
+        .append("photoPath", "nonexistent.png") // This photo does not exist
+        .append("submitTime", new Date());
+
     submissionDocuments.insertMany(testSubmissions);
     submissionDocuments.insertOne(submission);
+    submissionDocuments.insertOne(newSubmission);
 
     MongoCollection<Document> startedHuntDocuments = db.getCollection("startedHunts");
     startedHuntDocuments.drop();
@@ -152,16 +161,6 @@ public class SubmissionControllerSpec {
         .append("status", true)
         .append("endDate", new Date())
         .append("submissionIds", submissionIds);
-
-    newSubmissionId = new ObjectId();
-    Document newSubmission = new Document()
-        .append("_id", newSubmissionId)
-        .append("taskId", "Task 9")
-        .append("teamId", "Team 9")
-        .append("photoPath", "nonexistent.png") // This photo does not exist
-        .append("submitTime", new Date());
-
-    submissionDocuments.insertOne(newSubmission);
 
     startedHuntDocuments.insertMany(testStartedHunts);
     startedHuntDocuments.insertOne(startedHunt);
@@ -319,13 +318,13 @@ public class SubmissionControllerSpec {
     // Use the new submissionId for the test
     when(ctx.pathParam("id")).thenReturn(newSubmissionId.toHexString());
 
-    // Mock the photo file to simulate that it does not exist
+    // Mock the photo file
     File photo = mock(File.class);
     when(photo.exists()).thenReturn(false);
 
     submissionController.getPhotoFromSubmission(ctx);
 
-    // Verify that the result is an empty string
     verify(ctx).result("");
+    verify(ctx).status(HttpStatus.NOT_FOUND);
   }
 }

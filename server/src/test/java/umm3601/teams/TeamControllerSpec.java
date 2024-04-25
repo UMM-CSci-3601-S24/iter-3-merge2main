@@ -160,8 +160,6 @@ public class TeamControllerSpec {
     when(ctx.bodyValidator(Team.class))
         .thenReturn(new BodyValidator<>(testNewTeam, Team.class, javalinJackson));
 
-    // Mock any necessary database interactions
-
     // Call the createTeam method
     teamController.createTeam(ctx);
 
@@ -173,8 +171,6 @@ public class TeamControllerSpec {
     Map<String, String> responseJson = mapCaptor.getValue();
     assertNotNull(responseJson);
     assertTrue(responseJson.containsKey("id"));
-
-    // Verify any other interactions or assertions as needed
   }
 
   @Test
