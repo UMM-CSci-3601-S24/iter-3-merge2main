@@ -27,6 +27,9 @@ public class TeamController implements Controller {
   private static final String API_CREATE_TEAMS = "/api/teams/create";
   private static final String API_STARTEDHUNT_TEAMS = "/api/teams/startedHunt/{startedHuntId}";
 
+  static final int MAX_TEAMS = 10;
+  static final int MIN_TEAMS = 1;
+
   private final JacksonMongoCollection<Team> teamCollection;
 
   public TeamController(MongoDatabase database) {
@@ -149,31 +152,32 @@ public class TeamController implements Controller {
   /**
    * Creates a specified number of teams for a given hunt.
    *
-   * @param ctx the Javalin context, which includes the request and response
-   *            objects
+   * @param ctx The Javalin context object, which contains the request and
+   *            response information.
    *
-   *            The method retrieves the startedHunt ID and the number of teams to
-   *            be created from the request body.
-   *            It validates the number of teams to be between 1 and 10.
-   *            For each team to be created, it creates a new Team object, sets
-   *            the team name and startedHunt ID, and adds it to a list of teams.
-   *            It then attempts to insert all the teams into the team collection
-   *            in the database.
-   *            If successful, it sets the response status to 201 (Created).
-   *            If an exception occurs during the process, it sets the response
-   *            status to 500 (Internal Server Error) and includes an error
-   *            message in the response.
+   *            The method extracts the hunt ID and the number of teams to be
+   *            created from the request.
+   *            It validates the number of teams to be between 1 and 10,
+   *            inclusive.
+   *            For each team to be created, it generates a new Team object with a
+   *            name ("Team i") and the hunt ID, and adds it to a list.
+   *            It then attempts to insert the list of teams into the team
+   *            collection in the database.
+   *            If successful, it sets the response status to 201 (Created) and
+   *            returns the list of created teams in the response body.
+   *            If an error occurs during the process, it sets the response status
+   *            to 500 (Internal Server Error) and returns an error message.
    */
   public void createTeams(Context ctx) {
     String startedHuntId = ctx.pathParam("startedHuntId");
     int numTeams = ctx.bodyAsClass(Integer.class);
 
-    if (numTeams < 1 || numTeams > 10) {
+    if (numTeams < MIN_TEAMS || numTeams > MAX_TEAMS) {
       throw new BadRequestResponse("Invalid number of teams requested");
     }
 
     List<Team> teams = new ArrayList<>();
-    for (int i = 0; i < numTeams; i++) {
+    for (int i = MIN_TEAMS; i <= numTeams; i++) {
       Team newTeam = new Team();
       newTeam.teamName = "Team " + i;
       newTeam.startedHuntId = startedHuntId;
@@ -183,6 +187,7 @@ public class TeamController implements Controller {
     try {
       teamCollection.insertMany(teams);
       ctx.status(HttpStatus.CREATED);
+      ctx.json(teams);
     } catch (Exception e) {
       ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error creating teams");
     }
