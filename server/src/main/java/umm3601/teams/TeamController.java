@@ -55,7 +55,8 @@ public class TeamController implements Controller {
    */
   public void createTeam(Context ctx) {
     Team newTeam = ctx.bodyValidator(Team.class)
-        .check(team -> team.teamName != null && team.teamName.length() > 0, "Team name is required")
+        .check(team -> team.teamName != null, "Team name cannot be null")
+        .check(team -> !team.teamName.isEmpty(), "Team name cannot be empty")
         .get();
 
     teamCollection.insertOne(newTeam);
