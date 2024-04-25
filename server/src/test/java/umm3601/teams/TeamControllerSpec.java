@@ -200,6 +200,20 @@ public class TeamControllerSpec {
   }
 
   @Test
+  void testCreateTeamWithNullStartedHuntId() {
+    String testNewTeam = """
+        {
+          "teamName": "Team 5",
+          "startedHuntId": null
+        }
+        """;
+    when(ctx.bodyValidator(Team.class))
+        .then(value -> new BodyValidator<Team>(testNewTeam, Team.class, javalinJackson));
+
+    assertThrows(ValidationException.class, () -> teamController.createTeam(ctx));
+  }
+
+  @Test
   void testGetTeams() throws IOException {
     teamController.getTeams(ctx);
     verify(ctx).json(any());
