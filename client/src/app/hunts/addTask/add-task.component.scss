@@ -1,3 +1,11 @@
+.add-task-card {
+  position: absolute;
+  width: 500px;
+  border: 1px dashed black;
+  box-shadow: 0 0 8px 0 rgb(0, 158, 250);
+  top: 50px;
+}
+
 .add-task-button {
   font-size: 14px;
   padding: 10px 20pxd;
@@ -17,4 +25,8 @@
 .add-task-title {
   font-size: 24px;
   margin-bottom: 20px;
+}
+
+.flex-1 {
+  position: relative;
 }
