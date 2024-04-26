@@ -1,4 +1,4 @@
-package umm3601.host;
+package umm3601.controllerSpecs;
 
 import static com.mongodb.client.model.Filters.eq;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -60,6 +60,13 @@ import io.javalin.json.JavalinJackson;
 import io.javalin.validation.BodyValidator;
 import io.javalin.validation.ValidationException;
 import io.javalin.validation.Validator;
+import umm3601.host.CompleteHunt;
+import umm3601.host.EndedHunt;
+import umm3601.host.FinishedTask;
+import umm3601.host.Host;
+import umm3601.host.HostController;
+import umm3601.host.Hunt;
+import umm3601.host.Task;
 import umm3601.startedHunts.StartedHunt;
 
 @SuppressWarnings({ "MagicNumber" })

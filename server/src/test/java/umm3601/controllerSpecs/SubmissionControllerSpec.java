@@ -1,4 +1,4 @@
-package umm3601.teams;
+package umm3601.controllerSpecs;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -39,6 +39,8 @@ import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import umm3601.startedHunts.StartedHunt;
+import umm3601.teams.Submission;
+import umm3601.teams.SubmissionController;
 
 public class SubmissionControllerSpec {
   private SubmissionController submissionController;

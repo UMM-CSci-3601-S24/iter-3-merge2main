@@ -1,4 +1,4 @@
-package umm3601.teams;
+package umm3601.controllerSpecs;
 
 import static com.mongodb.client.model.Filters.eq;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,6 +44,8 @@ import io.javalin.http.NotFoundResponse;
 import io.javalin.json.JavalinJackson;
 import io.javalin.validation.BodyValidator;
 import io.javalin.validation.ValidationException;
+import umm3601.teams.Team;
+import umm3601.teams.TeamController;
 
 @SuppressWarnings({ "MagicNumber" })
 public class TeamControllerSpec {

@@ -55,14 +55,14 @@ public class HostController implements Controller {
   private static final String PHOTOS = "/photos/{photoPath}";
   private static final String SERVER_PHOTOS = "http://localhost:4567/photos/";
 
-  static final String HOST_KEY = "hostId";
+  public static final String HOST_KEY = "hostId";
   static final String HUNT_KEY = "huntId";
 
   static final int REASONABLE_NAME_LENGTH_HUNT = 50;
-  static final int REASONABLE_DESCRIPTION_LENGTH_HUNT = 200;
+  public static final int REASONABLE_DESCRIPTION_LENGTH_HUNT = 200;
   private static final int REASONABLE_EST_LENGTH_HUNT = 240;
 
-  static final int REASONABLE_NAME_LENGTH_TASK = 150;
+  public static final int REASONABLE_NAME_LENGTH_TASK = 150;
 
   private static final int ACCESS_CODE_MIN = 100000;
   private static final int ACCESS_CODE_RANGE = 900000;
