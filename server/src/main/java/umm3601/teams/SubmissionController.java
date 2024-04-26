@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -68,6 +69,16 @@ public class SubmissionController implements Controller {
     submission.submitTime = new java.util.Date();
     submissionCollection.insertOne(submission);
     return submission;
+  }
+
+  /**
+   * Overloaded method for getting a submission by ID.
+   *
+   * @param id The ID of the submission to retrieve.
+   * @return The submission with the given ID.
+   */
+  public Submission getSubmission(String id) {
+    return submissionCollection.find(eq("_id", new ObjectId(id))).first();
   }
 
   /**
@@ -246,6 +257,15 @@ public class SubmissionController implements Controller {
     ctx.status(HttpStatus.NO_CONTENT);
   }
 
+  public void deleteSubmissions(ArrayList<String> submissionIds) {
+    for (String submissionId : submissionIds) {
+      Submission submission = submissionCollection.find(eq("_id", new ObjectId(submissionId))).first();
+      if (submission != null) {
+        deleteSubmission(null, submissionId);
+      }
+    }
+  }
+
   @Override
   public void addRoutes(Javalin server) {
     server.get(API_SUBMISSION, this::getSubmission);
@@ -254,6 +274,7 @@ public class SubmissionController implements Controller {
     server.get(API_SUBMISSIONS_BY_TEAM_AND_TASK, this::getSubmissionByTeamAndTask);
     server.get(API_SUBMISSIONS_BY_STARTEDHUNT, this::getSubmissionsByStartedHunt);
     server.get(API_SUBMISSION_GET_PHOTO, this::getPhotoFromSubmission);
+    server.delete(API_SUBMISSION, ctx -> deleteSubmission(ctx, ctx.pathParam("id")));
   }
 
 }

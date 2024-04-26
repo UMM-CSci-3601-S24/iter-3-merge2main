@@ -70,7 +70,7 @@ import umm3601.host.Task;
 import umm3601.startedHunts.StartedHunt;
 
 @SuppressWarnings({ "MagicNumber" })
-class HostControllerSpec {
+public class HostControllerSpec {
   private HostController hostController;
   private ObjectId frysId;
   private ObjectId huntId;

@@ -21,7 +21,9 @@ import io.javalin.http.NotFoundResponse;
 import umm3601.Controller;
 import umm3601.host.CompleteHunt;
 import umm3601.host.HostController;
+import umm3601.teams.Submission;
 import umm3601.teams.SubmissionController;
+import umm3601.teams.Team;
 import umm3601.teams.TeamController;
 
 public class StartedHuntController implements Controller {
@@ -60,7 +62,7 @@ public class StartedHuntController implements Controller {
 
   }
 
-    public void startHunt(Context ctx) {
+  public void startHunt(Context ctx) {
     CompleteHunt completeHunt = new CompleteHunt();
     completeHunt.hunt = hostController.getHunt(ctx);
     completeHunt.tasks = hostController.getTasks(ctx);
@@ -145,7 +147,8 @@ public class StartedHuntController implements Controller {
    */
   public void getStartedHuntsByHostId(Context ctx) {
     String hostId = ctx.pathParam(HOST_KEY);
-    List<StartedHunt> startedHunts = startedHuntCollection.find(eq(STARTEDHUNT_HOST_KEY, hostId)).into(new ArrayList<>());
+    List<StartedHunt> startedHunts = startedHuntCollection.find(eq(STARTEDHUNT_HOST_KEY, hostId))
+        .into(new ArrayList<>());
     ctx.json(startedHunts);
     ctx.status(HttpStatus.OK);
   }
@@ -201,16 +204,23 @@ public class StartedHuntController implements Controller {
     String id = ctx.pathParam("id");
     StartedHunt startedHunt = startedHuntCollection.find(eq("_id", new ObjectId(id))).first();
 
-    if (startedHunt != null) {
-      // Get the list of submissionIds from the startedHunt
-      List<String> submissionIds = startedHunt.getSubmissionIds();
+    if (startedHunt == null) {
+      throw new NotFoundResponse("The started hunt with id " + id + " was not found");
+    }
 
-      // Delete all submissions with those IDs
-      for (String submissionId : submissionIds) {
+    // Get the list of submissionIds from the startedHunt
+    List<String> submissionIds = startedHunt.getSubmissionIds();
+
+    // Delete all submissions with those IDs
+    for (String submissionId : submissionIds) {
+      Submission submission = submissionController.getSubmission(submissionId);
+      if (submission != null) {
         submissionController.deleteSubmission(ctx, submissionId);
       }
-
-      // Delete all teams associated with the StartedHunt
+    }
+    // Delete all teams associated with the StartedHunt
+    List<Team> teams = teamController.getTeamsByStartedHuntId(id);
+    if (teams != null && !teams.isEmpty()) {
       teamController.deleteTeamsByStartedHuntId(id);
     }
 
