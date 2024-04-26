@@ -18,14 +18,14 @@ import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -1179,52 +1179,21 @@ class HostControllerSpec {
     hostController.deletePhoto(id, ctx);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
-  void testGetPhotosFromTask() throws IOException {
-    // Create a Task with the paths of the temporary files
-    UploadedFile uploadedFile = mock(UploadedFile.class);
-    InputStream inputStream = new ByteArrayInputStream(new byte[0]);
-
-    Document startedHunt = db.getCollection("startedHunts").find(eq("_id", new ObjectId(startedHuntId.toHexString())))
-        .first();
-    Document testTask = db.getCollection("tasks").find(eq("_id", new ObjectId(taskId.toHexString()))).first();
-    startedHunt.get("completeHunt", Document.class).get("tasks", List.class).add(testTask);
-    db.getCollection("startedHunts").replaceOne(eq("_id", new ObjectId(startedHuntId.toHexString())), startedHunt);
-
-    when(ctx.uploadedFile("photo")).thenReturn(uploadedFile);
-    when(uploadedFile.content()).thenReturn(inputStream);
-    when(uploadedFile.filename()).thenReturn("test.jpg");
-    when(ctx.status(anyInt())).thenReturn(ctx);
-    when(ctx.pathParam("taskId")).thenReturn(taskId.toHexString());
-    when(ctx.pathParam("startedHuntId")).thenReturn(startedHuntId.toHexString());
-
-    hostController.addPhoto(ctx);
-
-    Document updatedTask = (Document) db.getCollection("startedHunts")
-        .find(eq("_id", new ObjectId(startedHuntId.toHexString())))
-        .first().get("completeHunt", Document.class).get("tasks", List.class).get(3);
+  void testGetPhotosFromTask() {
+    // Create a task with two photos
     Task task = new Task();
-    task.photos = updatedTask.get("photos", List.class);
-    task.huntId = updatedTask.getString("huntId");
-    task.name = updatedTask.getString("name");
-    task.status = updatedTask.getBoolean("status");
-    task._id = updatedTask.getObjectId("_id").toHexString();
+    task.photos = Arrays.asList("photo1.jpg", "photo2.jpg");
 
-    File addedFile = new File("photos/" + task.photos.get(0));
+    // Create the HostController instance
+    HostController mockHostController = new HostController(db);
 
-    // Call the method under test
-    List<String> encodedPhotos = hostController.getPhotosFromTask(task);
+    // Call the method with the task
+    List<String> photoUrls = mockHostController.getPhotosFromTask(task);
 
-    // Check that the returned list has the correct size
-    assertEquals(1, encodedPhotos.size());
-
-    // Check that the returned list contains the correct encoded photos
-    byte[] bytes1 = Files.readAllBytes(addedFile.toPath());
-    String expectedEncoded1 = "data:image/png;base64," + Base64.getEncoder().encodeToString(bytes1);
-    assertEquals(expectedEncoded1, encodedPhotos.get(0));
-
-    hostController.deletePhoto(task.photos.get(0), ctx);
+    // Check that the URLs were constructed correctly
+    assertEquals("http://localhost:4567/photos/photo1.jpg", photoUrls.get(0));
+    assertEquals("http://localhost:4567/photos/photo2.jpg", photoUrls.get(1));
   }
 
   @SuppressWarnings("unchecked")
@@ -1379,4 +1348,30 @@ class HostControllerSpec {
     assertEquals(taskDocuments.get(2).get("_id").toString(), finishedHunt.finishedTasks.get(2).taskId);
   }
 
+  @Test
+  void testGetPhotoFileExists() throws FileNotFoundException {
+    String photoPath = "test.png";
+    File file = mock(File.class);
+
+    when(ctx.pathParam("photoPath")).thenReturn(photoPath);
+    when(ctx.status(any(HttpStatus.class))).thenReturn(ctx);
+    when(file.exists()).thenReturn(true);
+
+    hostController.getPhoto(ctx);
+
+    verify(ctx).result(any(FileInputStream.class));
+  }
+
+  @Test
+  void testGetPhotoFileDoesNotExist() {
+    String photoPath = "nonexistent.png";
+
+    when(ctx.pathParam("photoPath")).thenReturn(photoPath);
+    when(ctx.status(any(HttpStatus.class))).thenReturn(ctx);
+
+    hostController.getPhoto(ctx);
+
+    verify(ctx).status(HttpStatus.NOT_FOUND);
+    verify(ctx).result("Photo not found");
+  }
 }
