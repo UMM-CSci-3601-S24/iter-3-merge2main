@@ -1,6 +1,5 @@
 package umm3601.controllerSpecs;
 
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -14,9 +13,7 @@ import static org.mockito.ArgumentMatchers.any;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -394,83 +391,91 @@ public class SubmissionControllerSpec {
 
   @Test
   void testGetFileExtension() {
-    SubmissionController submissionController = new SubmissionController(db);
+    SubmissionController testSubmissionController = new SubmissionController(db);
 
     String filename1 = "test.jpg";
     String filename2 = "document.pdf";
     String filename3 = "file_without_extension";
 
-    assertEquals("jpg", submissionController.getFileExtension(filename1));
-    assertEquals("pdf", submissionController.getFileExtension(filename2));
-    assertEquals("", submissionController.getFileExtension(filename3));
+    assertEquals("jpg", testSubmissionController.getFileExtension(filename1));
+    assertEquals("pdf", testSubmissionController.getFileExtension(filename2));
+    assertEquals("", testSubmissionController.getFileExtension(filename3));
   }
 
- @Test
-    public void testUploadPhotoSuccess() throws IOException {
-        // Mock the uploaded file
-        UploadedFile uploadedFile = Mockito.mock(UploadedFile.class);
-        when(uploadedFile.content()).thenReturn(new ByteArrayInputStream("test photo content".getBytes()));
-        when(uploadedFile.filename()).thenReturn("test.jpg");
+  @Test
+  public void testUploadPhotoSuccess() throws IOException {
+    // Mock the uploaded file
+    UploadedFile uploadedFile = Mockito.mock(UploadedFile.class);
+    when(uploadedFile.content()).thenReturn(new ByteArrayInputStream("test photo content".getBytes()));
+    when(uploadedFile.filename()).thenReturn("test.jpg");
 
-        // Mock the context
-        when(ctx.uploadedFile("photo")).thenReturn(uploadedFile);
+    // Mock the context
+    when(ctx.uploadedFile("photo")).thenReturn(uploadedFile);
 
-        // Call the method under test
-        String result = submissionController.uploadPhoto(ctx);
+    // Call the method under test
+    String result = submissionController.uploadPhoto(ctx);
 
-        // Verify the behavior and assertions
-        assertNotNull(result);
-        assertTrue(result.matches("[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\\.jpg"));
+    // Verify the behavior and assertions
+    assertNotNull(result);
+    assertTrue(result.matches("[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\\.jpg"));
 
-        // Verify that the file was saved
-        String id = result.substring(0, result.lastIndexOf('.'));
-        String extension = result.substring(result.lastIndexOf('.') + 1);
-        File savedFile = new File("photos", id + "." + extension);
-        assertTrue(savedFile.exists());
-        assertEquals("test photo content", Files.readString(savedFile.toPath()));
+    // Verify that the file was saved
+    String id = result.substring(0, result.lastIndexOf('.'));
+    String extension = result.substring(result.lastIndexOf('.') + 1);
+    File savedFile = new File("photos", id + "." + extension);
+    assertTrue(savedFile.exists());
+    assertEquals("test photo content", Files.readString(savedFile.toPath()));
 
-        // Verify the context status
-        verify(ctx).status(HttpStatus.OK);
-    }
+    // Verify the context status
+    verify(ctx).status(HttpStatus.OK);
+  }
 
-    @Test
-    public void testUploadPhotoNoFileUploaded() {
-        // Mock the context
-        when(ctx.uploadedFile("photo")).thenReturn(null);
+  @Test
+  public void testUploadPhotoNoFileUploaded() {
+    // Mock the context
+    when(ctx.uploadedFile("photo")).thenReturn(null);
 
-        // Call the method under test and assert the exception
-        BadRequestResponse exception = assertThrows(BadRequestResponse.class, () -> submissionController.uploadPhoto(ctx));
-        assertEquals("No photo uploaded", exception.getMessage());
-    }
+    // Call the method under test and assert the exception
+    BadRequestResponse exception = assertThrows(BadRequestResponse.class, () -> submissionController.uploadPhoto(ctx));
+    assertEquals("No photo uploaded", exception.getMessage());
+  }
 
-    // @SuppressWarnings("static-access")
-    // @Test
-    // public void testUploadPhotoErrorCopyingFile() throws IOException {
-    //     // Mock the uploaded file
-    //     UploadedFile uploadedFile = Mockito.mock(UploadedFile.class);
-    //     when(uploadedFile.content()).thenReturn(new ByteArrayInputStream("test photo content".getBytes()));
-    //     when(uploadedFile.filename()).thenReturn("test.jpg");
+  // @SuppressWarnings("static-access")
+  // @Test
+  // public void testUploadPhotoErrorCopyingFile() throws IOException {
+  // // Mock the uploaded file
+  // UploadedFile uploadedFile = Mockito.mock(UploadedFile.class);
+  // when(uploadedFile.content()).thenReturn(new ByteArrayInputStream("test photo
+  // content".getBytes()));
+  // when(uploadedFile.filename()).thenReturn("test.jpg");
 
-    //     // Mock the context
-    //     when(ctx.uploadedFile("photo")).thenReturn(uploadedFile);
+  // // Mock the context
+  // when(ctx.uploadedFile("photo")).thenReturn(uploadedFile);
 
-    //     // Mock the file copy to throw an IOException
-    //     Files filesMock = Mockito.mock(Files.class);
-    //     doThrow(new IOException("File copy error")).when(filesMock).copy(any(InputStream.class), any(Path.class), any());
+  // // Mock the file copy to throw an IOException
+  // Files filesMock = Mockito.mock(Files.class);
+  // doThrow(new IOException("File copy
+  // error")).when(filesMock).copy(any(InputStream.class), any(Path.class),
+  // any());
 
-    //     // Call the method under test and assert the exception
-    //     IOException exception = assertThrows(IOException.class, () -> submissionController.uploadPhoto(ctx));
-    //     assertEquals("Error handling the uploaded file: File copy error", exception.getMessage());
-    // }
+  // // Call the method under test and assert the exception
+  // IOException exception = assertThrows(IOException.class, () ->
+  // submissionController.uploadPhoto(ctx));
+  // assertEquals("Error handling the uploaded file: File copy error",
+  // exception.getMessage());
+  // }
 
-    // @Test
-    // public void testUploadPhotoUnexpectedError() {
-    //     // Mock the context to throw an exception
-    //     when(ctx.uploadedFile("photo")).thenThrow(new RuntimeException("Unexpected error"));
+  // @Test
+  // public void testUploadPhotoUnexpectedError() {
+  // // Mock the context to throw an exception
+  // when(ctx.uploadedFile("photo")).thenThrow(new RuntimeException("Unexpected
+  // error"));
 
-    //     // Call the method under test and assert the exception
-    //     BadRequestResponse exception = assertThrows(BadRequestResponse.class, () -> submissionController.uploadPhoto(ctx));
-    //     assertEquals("Unexpected error during photo upload: Unexpected error", exception.getMessage());
-    // }
+  // // Call the method under test and assert the exception
+  // BadRequestResponse exception = assertThrows(BadRequestResponse.class, () ->
+  // submissionController.uploadPhoto(ctx));
+  // assertEquals("Unexpected error during photo upload: Unexpected error",
+  // exception.getMessage());
+  // }
 
 }
