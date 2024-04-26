@@ -53,7 +53,6 @@ public class StartedHuntControllerSpec {
   private ObjectId submissionId;
   private ObjectId frysId;
   private ObjectId huntId;
-  private ObjectId taskId;
   private ObjectId teamId;
 
   private static MongoClient mongoClient;
@@ -63,13 +62,13 @@ public class StartedHuntControllerSpec {
   private Context ctx;
 
   @Captor
-  ArgumentCaptor<Document> startedHuntDocumentCaptor;
+  private ArgumentCaptor<Document> startedHuntDocumentCaptor;
 
   @Captor
-  ArgumentCaptor<StartedHunt> startedHuntCaptor;
+  private ArgumentCaptor<StartedHunt> startedHuntCaptor;
 
   @Captor
-  ArgumentCaptor<ArrayList<StartedHunt>> startedHuntArrayListCaptor;
+  private ArgumentCaptor<ArrayList<StartedHunt>> startedHuntArrayListCaptor;
 
   @BeforeAll
   static void setupAll() {
@@ -120,20 +119,6 @@ public class StartedHuntControllerSpec {
             .append("description", "Fry's hunt for Morris")
             .append("est", 30)
             .append("numberOfTasks", 2));
-    testHunts.add(
-        new Document()
-            .append("hostId", "frysId")
-            .append("name", "Fry's Hunt 3")
-            .append("description", "Fry's hunt for money")
-            .append("est", 40)
-            .append("numberOfTasks", 1));
-    testHunts.add(
-        new Document()
-            .append("hostId", "differentId")
-            .append("name", "Different's Hunt")
-            .append("description", "Different's hunt for money")
-            .append("est", 60)
-            .append("numberOfTasks", 10));
 
     huntId = new ObjectId();
     Document hunt = new Document()
@@ -146,45 +131,6 @@ public class StartedHuntControllerSpec {
 
     huntDocuments.insertMany(testHunts);
     huntDocuments.insertOne(hunt);
-
-    MongoCollection<Document> taskDocuments = db.getCollection("tasks");
-    taskDocuments.drop();
-    List<Document> testTasks = new ArrayList<>();
-    testTasks.add(
-        new Document()
-            .append("huntId", huntId.toHexString())
-            .append("name", "Take a picture of a cat")
-            .append("status", false)
-            .append("photos", new ArrayList<String>()));
-    testTasks.add(
-        new Document()
-            .append("huntId", huntId.toHexString())
-            .append("name", "Take a picture of a dog")
-            .append("status", false)
-            .append("photos", new ArrayList<String>()));
-    testTasks.add(
-        new Document()
-            .append("huntId", huntId.toHexString())
-            .append("name", "Take a picture of a park")
-            .append("status", true)
-            .append("photos", new ArrayList<String>()));
-    testTasks.add(
-        new Document()
-            .append("huntId", "differentId")
-            .append("name", "Take a picture of a moose")
-            .append("status", true)
-            .append("photos", new ArrayList<String>()));
-
-    taskId = new ObjectId();
-    Document task = new Document()
-        .append("_id", taskId)
-        .append("huntId", "someId")
-        .append("name", "Best Task")
-        .append("status", false)
-        .append("photos", new ArrayList<String>());
-
-    taskDocuments.insertMany(testTasks);
-    taskDocuments.insertOne(task);
 
     MongoCollection<Document> submissionDocuments = db.getCollection("submissions");
     submissionDocuments.drop();
@@ -285,6 +231,8 @@ public class StartedHuntControllerSpec {
 
     teamDocuments.insertMany(testTeams);
     teamDocuments.insertOne(team);
+
+    startedHuntController = new StartedHuntController(db);
   }
 
   @Test
@@ -455,8 +403,8 @@ public class StartedHuntControllerSpec {
     assertNull(team);
 
     // Check that each submission referenced by the submissionIds no longer exists
-    for (String submissionId : submissionIds) {
-      Document submission = db.getCollection("submissions").find(eq("_id", new ObjectId(submissionId))).first();
+    for (String submissionIdTest : submissionIds) {
+      Document submission = db.getCollection("submissions").find(eq("_id", new ObjectId(submissionIdTest))).first();
       assertNull(submission);
     }
   }
@@ -536,8 +484,8 @@ public class StartedHuntControllerSpec {
     assertNull(team);
 
     // Check that each submission referenced by the submissionIds no longer exists
-    for (String submissionId : submissionIds) {
-      Document submission = db.getCollection("submissions").find(eq("_id", new ObjectId(submissionId))).first();
+    for (String submissionIdTest : submissionIds) {
+      Document submission = db.getCollection("submissions").find(eq("_id", new ObjectId(submissionIdTest))).first();
       assertNull(submission);
     }
   }

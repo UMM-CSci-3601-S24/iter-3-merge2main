@@ -1,5 +1,6 @@
 package umm3601.controllerSpecs;
 
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -10,8 +11,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -36,8 +41,11 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.javalin.Javalin;
+import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
+import io.javalin.http.NotFoundResponse;
+import io.javalin.http.UploadedFile;
 import umm3601.startedHunts.StartedHunt;
 import umm3601.teams.Submission;
 import umm3601.teams.SubmissionController;
@@ -341,4 +349,128 @@ public class SubmissionControllerSpec {
 
     verify(ctx, Mockito.never()).json(any());
   }
+
+  // @Test
+  // void testDeleteSubmission() {
+  // when(ctx.pathParam("id")).thenReturn(submissionId.toHexString());
+  // when(ctx.pathParam("photoPath")).thenReturn("test.png");
+
+  // submissionController.deleteSubmission(ctx, submissionId.toHexString());
+
+  // verify(ctx).status(HttpStatus.NO_CONTENT);
+  // // save new test.png file to photos directory
+  // }
+
+  @Test
+  void testDeleteSubmissionWithNonexistentPhoto() {
+    when(ctx.pathParam("id")).thenReturn(newSubmissionId.toHexString());
+    when(ctx.pathParam("photoPath")).thenReturn("nonexistent.png");
+
+    submissionController.deleteSubmission(ctx, newSubmissionId.toHexString());
+
+    verify(ctx).status(HttpStatus.NO_CONTENT);
+  }
+
+  @Test
+  void testDeleteSubmissionWithNonexistentSubmission() {
+    when(ctx.pathParam("id")).thenReturn(new ObjectId().toHexString());
+
+    assertThrows(NotFoundResponse.class, () -> {
+      submissionController.deleteSubmission(ctx, new ObjectId().toHexString());
+    });
+  }
+
+  @Test
+  void testDeleteSubmissions() {
+    ArrayList<String> submissionIdsList = new ArrayList<>();
+    submissionIdsList.add(submissionId.toHexString());
+
+    submissionController.deleteSubmissions(submissionIdsList);
+
+    // Verify that the submission the submission was deleted from database
+    assertEquals(0, db.getCollection("submissions").countDocuments(new Document("_id", submissionId)));
+
+  }
+
+  @Test
+  void testGetFileExtension() {
+    SubmissionController submissionController = new SubmissionController(db);
+
+    String filename1 = "test.jpg";
+    String filename2 = "document.pdf";
+    String filename3 = "file_without_extension";
+
+    assertEquals("jpg", submissionController.getFileExtension(filename1));
+    assertEquals("pdf", submissionController.getFileExtension(filename2));
+    assertEquals("", submissionController.getFileExtension(filename3));
+  }
+
+ @Test
+    public void testUploadPhotoSuccess() throws IOException {
+        // Mock the uploaded file
+        UploadedFile uploadedFile = Mockito.mock(UploadedFile.class);
+        when(uploadedFile.content()).thenReturn(new ByteArrayInputStream("test photo content".getBytes()));
+        when(uploadedFile.filename()).thenReturn("test.jpg");
+
+        // Mock the context
+        when(ctx.uploadedFile("photo")).thenReturn(uploadedFile);
+
+        // Call the method under test
+        String result = submissionController.uploadPhoto(ctx);
+
+        // Verify the behavior and assertions
+        assertNotNull(result);
+        assertTrue(result.matches("[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\\.jpg"));
+
+        // Verify that the file was saved
+        String id = result.substring(0, result.lastIndexOf('.'));
+        String extension = result.substring(result.lastIndexOf('.') + 1);
+        File savedFile = new File("photos", id + "." + extension);
+        assertTrue(savedFile.exists());
+        assertEquals("test photo content", Files.readString(savedFile.toPath()));
+
+        // Verify the context status
+        verify(ctx).status(HttpStatus.OK);
+    }
+
+    @Test
+    public void testUploadPhotoNoFileUploaded() {
+        // Mock the context
+        when(ctx.uploadedFile("photo")).thenReturn(null);
+
+        // Call the method under test and assert the exception
+        BadRequestResponse exception = assertThrows(BadRequestResponse.class, () -> submissionController.uploadPhoto(ctx));
+        assertEquals("No photo uploaded", exception.getMessage());
+    }
+
+    // @SuppressWarnings("static-access")
+    // @Test
+    // public void testUploadPhotoErrorCopyingFile() throws IOException {
+    //     // Mock the uploaded file
+    //     UploadedFile uploadedFile = Mockito.mock(UploadedFile.class);
+    //     when(uploadedFile.content()).thenReturn(new ByteArrayInputStream("test photo content".getBytes()));
+    //     when(uploadedFile.filename()).thenReturn("test.jpg");
+
+    //     // Mock the context
+    //     when(ctx.uploadedFile("photo")).thenReturn(uploadedFile);
+
+    //     // Mock the file copy to throw an IOException
+    //     Files filesMock = Mockito.mock(Files.class);
+    //     doThrow(new IOException("File copy error")).when(filesMock).copy(any(InputStream.class), any(Path.class), any());
+
+    //     // Call the method under test and assert the exception
+    //     IOException exception = assertThrows(IOException.class, () -> submissionController.uploadPhoto(ctx));
+    //     assertEquals("Error handling the uploaded file: File copy error", exception.getMessage());
+    // }
+
+    // @Test
+    // public void testUploadPhotoUnexpectedError() {
+    //     // Mock the context to throw an exception
+    //     when(ctx.uploadedFile("photo")).thenThrow(new RuntimeException("Unexpected error"));
+
+    //     // Call the method under test and assert the exception
+    //     BadRequestResponse exception = assertThrows(BadRequestResponse.class, () -> submissionController.uploadPhoto(ctx));
+    //     assertEquals("Unexpected error during photo upload: Unexpected error", exception.getMessage());
+    // }
+
 }

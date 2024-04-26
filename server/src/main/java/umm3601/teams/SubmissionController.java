@@ -3,23 +3,33 @@ package umm3601.teams;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Array;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
+import org.bson.Document;
 import org.bson.UuidRepresentation;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.mongojack.JacksonMongoCollection;
 
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+
+import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.in;
 
 import io.javalin.Javalin;
+import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
@@ -34,6 +44,8 @@ public class SubmissionController implements Controller {
   private static final String API_SUBMISSIONS_BY_TEAM_AND_TASK = "/api/submissions/team/{teamId}/task/{taskId}";
   private static final String API_SUBMISSIONS_BY_STARTEDHUNT = "/api/submissions/startedHunt/{startedHuntId}";
   private static final String API_SUBMISSION_GET_PHOTO = "/api/submissions/{id}/photo";
+  private static final String PHOTOS = "/photos/{photoPath}";
+  private static final String SERVER_PHOTOS = "http://localhost:4567/photos/";
 
   private final JacksonMongoCollection<Submission> submissionCollection;
   private final JacksonMongoCollection<StartedHunt> startedHuntCollection;
@@ -258,13 +270,155 @@ public class SubmissionController implements Controller {
   }
 
   public void deleteSubmissions(ArrayList<String> submissionIds) {
-    for (String submissionId : submissionIds) {
-      Submission submission = submissionCollection.find(eq("_id", new ObjectId(submissionId))).first();
-      if (submission != null) {
-        deleteSubmission(null, submissionId);
-      }
+    // Convert submissionIds to a list of ObjectId
+    List<ObjectId> objectIds = submissionIds.stream()
+        .map(ObjectId::new)
+        .collect(Collectors.toList());
+
+    // Create a filter that matches the _id field to any of the submissionIds
+    Bson filter = Filters.in("_id", objectIds);
+
+    // Delete all matching documents
+    submissionCollection.deleteMany(filter);
+  }
+
+  /*
+   *
+   * ******PHOTO HANDLING******
+   *
+   */
+
+  public void addPhoto(Context ctx) {
+    String id = uploadPhoto(ctx);
+    addPhotoPathToSubmission(ctx, id);
+    ctx.status(HttpStatus.CREATED);
+    ctx.json(Map.of("id", id));
+  }
+
+  public String getFileExtension(String filename) {
+    int dotIndex = filename.lastIndexOf('.');
+    if (dotIndex >= 0) {
+      return filename.substring(dotIndex + 1);
+    } else {
+      return "";
     }
   }
+
+  public String uploadPhoto(Context ctx) {
+    var uploadedFile = ctx.uploadedFile("photo");
+    if (uploadedFile != null) {
+      try (InputStream in = uploadedFile.content()) {
+
+        String id = UUID.randomUUID().toString();
+
+        String extension = getFileExtension(uploadedFile.filename());
+        File file = Path.of("photos", id + "." + extension).toFile();
+        System.err.println("The path was " + file.toPath());
+
+        Files.copy(in, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        ctx.status(HttpStatus.OK);
+        return id + "." + extension;
+      } catch (IOException e) {
+        System.err.println("Error copying the uploaded file: " + e);
+        throw new BadRequestResponse("Error handling the uploaded file: " + e.getMessage());
+      }
+    } else {
+      throw new BadRequestResponse("No photo uploaded");
+    }
+  }
+
+  public void addPhotoPathToSubmission(Context ctx, String photoPath) {
+    System.out.println("addPhotoPathToSubmission method called with photoPath: " + photoPath);
+    String taskId = ctx.pathParam("taskId");
+    String teamId = ctx.pathParam("teamId");
+    String startedHuntId = ctx.pathParam("startedHuntId"); // get the startedHuntId from the context
+    Submission submission = submissionCollection.find(and(eq("taskId", taskId), eq("teamId", teamId))).first();
+
+    if (submission == null) {
+      submission = createSubmission(taskId, teamId, photoPath); // store the new submission
+    } else {
+      submission.photoPath = photoPath;
+      submissionCollection.insertOne(submission);
+    }
+
+    // Add the submission's ID to the StartedHunt's submissionIds array
+    StartedHunt startedHunt = startedHuntCollection.find(eq("_id", new ObjectId(startedHuntId))).first();
+    if (startedHunt != null) {
+      startedHunt.submissionIds.add(submission._id); // assuming submissionIds is a List<String>
+      startedHuntCollection.save(startedHunt);
+    }
+  }
+
+  public void deletePhoto(String id, Context ctx) {
+    Path filePath = Path.of("photos/" + id);
+    if (!Files.exists(filePath)) {
+      ctx.status(HttpStatus.NOT_FOUND);
+      throw new BadRequestResponse("Photo with ID " + id + " does not exist");
+    }
+    try {
+      Files.delete(filePath);
+
+      ctx.status(HttpStatus.OK);
+    } catch (IOException e) {
+      ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new BadRequestResponse("Error deleting the photo: " + e.getMessage());
+    }
+  }
+
+  public void getPhoto(Context ctx) {
+    String photoPath = ctx.pathParam("photoPath");
+    File file = new File("photos/" + photoPath);
+    if (file.exists()) {
+      try {
+        ctx.result(new FileInputStream(file));
+
+      } catch (FileNotFoundException e) {
+        ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error reading file: " + e.getMessage());
+      }
+    } else {
+      ctx.status(HttpStatus.NOT_FOUND).result("Photo not found");
+    }
+  }
+
+  public void replacePhoto(Context ctx) {
+    String taskId = ctx.pathParam("taskId");
+    String teamId = ctx.pathParam("teamId");
+
+    // Find the submission
+    Submission submission = submissionCollection.find(and(eq("taskId", taskId), eq("teamId", teamId))).first();
+
+    if (submission == null) {
+      throw new BadRequestResponse("No submission found for the given taskId and teamId");
+    }
+
+    // Delete the old photo
+    deletePhoto(submission.photoPath, ctx);
+
+    // Upload a new photo and update the submission
+    String newPhotoId = uploadPhoto(ctx);
+    submission.photoPath = newPhotoId;
+
+    // Update the submission in the database
+    submissionCollection.updateOne(eq("_id", submission._id),
+        new Document("$set", new Document("photoPath", newPhotoId)));
+
+    ctx.status(HttpStatus.OK);
+    ctx.json(Map.of("id", newPhotoId));
+  }
+
+  public String getPhotoFromServer(Submission submission) throws FileNotFoundException {
+    if (submission == null || submission.photoPath == null) {
+      throw new FileNotFoundException("Photo not found");
+    }
+    String photoUrl = SERVER_PHOTOS + submission.photoPath;
+    return photoUrl;
+  }
+
+  /*
+   *
+   * ******END PHOTO HANDLING******
+   *
+   */
 
   @Override
   public void addRoutes(Javalin server) {
@@ -275,6 +429,9 @@ public class SubmissionController implements Controller {
     server.get(API_SUBMISSIONS_BY_STARTEDHUNT, this::getSubmissionsByStartedHunt);
     server.get(API_SUBMISSION_GET_PHOTO, this::getPhotoFromSubmission);
     server.delete(API_SUBMISSION, ctx -> deleteSubmission(ctx, ctx.pathParam("id")));
+    server.post(API_SUBMISSION, this::addPhoto);
+    server.put(API_SUBMISSION, this::replacePhoto);
+    server.get(PHOTOS, this::getPhoto);
   }
 
 }
