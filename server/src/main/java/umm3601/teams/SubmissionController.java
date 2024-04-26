@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.bson.UuidRepresentation;
 import org.bson.types.ObjectId;
@@ -18,8 +21,9 @@ import static com.mongodb.client.model.Filters.in;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
+import io.javalin.http.NotFoundResponse;
 import umm3601.Controller;
-import umm3601.host.StartedHunt;
+import umm3601.startedHunts.StartedHunt;
 
 public class SubmissionController implements Controller {
 
@@ -212,6 +216,34 @@ public class SubmissionController implements Controller {
       ctx.result("");
       ctx.status(HttpStatus.NOT_FOUND);
     }
+  }
+
+  /**
+   * Deletes a Submission from the database.
+   *
+   * @param ctx a Javalin Context object containing the HTTP request information.
+   *            Expects an "id" path parameter.
+   *            If a Submission with the matching ID is found, it is deleted and
+   *            the HTTP status is set to NO_CONTENT (204).
+   *            If no such Submission is found, a NotFoundResponse is thrown.
+   */
+  public void deleteSubmission(Context ctx, String id) {
+    Submission submission = submissionCollection.find(eq("_id", new ObjectId(id))).first();
+
+    if (submission == null) {
+      throw new NotFoundResponse("The requested submission was not found.");
+    }
+
+    // Delete the photo associated with the submission
+    try {
+      Path photoPath = Paths.get("photos/" + submission.photoPath);
+      Files.deleteIfExists(photoPath);
+    } catch (IOException e) {
+      ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error deleting file: " + e.getMessage());
+      return;
+    }
+    submissionCollection.removeById(id);
+    ctx.status(HttpStatus.NO_CONTENT);
   }
 
   @Override

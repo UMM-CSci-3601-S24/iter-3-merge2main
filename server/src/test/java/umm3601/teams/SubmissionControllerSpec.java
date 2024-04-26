@@ -38,7 +38,7 @@ import com.mongodb.client.MongoDatabase;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
-import umm3601.host.StartedHunt;
+import umm3601.startedHunts.StartedHunt;
 
 public class SubmissionControllerSpec {
   private SubmissionController submissionController;

@@ -233,6 +233,22 @@ public class TeamController implements Controller {
     return teamCollection.find(eq("startedHuntId", startedHuntId)).into(new ArrayList<>());
   }
 
+  /**
+   * Deletes all teams associated with a specific started hunt.
+   *
+   * @param startedHuntId the ID of the started hunt
+   *
+   *                      The method takes a startedHunt ID as input.
+   *                      It queries the team collection in the database for all
+   *                      teams where
+   *                      the 'startedHuntId' matches the provided startedHunt ID.
+   *                      It then deletes all teams associated with the
+   *                      startedHunt.
+   */
+  public void deleteTeamsByStartedHuntId(String startedHuntId) {
+    teamCollection.deleteMany(eq("startedHuntId", startedHuntId));
+  }
+
   @Override
   public void addRoutes(Javalin server) {
     server.post(API_SINGLE_TEAM, this::createTeam);

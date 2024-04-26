@@ -1,4 +1,4 @@
-package umm3601.host;
+package umm3601.startedHunts;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.mongojack.Id;
 import org.mongojack.ObjectId;
+
+import umm3601.host.CompleteHunt;
 
 @SuppressWarnings({ "VisibilityModifier" })
 public class StartedHunt {
