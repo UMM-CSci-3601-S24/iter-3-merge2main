@@ -586,6 +586,7 @@ public class HostController implements Controller {
   public void handleWebSocketConnections(Javalin server) {
     server.ws(WEBSOCKET_HOST, ws -> {
       ws.onConnect(ctx -> {
+        System.out.println("Connected to host websocket: " + ctx.getSessionId());
         addConnectedContext(ctx);
         ctx.enableAutomaticPings(WEB_SOCKET_PING_INTERVAL, TimeUnit.SECONDS);
       });
