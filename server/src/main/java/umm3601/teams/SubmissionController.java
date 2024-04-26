@@ -288,6 +288,16 @@ public class SubmissionController implements Controller {
    *
    */
 
+  /**
+   * Adds a photo to the server and updates the submission with the photo's ID.
+   *
+   * @param ctx a Javalin Context object containing the HTTP request information.
+   *            Expects "taskId" and "teamId" path parameters.
+   *            If a submission with the given taskId and teamId is found, it
+   *            uploads a photo and updates the submission with the photo's ID.
+   *            If no submission is found, a new submission is created with the
+   *            photo's ID.
+   */
   public void addPhoto(Context ctx) {
     String id = uploadPhoto(ctx);
     addPhotoPathToSubmission(ctx, id);
@@ -295,6 +305,12 @@ public class SubmissionController implements Controller {
     ctx.json(Map.of("id", id));
   }
 
+  /**
+   * Extracts the file extension from a filename.
+   *
+   * @param filename The name of the file.
+   * @return The file extension.
+   */
   public String getFileExtension(String filename) {
     int dotIndex = filename.lastIndexOf('.');
     if (dotIndex >= 0) {
@@ -304,6 +320,16 @@ public class SubmissionController implements Controller {
     }
   }
 
+  /**
+   * Uploads a photo to the server.
+   *
+   * @param ctx a Javalin Context object containing the HTTP request information.
+   *            Expects a "photo" form field containing the photo to upload.
+   *            If a photo is uploaded successfully, it is saved to the 'photos/'
+   *            directory with a unique ID.
+   *            The unique ID is returned as a response.
+   *            If no photo is uploaded, a BadRequestResponse is thrown.
+   */
   public String uploadPhoto(Context ctx) {
     var uploadedFile = ctx.uploadedFile("photo");
     if (uploadedFile != null) {
@@ -327,6 +353,14 @@ public class SubmissionController implements Controller {
     }
   }
 
+  /**
+   * Adds a photo path to a submission and updates the StartedHunt with the
+   * submission's ID.
+   *
+   * @param ctx       a Javalin Context object containing the HTTP request
+   *                  information.
+   * @param photoPath The path to the photo to add to the submission.
+   */
   public void addPhotoPathToSubmission(Context ctx, String photoPath) {
     System.out.println("addPhotoPathToSubmission method called with photoPath: " + photoPath);
     String taskId = ctx.pathParam("taskId");
@@ -349,6 +383,15 @@ public class SubmissionController implements Controller {
     }
   }
 
+  /**
+   * Deletes a photo from the server.
+   *
+   * @param id  The ID of the photo to delete.
+   * @param ctx a Javalin Context object containing the HTTP request information.
+   *            If a photo with the given ID is found, it is deleted from the
+   *            server.
+   *            If no such photo is found, the HTTP status is set to NOT_FOUND.
+   */
   public void deletePhoto(String id, Context ctx) {
     Path filePath = Path.of("photos/" + id);
     if (!Files.exists(filePath)) {
@@ -365,6 +408,15 @@ public class SubmissionController implements Controller {
     }
   }
 
+  /**
+   * Retrieves a photo from the server and returns it as a response.
+   *
+   * @param ctx a Javalin Context object containing the HTTP request information.
+   *            Expects a "photoPath" path parameter.
+   *            If a photo with the given photoPath is found, it is sent as a
+   *            response with an HTTP status of OK.
+   *            If the photo is not found, the HTTP status is set to NOT_FOUND.
+   */
   public void getPhoto(Context ctx) {
     String photoPath = ctx.pathParam("photoPath");
     File file = new File("photos/" + photoPath);
@@ -380,6 +432,17 @@ public class SubmissionController implements Controller {
     }
   }
 
+  /**
+   * Replaces the photo associated with a submission.
+   *
+   * @param ctx a Javalin Context object containing the HTTP request information.
+   *            Expects "taskId" and "teamId" path parameters.
+   *            If a submission with the given taskId and teamId is found, it
+   *            deletes the old photo associated with the submission and uploads a
+   *            new photo.
+   *            The new photo's ID is stored in the submission's photoPath field,
+   *            and the submission is updated in the database.
+   */
   public void replacePhoto(Context ctx) {
     String taskId = ctx.pathParam("taskId");
     String teamId = ctx.pathParam("teamId");
@@ -406,6 +469,13 @@ public class SubmissionController implements Controller {
     ctx.json(Map.of("id", newPhotoId));
   }
 
+  /**
+   * Retrieves a photo from the server and returns the URL.
+   *
+   * @param submission The submission object containing the photoPath.
+   * @return The URL of the photo.
+   * @throws FileNotFoundException If the photo is not found.
+   */
   public String getPhotoFromServer(Submission submission) throws FileNotFoundException {
     if (submission == null || submission.photoPath == null) {
       throw new FileNotFoundException("Photo not found");
