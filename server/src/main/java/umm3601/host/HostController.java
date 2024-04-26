@@ -571,23 +571,29 @@ public class HostController implements Controller {
   }
 
   public void addConnectedContext(WsContext context) {
+    System.out.println("Adding connected context: " + context);
     this.connectedContexts.add(context);
   }
 
   public ArrayList<WsContext> getConnectedContexts() {
+    System.out.println("Getting connected contexts");
     return new ArrayList<>(this.connectedContexts);
   }
   public void createAndSendEvent(String event, String data) {
+    System.out.println("Creating and sending event: " + event);
     Map<String, String> events = createEvent(event, data);
     System.out.println("Sending event: " + events);
     updateListeners(events);
   }
 
   public void handleWebSocketConnections(Javalin server) {
+    System.out.println("Handling WebSocket connections");
     server.ws(WEBSOCKET_HOST, ws -> {
       ws.onConnect(ctx -> {
+        System.out.println("WebSocket connected: " + ctx);
         addConnectedContext(ctx);
         ctx.enableAutomaticPings(WEB_SOCKET_PING_INTERVAL, TimeUnit.SECONDS);
+
       });
     });
   }
