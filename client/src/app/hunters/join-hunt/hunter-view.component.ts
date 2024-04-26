@@ -141,6 +141,7 @@ export class HunterViewComponent implements OnInit, OnDestroy {
   deletePhoto(task: Task, startedHuntId: string): void {
     this.hostService.deletePhoto(startedHuntId, task._id, task.photos[0]).subscribe({
       next: () => {
+        task.status = false;
         task.photos = [];
         this.snackBar.open('Photo deleted successfully', 'Close', {
           duration: 3000
