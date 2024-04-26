@@ -4,6 +4,7 @@ import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
+import io.javalin.http.InternalServerErrorResponse;
 import io.javalin.http.NotFoundResponse;
 import io.javalin.websocket.WsContext;
 import umm3601.Controller;
@@ -209,10 +210,12 @@ public class HostController implements Controller {
     try {
       ctx.result(new FileInputStream(file));
     } catch (FileNotFoundException e) {
-      ctx.status(500).result("Error reading file: " + e.getMessage());
+      throw new InternalServerErrorResponse("Error reading file: " + e.getMessage());
+      // ctx.status(500).result("Error reading file: " + e.getMessage());
     }
   } else {
-    ctx.status(404).result("Photo not found");
+    throw new NotFoundResponse("Photo not found");
+    // ctx.status(404).result("Photo not found");
   }
 }
 
