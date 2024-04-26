@@ -290,6 +290,39 @@ describe('HunterViewComponent', () => {
     });
   });
 
+  describe('Photo Deletion', () => {
+    let component: HunterViewComponent;
+    let mockHostService: jasmine.SpyObj<HostService>;
+    let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
+    let task: Task;
+    let startedHuntId: string;
+    const mockRoute = jasmine.createSpyObj('ActivatedRoute', ['snapshot']);
+    const mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+    const mockDialog = jasmine.createSpyObj('MatDialog', ['open']);
+    const mockNg2ImgMax = jasmine.createSpyObj('Ng2ImgMaxService', ['compressImage']);
+
+    beforeEach(() => {
+      mockHostService = jasmine.createSpyObj('HostService', ['deletePhoto']);
+      mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
+      component = new HunterViewComponent(mockHostService, mockRoute, mockSnackBar, mockRouter, mockDialog, mockNg2ImgMax);
+      task = { _id: '1', huntId: '1', name: 'Task 1', status: true, photos: ['photoId']};
+      startedHuntId = '';
+    });
+
+    it('should handle error when deleting photo', () => {
+      // Arrange: Set up the deletePhoto method to return an observable that throws an error.
+      const error = new Error('Test error');
+      mockHostService.deletePhoto.and.returnValue(throwError(error));
+
+      // Act: Call the method that triggers the deletion.
+      component.deletePhoto(task, startedHuntId);
+
+      // Assert: Check that the error message was shown.
+      expect(mockSnackBar.open).toHaveBeenCalledWith('Error deleting photo. Please try again', 'Close', { duration: 3000 });
+    });
+  });
+
+
 
 });
 
