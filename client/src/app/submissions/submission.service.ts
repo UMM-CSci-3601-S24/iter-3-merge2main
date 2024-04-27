@@ -34,4 +34,20 @@ export class SubmissionService {
   getPhotoFromSubmission(id: string) {
     return this.httpClient.get(`${this.submissionUrl}/${id}/photo`);
   }
+
+  deleteSubmission(id: string) {
+    return this.httpClient.delete(`${this.submissionUrl}/${id}`);
+  }
+
+  submitPhoto(startedHuntId: string, teamId: string, taskId: string, photo: File) {
+    const formData = new FormData();
+    formData.append('photo', photo);
+    return this.httpClient.post(`${this.submissionUrl}/startedHunt/${startedHuntId}/team/${teamId}/task/${taskId}`, formData);
+  }
+
+  replacePhoto(id: string, photo: File) {
+    const formData = new FormData();
+    formData.append('photo', photo);
+    return this.httpClient.put(`${this.submissionUrl}/${id}/photo`, formData);
+  }
 }

@@ -43,9 +43,11 @@ public class SubmissionController implements Controller {
   private static final String API_SUBMISSIONS_BY_TASK = "/api/submissions/task/{taskId}";
   private static final String API_SUBMISSIONS_BY_TEAM_AND_TASK = "/api/submissions/team/{teamId}/task/{taskId}";
   private static final String API_SUBMISSIONS_BY_STARTEDHUNT = "/api/submissions/startedHunt/{startedHuntId}";
+  private static final String API_SUBMIT_PHOTO = "/api/submissions/startedHunt/{startedHuntId}/team/{teamId}/task/{taskId}";
   private static final String API_SUBMISSION_GET_PHOTO = "/api/submissions/{id}/photo";
   private static final String PHOTOS = "/photos/{photoPath}";
   private static final String SERVER_PHOTOS = "http://localhost:4567/photos/";
+
 
   private final JacksonMongoCollection<Submission> submissionCollection;
   private final JacksonMongoCollection<StartedHunt> startedHuntCollection;
@@ -204,44 +206,6 @@ public class SubmissionController implements Controller {
   }
 
   /**
-   * Retrieves a photo associated with a specific submission from the server.
-   *
-   * @param ctx a Javalin HTTP context
-   *
-   *            This method takes a Javalin HTTP context as input, which should
-   *            contain a path parameter 'id' representing the submission ID.
-   *            It attempts to find a submission with the given ID in the
-   *            submission collection, and if found, it tries to retrieve the
-   *            associated photo file from the 'photos/' directory.
-   *            If the photo file exists, it sends the file as a result with an
-   *            HTTP status of OK.
-   *            If the photo file does not exist, it sends an empty result with an
-   *            HTTP status of NOT FOUND.
-   *            If there's an error while accessing the file, it sends an error
-   *            message as a result with an HTTP status of INTERNAL SERVER ERROR.
-   */
-  public void getPhotoFromSubmission(Context ctx) {
-    String submissionId = ctx.pathParam("id");
-    System.out.println("Server: Received request to get photo for submissionId: " + submissionId);
-
-    Submission submission = submissionCollection.find(eq("_id", new ObjectId(submissionId))).first();
-
-    File photo = new File("photos/" + submission.photoPath);
-    if (photo.exists()) {
-      try (FileInputStream fis = new FileInputStream(photo)) {
-        ctx.result(fis);
-        ctx.status(HttpStatus.OK);
-      } catch (IOException e) {
-        ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error accessing file: " + e.getMessage());
-      }
-    } else {
-      System.out.println("Server: No photo found for submissionId: " + submissionId);
-      ctx.result("");
-      ctx.status(HttpStatus.NOT_FOUND);
-    }
-  }
-
-  /**
    * Deletes a Submission from the database.
    *
    * @param ctx a Javalin Context object containing the HTTP request information.
@@ -368,11 +332,12 @@ public class SubmissionController implements Controller {
     String startedHuntId = ctx.pathParam("startedHuntId"); // get the startedHuntId from the context
     Submission submission = submissionCollection.find(and(eq("taskId", taskId), eq("teamId", teamId))).first();
 
+
     if (submission == null) {
       submission = createSubmission(taskId, teamId, photoPath); // store the new submission
     } else {
       submission.photoPath = photoPath;
-      submissionCollection.insertOne(submission);
+      submissionCollection.replaceOne(eq("_id", submission._id), submission); // update the existing submission (replace it
     }
 
     // Add the submission's ID to the StartedHunt's submissionIds array
@@ -380,6 +345,44 @@ public class SubmissionController implements Controller {
     if (startedHunt != null) {
       startedHunt.submissionIds.add(submission._id); // assuming submissionIds is a List<String>
       startedHuntCollection.save(startedHunt);
+    }
+  }
+
+  /**
+   * Retrieves a photo associated with a specific submission from the server.
+   *
+   * @param ctx a Javalin HTTP context
+   *
+   *            This method takes a Javalin HTTP context as input, which should
+   *            contain a path parameter 'id' representing the submission ID.
+   *            It attempts to find a submission with the given ID in the
+   *            submission collection, and if found, it tries to retrieve the
+   *            associated photo file from the 'photos/' directory.
+   *            If the photo file exists, it sends the file as a result with an
+   *            HTTP status of OK.
+   *            If the photo file does not exist, it sends an empty result with an
+   *            HTTP status of NOT FOUND.
+   *            If there's an error while accessing the file, it sends an error
+   *            message as a result with an HTTP status of INTERNAL SERVER ERROR.
+   */
+  public void getPhotoFromSubmission(Context ctx) {
+    String submissionId = ctx.pathParam("id");
+    System.out.println("Server: Received request to get photo for submissionId: " + submissionId);
+
+    Submission submission = submissionCollection.find(eq("_id", new ObjectId(submissionId))).first();
+
+    File photo = new File("photos/" + submission.photoPath);
+    if (photo.exists()) {
+      try (FileInputStream fis = new FileInputStream(photo)) {
+        ctx.result(fis);
+        ctx.status(HttpStatus.OK);
+      } catch (IOException e) {
+        ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error accessing file: " + e.getMessage());
+      }
+    } else {
+      System.out.println("Server: No photo found for submissionId: " + submissionId);
+      ctx.result("");
+      ctx.status(HttpStatus.NOT_FOUND);
     }
   }
 
@@ -443,19 +446,51 @@ public class SubmissionController implements Controller {
    *            The new photo's ID is stored in the submission's photoPath field,
    *            and the submission is updated in the database.
    */
+  // public void replacePhoto(Context ctx) {
+  //   String taskId = ctx.pathParam("taskId");
+  //   String teamId = ctx.pathParam("teamId");
+
+  //   // Find the submission
+  //   Submission submission = submissionCollection.find(and(eq("taskId", taskId), eq("teamId", teamId))).first();
+
+  //   if (submission == null) {
+  //     throw new BadRequestResponse("No submission found for the given taskId and teamId");
+  //   }
+
+  //       // Check if the submission has a photo to replace
+  //       File photoFile = new File(submission.photoPath);
+  //       if (photoFile.exists()) {
+  //           // Delete the old photo only if it exists
+  //           deletePhoto(submission.photoPath, ctx);
+  //       }
+
+  //   // Upload a new photo and update the submission
+  //   String newPhotoId = uploadPhoto(ctx);
+  //   submission.photoPath = newPhotoId;
+
+  //   // Update the submission in the database
+  //   submissionCollection.updateOne(eq("_id", submission._id),
+  //       new Document("$set", new Document("photoPath", newPhotoId)));
+
+  //   ctx.status(HttpStatus.OK);
+  //   ctx.json(Map.of("id", newPhotoId));
+  // }
   public void replacePhoto(Context ctx) {
-    String taskId = ctx.pathParam("taskId");
-    String teamId = ctx.pathParam("teamId");
+    String id = ctx.pathParam("id");
 
     // Find the submission
-    Submission submission = submissionCollection.find(and(eq("taskId", taskId), eq("teamId", teamId))).first();
+    Submission submission = submissionCollection.find(eq("_id", new ObjectId(id))).first();
 
     if (submission == null) {
-      throw new BadRequestResponse("No submission found for the given taskId and teamId");
+      throw new BadRequestResponse("No submission found for the given id");
     }
 
-    // Delete the old photo
-    deletePhoto(submission.photoPath, ctx);
+    // Check if the submission has a photo to replace
+    File photoFile = new File(submission.photoPath);
+    if (photoFile.exists()) {
+      // Delete the old photo only if it exists
+      deletePhoto(submission.photoPath, ctx);
+    }
 
     // Upload a new photo and update the submission
     String newPhotoId = uploadPhoto(ctx);
@@ -499,6 +534,7 @@ public class SubmissionController implements Controller {
     server.get(API_SUBMISSIONS_BY_STARTEDHUNT, this::getSubmissionsByStartedHunt);
     server.get(API_SUBMISSION_GET_PHOTO, this::getPhotoFromSubmission);
     server.delete(API_SUBMISSION, ctx -> deleteSubmission(ctx, ctx.pathParam("id")));
+    server.post(API_SUBMIT_PHOTO, this::addPhoto);
     server.post(API_SUBMISSION, this::addPhoto);
     server.put(API_SUBMISSION, this::replacePhoto);
     server.get(PHOTOS, this::getPhoto);

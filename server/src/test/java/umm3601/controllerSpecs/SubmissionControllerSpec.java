@@ -1,19 +1,24 @@
 package umm3601.controllerSpecs;
 
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static com.mongodb.client.model.Filters.and;
+import static com.mongodb.client.model.Filters.eq;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -28,6 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
@@ -52,6 +58,9 @@ public class SubmissionControllerSpec {
   private ObjectId startedHuntId;
   private ObjectId submissionId;
   private ObjectId newSubmissionId;
+  private ObjectId teamId;
+  private ObjectId taskId;
+  private ObjectId huntId;
 
   private static MongoClient mongoClient;
   private static MongoDatabase db;
@@ -119,8 +128,8 @@ public class SubmissionControllerSpec {
     newSubmissionId = new ObjectId();
     Document newSubmission = new Document()
         .append("_id", newSubmissionId)
-        .append("taskId", "Task 9")
-        .append("teamId", "Team 9")
+        .append("taskId", taskId.toHexString())
+        .append("teamId", teamId.toHexString())
         .append("photoPath", "nonexistent.png") // This photo does not exist
         .append("submitTime", new Date());
 
@@ -172,7 +181,92 @@ public class SubmissionControllerSpec {
     startedHuntDocuments.insertMany(testStartedHunts);
     startedHuntDocuments.insertOne(startedHunt);
 
+    MongoCollection<Document> teamDocuments = db.getCollection("teams");
+    teamDocuments.drop();
+    List<Document> testTeams = new ArrayList<>();
+    testTeams.add(new Document()
+        .append("teamName", "Team 1")
+        .append("startedHuntId", "startedHunt1"));
+    testTeams.add(new Document()
+        .append("teamName", "Team 2")
+        .append("startedHuntId", "startedHunt2"));
+
+    teamId = new ObjectId();
+    Document team = new Document()
+        .append("_id", teamId)
+        .append("teamName", "Team 4")
+        .append("startedHuntId", "startedHunt1");
+
+    teamDocuments.insertMany(testTeams);
+    teamDocuments.insertOne(team);
     submissionController = new SubmissionController(db);
+  }
+
+  @BeforeEach
+  void setup() throws IOException {
+    MockitoAnnotations.openMocks(this);
+
+    MongoCollection<Document> teamDocuments = db.getCollection("teams");
+    teamDocuments.drop();
+    List<Document> testTeams = new ArrayList<>();
+    testTeams.add(new Document()
+        .append("teamName", "Team 1")
+        .append("startedHuntId", "startedHunt1"));
+    testTeams.add(new Document()
+        .append("teamName", "Team 2")
+        .append("startedHuntId", "startedHunt2"));
+    testTeams.add(new Document()
+        .append("teamName", "Team 3")
+        .append("startedHuntId", "startedHunt3"));
+
+    teamId = new ObjectId();
+    Document team = new Document()
+        .append("_id", teamId)
+        .append("teamName", "Team 4")
+        .append("startedHuntId", "startedHunt1");
+
+    teamDocuments.insertMany(testTeams);
+    teamDocuments.insertOne(team);
+    MongoCollection<Document> taskDocuments = db.getCollection("tasks");
+    taskDocuments.drop();
+    huntId = new ObjectId();
+    List<Document> testTasks = new ArrayList<>();
+    testTasks.add(
+        new Document()
+            .append("huntId", huntId.toHexString())
+            .append("name", "Take a picture of a cat")
+            .append("status", false)
+            .append("photos", new ArrayList<String>()));
+    testTasks.add(
+        new Document()
+            .append("huntId", huntId.toHexString())
+            .append("name", "Take a picture of a dog")
+            .append("status", false)
+            .append("photos", new ArrayList<String>()));
+    testTasks.add(
+        new Document()
+            .append("huntId", huntId.toHexString())
+            .append("name", "Take a picture of a park")
+            .append("status", true)
+            .append("photos", new ArrayList<String>()));
+    testTasks.add(
+        new Document()
+            .append("huntId", "differentId")
+            .append("name", "Take a picture of a moose")
+            .append("status", true)
+            .append("photos", new ArrayList<String>()));
+
+    taskId = new ObjectId();
+    Document task = new Document()
+        .append("_id", taskId)
+        .append("huntId", "someId")
+        .append("name", "Best Task")
+        .append("status", false)
+        .append("photos", new ArrayList<String>());
+
+    taskDocuments.insertMany(testTasks);
+    taskDocuments.insertOne(task);
+
   }
 
   @Test
@@ -478,4 +572,145 @@ public class SubmissionControllerSpec {
   // exception.getMessage());
   // }
 
+  @Test
+  void testAddPhotoPathToSubmission() throws IOException {
+    String photoPath = "test.jpg";
+
+    // Set up the same taskId and teamId used in the test setup
+    String taskId = "Task 4";
+    String teamId = "Team 4";
+
+    // Delete any existing submission with the same taskId and teamId
+    db.getCollection("submissions").deleteMany(and(eq("taskId", taskId), eq("teamId", teamId)));
+
+    // Mock the context
+    when(ctx.pathParam("taskId")).thenReturn(taskId);
+    when(ctx.pathParam("teamId")).thenReturn(teamId);
+    when(ctx.pathParam("startedHuntId")).thenReturn(startedHuntId.toHexString());
+
+    submissionController.addPhotoPathToSubmission(ctx, photoPath);
+
+    Document updatedSubmission = db.getCollection("submissions")
+        .find(and(eq("taskId", taskId), eq("teamId", teamId))).first();
+
+    System.out.println("Updated submission: " + updatedSubmission.toJson());
+
+    assertNotNull(updatedSubmission);
+    assertEquals(photoPath, updatedSubmission.get("photoPath"));
+  }
+
+  @Test
+  void testUpdatePhotoPathInExistingSubmission() throws IOException {
+    String photoPath = "test.jpg";
+
+    // Set up the same taskId and teamId used in the test setup
+    String taskId = "Task 4";
+    String teamId = "Team 4";
+
+    // Mock the context
+    when(ctx.pathParam("taskId")).thenReturn(taskId);
+    when(ctx.pathParam("teamId")).thenReturn(teamId);
+    when(ctx.pathParam("startedHuntId")).thenReturn(startedHuntId.toHexString());
+
+    // Ensure a submission already exists with the same taskId and teamId
+    Document existingSubmission = db.getCollection("submissions")
+        .find(and(eq("taskId", taskId), eq("teamId", teamId))).first();
+
+    System.out.println("Existing submission before update: " + existingSubmission);
+
+    if (existingSubmission == null) {
+      // If no existing submission, create a new one
+      Document newSubmission = new Document("taskId", taskId)
+          .append("teamId", teamId)
+          .append("photoPath", "oldTest.jpg");
+      db.getCollection("submissions").insertOne(newSubmission);
+      System.out.println("New submission created: " + newSubmission);
+    }
+
+    submissionController.addPhotoPathToSubmission(ctx, photoPath);
+
+    Document updatedSubmission = db.getCollection("submissions")
+        .find(and(eq("taskId", taskId), eq("teamId", teamId))).first();
+
+    System.out.println("Updated submission: " + updatedSubmission);
+
+    assertNotNull(updatedSubmission);
+    assertEquals(photoPath, updatedSubmission.get("photoPath"));
+  }
+
+  @Test
+  void testReplacePhotoWithContext() throws IOException {
+    SubmissionController submissionController = Mockito.mock(SubmissionController.class);
+
+    String photoPath = "test.png";
+
+    // Set up the same taskId and teamId used in the test setup
+    String taskId = "Task 4";
+    String teamId = "Team 4";
+
+    // Mock the context
+    when(ctx.pathParam("taskId")).thenReturn(taskId);
+    when(ctx.pathParam("teamId")).thenReturn(teamId);
+    when(ctx.pathParam("startedHuntId")).thenReturn(startedHuntId.toHexString());
+
+    // Ensure a submission already exists with the same taskId and teamId
+    Document existingSubmission = db.getCollection("submissions")
+        .find(and(eq("taskId", taskId), eq("teamId", teamId))).first();
+
+    System.out.println("Existing submission before update: " + existingSubmission);
+
+    if (existingSubmission == null) {
+      // If no existing submission, create a new one
+      Document newSubmission = new Document("taskId", taskId)
+          .append("teamId", teamId)
+          .append("photoPath", "oldTest.jpg");
+      db.getCollection("submissions").insertOne(newSubmission);
+      System.out.println("New submission created: " + newSubmission);
+    }
+
+    // Mock the file deletion operation
+    // Simulate the deletion by not performing any action
+    doNothing().when(submissionController).deletePhoto(anyString(), any());
+
+    submissionController.replacePhoto(ctx);
+
+    Document updatedSubmission = db.getCollection("submissions")
+        .find(and(eq("taskId", taskId), eq("teamId", teamId))).first();
+
+    System.out.println("Updated submission: " + updatedSubmission);
+
+    assertNotNull(updatedSubmission);
+    assertEquals(photoPath, updatedSubmission.get("photoPath"));
+  }
+
+
+    @Test
+    public void testDeletePhoto() throws IOException {
+        // Create a mock Context object
+        Context ctx = mock(Context.class);
+
+        // Create a mock Path object
+        Path filePath = mock(Path.class);
+
+        // Mock the behavior of Files.exists() method
+        when(Files.exists(filePath)).thenReturn(true);
+
+        // Mock the behavior of Files.delete() method
+        MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class);
+        mockedFiles.when(() -> Files.delete(filePath)).thenReturn(null);
+
+        // Create an instance of SubmissionController
+        SubmissionController submissionController = new SubmissionController(db);
+
+        // Call the deletePhoto method
+        submissionController.deletePhoto("photoId", ctx);
+
+        // Verify that the status is set to HttpStatus.OK
+        verify(ctx).status(HttpStatus.OK);
+
+        // Verify that Files.delete() method is called with the correct filePath
+        mockedFiles.verify(() -> Files.delete(filePath));
+    }
 }
+
+
