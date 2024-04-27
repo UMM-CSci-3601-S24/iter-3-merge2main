@@ -202,4 +202,33 @@ describe('SubmissionService', () => {
     expect(req.request.method).toEqual('GET');
     req.flush(photoPath);
   });
+
+  it('should delete submission', () => {
+    const submissionId = '1234';
+    submissionService.deleteSubmission(submissionId).subscribe();
+
+    const req = httpTestingController.expectOne(`${submissionService.submissionUrl}/${submissionId}`);
+    expect(req.request.method).toEqual('DELETE');
+  });
+
+  it('should submit photo', () => {
+    const startedHuntId = 'startedHunt1_id';
+    const teamId = '8765';
+    const taskId = '8765';
+    const photo = new File(['photo'], 'photo.jpg');
+    submissionService.submitPhoto(startedHuntId, teamId, taskId, photo).subscribe();
+
+    const req = httpTestingController.expectOne(`${submissionService.submissionUrl}/startedHunt/${startedHuntId}/team/${teamId}/task/${taskId}`);
+    expect(req.request.method).toEqual('POST');
+  });
+
+  it('should replace photo', () => {
+    const submissionId = '1234';
+    const photo = new File(['photo'], 'photo.jpg');
+    submissionService.replacePhoto(submissionId, photo).subscribe();
+
+    const req = httpTestingController.expectOne(`${submissionService.submissionUrl}/${submissionId}/photo`);
+    expect(req.request.method).toEqual('PUT');
+  });
+
 });

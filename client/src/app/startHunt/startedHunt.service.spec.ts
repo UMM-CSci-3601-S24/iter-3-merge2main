@@ -3,7 +3,9 @@ import { HttpClientTestingModule, HttpTestingController } from "@angular/common/
 import { StartedHunt } from "./startedHunt";
 import { StartedHuntService } from "./startedHunt.service";
 import { Hunt } from "../hunts/hunt";
-import { TestBed } from "@angular/core/testing";
+import { TestBed, waitForAsync } from "@angular/core/testing";
+import { of } from "rxjs";
+import { Task } from "../hunts/task";
 
 describe('StartedHuntService', () => {
   const testHunts: Hunt[] = [
@@ -25,36 +27,32 @@ describe('StartedHuntService', () => {
     },
   ];
 
+  const testTasks: Task[] = [
+    {
+      _id: "5889",
+      huntId: "hunt1_id",
+      name: "Default Task 1",
+      status: false,
+      photos: []
+    },
+    {
+      _id: "5754",
+      huntId: "hunt1_id",
+      name: "Default Task 2",
+      status: false,
+      photos: []
+    },
+  ];
+
   const testStartedHunts: StartedHunt[] = [
     {
       _id: 'startedHunt1_id',
       accessCode: '123456',
       completeHunt: {
         hunt: testHunts[0],
-        tasks: [
-          {
-            _id: '5678',
-            huntId: 'ann_id',
-            name: 'Take a picture of a bird',
-            status: false,
-            photos: [],
-          },
-          {
-            _id: '8765',
-            huntId: 'ann_id',
-            name: 'Take a picture of a dog',
-            status: false,
-            photos: [],
-          },
-          {
-            _id: '1357',
-            huntId: 'ann_id',
-            name: 'Take a picture of a Stop sign',
-            status: false,
-            photos: [],
-          },
-        ],
+        tasks: testTasks
       },
+      status: true,
       submissionIds: ['1234', '5432'],
     },
     {
@@ -79,6 +77,7 @@ describe('StartedHuntService', () => {
           },
         ],
       },
+      status: false,
       submissionIds: ['9876'],
     },
   ];
@@ -116,5 +115,84 @@ describe('StartedHuntService', () => {
     expect(req.request.method).toEqual('GET');
     req.flush(expectedStartedHunt);
   });
+
+  it('should get ended hunt by id', () => {
+    const endedHuntId = 'startedHunt2_id';
+    const expectedEndedHunt = testStartedHunts[1];
+    startedHuntService.getEndedHuntById(endedHuntId).subscribe(
+      endedHunt => expect(endedHunt).toEqual(expectedEndedHunt)
+    );
+
+    const req = httpTestingController.expectOne(`${startedHuntService.endedHuntsUrl}/${endedHuntId}`);
+    expect(req.request.method).toEqual('GET');
+    req.flush(expectedEndedHunt);
+  });
+
+  it('should get started hunt by id', () => {
+    const startedHuntId = 'startedHunt1_id';
+    const expectedStartedHunt = testStartedHunts[0];
+    startedHuntService.getStartedHuntById(startedHuntId).subscribe(
+      startedHunt => expect(startedHunt).toEqual(expectedStartedHunt)
+    );
+
+    const req = httpTestingController.expectOne(`${startedHuntService.startedHuntsUrl}/${startedHuntId}`);
+    expect(req.request.method).toEqual('GET');
+    req.flush(expectedStartedHunt);
+  });
+
+  describe('Starting a hunt using `startHunt()`', () => {
+    it('calls api/startHunt/id with the correct ID', waitForAsync(() => {
+      const targetStartedHunt: StartedHunt = testStartedHunts[1];
+      const targetId: string = targetStartedHunt.completeHunt.hunt._id;
+
+      const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(targetStartedHunt.accessCode));
+
+      startedHuntService.startHunt(targetId).subscribe(() => {
+        expect(mockedMethod)
+          .withContext('one call')
+          .toHaveBeenCalledTimes(1);
+
+        expect(mockedMethod)
+          .withContext('talks to the correct endpoint')
+          .toHaveBeenCalledWith(`${startedHuntService.startHuntUrl}/${targetId}`);
+      });
+    }));
+  });
+
+  describe('Ending a hunt using `endStartedHunt()`', () => {
+    it('calls api/endHunt/id with the correct ID', waitForAsync(() => {
+      const targetStartedHunt: StartedHunt = testStartedHunts[1];
+      const targetId: string = targetStartedHunt._id;
+
+      const mockedMethod = spyOn(httpClient, 'put').and.returnValue(of(null));
+
+      startedHuntService.endStartedHunt(targetId).subscribe(() => {
+        expect(mockedMethod)
+          .withContext('one call')
+          .toHaveBeenCalledTimes(1);
+
+        expect(mockedMethod)
+          .withContext('talks to the correct endpoint')
+          .toHaveBeenCalledWith(`${startedHuntService.endHuntUrl}/${targetId}`, null);
+      });
+    }));
+  });
+
+  describe('Getting all ended hunts using `getEndedHunts()`', () => {
+    it('calls api/endedHunts', waitForAsync(() => {
+      const mockedMethod = spyOn(httpClient, 'get').and.returnValue(of(testStartedHunts));
+
+      startedHuntService.getEndedHunts().subscribe(() => {
+        expect(mockedMethod)
+          .withContext('one call')
+          .toHaveBeenCalledTimes(1);
+
+        expect(mockedMethod)
+          .withContext('talks to the correct endpoint')
+          .toHaveBeenCalledWith(`${startedHuntService.endedHuntsUrl}`);
+      });
+    }));
+  });
+
 
 });
