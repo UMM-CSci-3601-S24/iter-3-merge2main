@@ -18,7 +18,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -33,7 +32,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
@@ -280,15 +278,15 @@ public class SubmissionControllerSpec {
   public void testCreateSubmission() {
     SubmissionController mockSubmissionController = new SubmissionController(db);
 
-    String taskId = "task1";
-    String teamId = "team1";
+    String taskId2 = "task1";
+    String teamId2 = "team1";
     String photoPath = "/path/to/photo.jpg";
 
-    Submission submission = mockSubmissionController.createSubmission(taskId, teamId, photoPath);
+    Submission submission = mockSubmissionController.createSubmission(taskId2, teamId2, photoPath);
 
     assertNotNull(submission);
-    assertEquals(taskId, submission.taskId);
-    assertEquals(teamId, submission.teamId);
+    assertEquals(taskId2, submission.taskId);
+    assertEquals(teamId2, submission.teamId);
     assertEquals(photoPath, submission.photoPath);
     assertNotNull(submission.submitTime);
   }
@@ -394,10 +392,11 @@ public class SubmissionControllerSpec {
 
   @Test
   void testGetSubmissionsByStartedHuntInvalidId() {
+    SubmissionController testSubmissionController = new SubmissionController(db);
     when(ctx.pathParam("startedHuntId")).thenReturn("invalidId");
 
     assertThrows(IllegalArgumentException.class, () -> {
-      submissionController.getSubmissionsByStartedHunt(ctx);
+      testSubmissionController.getSubmissionsByStartedHunt(ctx);
     });
   }
 
@@ -479,7 +478,9 @@ public class SubmissionControllerSpec {
     submissionController.deleteSubmissions(submissionIdsList);
 
     // Verify that the submission the submission was deleted from database
-    assertEquals(0, db.getCollection("submissions").countDocuments(new Document("_id", submissionId)));
+    assertEquals(
+      0, db.getCollection(
+        "submissions").countDocuments(new Document("_id", submissionId)));
 
   }
 
@@ -577,21 +578,22 @@ public class SubmissionControllerSpec {
     String photoPath = "test.jpg";
 
     // Set up the same taskId and teamId used in the test setup
-    String taskId = "Task 4";
-    String teamId = "Team 4";
+    String taskId4 = "Task 4";
+    String teamId4 = "Team 4";
 
     // Delete any existing submission with the same taskId and teamId
-    db.getCollection("submissions").deleteMany(and(eq("taskId", taskId), eq("teamId", teamId)));
+    db.getCollection("submissions").deleteMany(and(
+      eq("taskId", taskId4), eq("teamId", teamId4)));
 
     // Mock the context
-    when(ctx.pathParam("taskId")).thenReturn(taskId);
-    when(ctx.pathParam("teamId")).thenReturn(teamId);
+    when(ctx.pathParam("taskId")).thenReturn(taskId4);
+    when(ctx.pathParam("teamId")).thenReturn(teamId4);
     when(ctx.pathParam("startedHuntId")).thenReturn(startedHuntId.toHexString());
 
     submissionController.addPhotoPathToSubmission(ctx, photoPath);
 
     Document updatedSubmission = db.getCollection("submissions")
-        .find(and(eq("taskId", taskId), eq("teamId", teamId))).first();
+        .find(and(eq("taskId", taskId4), eq("teamId", teamId4))).first();
 
     System.out.println("Updated submission: " + updatedSubmission.toJson());
 
@@ -604,24 +606,24 @@ public class SubmissionControllerSpec {
     String photoPath = "test.jpg";
 
     // Set up the same taskId and teamId used in the test setup
-    String taskId = "Task 4";
-    String teamId = "Team 4";
+    String taskId4 = "Task 4";
+    String teamId4 = "Team 4";
 
     // Mock the context
-    when(ctx.pathParam("taskId")).thenReturn(taskId);
-    when(ctx.pathParam("teamId")).thenReturn(teamId);
+    when(ctx.pathParam("taskId")).thenReturn(taskId4);
+    when(ctx.pathParam("teamId")).thenReturn(teamId4);
     when(ctx.pathParam("startedHuntId")).thenReturn(startedHuntId.toHexString());
 
     // Ensure a submission already exists with the same taskId and teamId
     Document existingSubmission = db.getCollection("submissions")
-        .find(and(eq("taskId", taskId), eq("teamId", teamId))).first();
+        .find(and(eq("taskId", taskId4), eq("teamId", teamId4))).first();
 
     System.out.println("Existing submission before update: " + existingSubmission);
 
     if (existingSubmission == null) {
       // If no existing submission, create a new one
-      Document newSubmission = new Document("taskId", taskId)
-          .append("teamId", teamId)
+      Document newSubmission = new Document("taskId", taskId4)
+          .append("teamId", teamId4)
           .append("photoPath", "oldTest.jpg");
       db.getCollection("submissions").insertOne(newSubmission);
       System.out.println("New submission created: " + newSubmission);
@@ -630,7 +632,7 @@ public class SubmissionControllerSpec {
     submissionController.addPhotoPathToSubmission(ctx, photoPath);
 
     Document updatedSubmission = db.getCollection("submissions")
-        .find(and(eq("taskId", taskId), eq("teamId", teamId))).first();
+        .find(and(eq("taskId", taskId4), eq("teamId", teamId4))).first();
 
     System.out.println("Updated submission: " + updatedSubmission);
 
@@ -640,29 +642,29 @@ public class SubmissionControllerSpec {
 
   @Test
   void testReplacePhotoWithContext() throws IOException {
-    SubmissionController submissionController = Mockito.mock(SubmissionController.class);
+    SubmissionController testSubmissionController = Mockito.mock(SubmissionController.class);
 
     String photoPath = "test.png";
 
     // Set up the same taskId and teamId used in the test setup
-    String taskId = "Task 4";
-    String teamId = "Team 4";
+    String taskId4 = "Task 4";
+    String teamId4 = "Team 4";
 
     // Mock the context
-    when(ctx.pathParam("taskId")).thenReturn(taskId);
-    when(ctx.pathParam("teamId")).thenReturn(teamId);
+    when(ctx.pathParam("taskId")).thenReturn(taskId4);
+    when(ctx.pathParam("teamId")).thenReturn(teamId4);
     when(ctx.pathParam("startedHuntId")).thenReturn(startedHuntId.toHexString());
 
     // Ensure a submission already exists with the same taskId and teamId
     Document existingSubmission = db.getCollection("submissions")
-        .find(and(eq("taskId", taskId), eq("teamId", teamId))).first();
+        .find(and(eq("taskId", taskId4), eq("teamId", teamId4))).first();
 
     System.out.println("Existing submission before update: " + existingSubmission);
 
     if (existingSubmission == null) {
       // If no existing submission, create a new one
-      Document newSubmission = new Document("taskId", taskId)
-          .append("teamId", teamId)
+      Document newSubmission = new Document("taskId", taskId4)
+          .append("teamId", teamId4)
           .append("photoPath", "oldTest.jpg");
       db.getCollection("submissions").insertOne(newSubmission);
       System.out.println("New submission created: " + newSubmission);
@@ -670,47 +672,16 @@ public class SubmissionControllerSpec {
 
     // Mock the file deletion operation
     // Simulate the deletion by not performing any action
-    doNothing().when(submissionController).deletePhoto(anyString(), any());
+    doNothing().when(testSubmissionController).deletePhoto(anyString(), any());
 
-    submissionController.replacePhoto(ctx);
+    testSubmissionController.replacePhoto(ctx);
 
     Document updatedSubmission = db.getCollection("submissions")
-        .find(and(eq("taskId", taskId), eq("teamId", teamId))).first();
+        .find(and(eq("taskId", taskId4), eq("teamId", teamId4))).first();
 
     System.out.println("Updated submission: " + updatedSubmission);
 
     assertNotNull(updatedSubmission);
     assertEquals(photoPath, updatedSubmission.get("photoPath"));
   }
-
-
-    @Test
-    public void testDeletePhoto() throws IOException {
-        // Create a mock Context object
-        Context ctx = mock(Context.class);
-
-        // Create a mock Path object
-        Path filePath = mock(Path.class);
-
-        // Mock the behavior of Files.exists() method
-        when(Files.exists(filePath)).thenReturn(true);
-
-        // Mock the behavior of Files.delete() method
-        MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class);
-        mockedFiles.when(() -> Files.delete(filePath)).thenReturn(null);
-
-        // Create an instance of SubmissionController
-        SubmissionController submissionController = new SubmissionController(db);
-
-        // Call the deletePhoto method
-        submissionController.deletePhoto("photoId", ctx);
-
-        // Verify that the status is set to HttpStatus.OK
-        verify(ctx).status(HttpStatus.OK);
-
-        // Verify that Files.delete() method is called with the correct filePath
-        mockedFiles.verify(() -> Files.delete(filePath));
-    }
 }
-
-

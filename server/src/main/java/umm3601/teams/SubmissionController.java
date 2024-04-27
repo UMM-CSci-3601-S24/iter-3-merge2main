@@ -43,11 +43,11 @@ public class SubmissionController implements Controller {
   private static final String API_SUBMISSIONS_BY_TASK = "/api/submissions/task/{taskId}";
   private static final String API_SUBMISSIONS_BY_TEAM_AND_TASK = "/api/submissions/team/{teamId}/task/{taskId}";
   private static final String API_SUBMISSIONS_BY_STARTEDHUNT = "/api/submissions/startedHunt/{startedHuntId}";
-  private static final String API_SUBMIT_PHOTO = "/api/submissions/startedHunt/{startedHuntId}/team/{teamId}/task/{taskId}";
+  private static final String API_SUBMIT_PHOTO =
+  "/api/submissions/startedHunt/{startedHuntId}/team/{teamId}/task/{taskId}";
   private static final String API_SUBMISSION_GET_PHOTO = "/api/submissions/{id}/photo";
   private static final String PHOTOS = "/photos/{photoPath}";
   private static final String SERVER_PHOTOS = "http://localhost:4567/photos/";
-
 
   private final JacksonMongoCollection<Submission> submissionCollection;
   private final JacksonMongoCollection<StartedHunt> startedHuntCollection;
@@ -332,12 +332,11 @@ public class SubmissionController implements Controller {
     String startedHuntId = ctx.pathParam("startedHuntId"); // get the startedHuntId from the context
     Submission submission = submissionCollection.find(and(eq("taskId", taskId), eq("teamId", teamId))).first();
 
-
     if (submission == null) {
       submission = createSubmission(taskId, teamId, photoPath); // store the new submission
     } else {
       submission.photoPath = photoPath;
-      submissionCollection.replaceOne(eq("_id", submission._id), submission); // update the existing submission (replace it
+      submissionCollection.replaceOne(eq("_id", submission._id), submission);
     }
 
     // Add the submission's ID to the StartedHunt's submissionIds array
@@ -447,33 +446,35 @@ public class SubmissionController implements Controller {
    *            and the submission is updated in the database.
    */
   // public void replacePhoto(Context ctx) {
-  //   String taskId = ctx.pathParam("taskId");
-  //   String teamId = ctx.pathParam("teamId");
+  // String taskId = ctx.pathParam("taskId");
+  // String teamId = ctx.pathParam("teamId");
 
-  //   // Find the submission
-  //   Submission submission = submissionCollection.find(and(eq("taskId", taskId), eq("teamId", teamId))).first();
+  // // Find the submission
+  // Submission submission = submissionCollection.find(and(eq("taskId", taskId),
+  // eq("teamId", teamId))).first();
 
-  //   if (submission == null) {
-  //     throw new BadRequestResponse("No submission found for the given taskId and teamId");
-  //   }
+  // if (submission == null) {
+  // throw new BadRequestResponse("No submission found for the given taskId and
+  // teamId");
+  // }
 
-  //       // Check if the submission has a photo to replace
-  //       File photoFile = new File(submission.photoPath);
-  //       if (photoFile.exists()) {
-  //           // Delete the old photo only if it exists
-  //           deletePhoto(submission.photoPath, ctx);
-  //       }
+  // // Check if the submission has a photo to replace
+  // File photoFile = new File(submission.photoPath);
+  // if (photoFile.exists()) {
+  // // Delete the old photo only if it exists
+  // deletePhoto(submission.photoPath, ctx);
+  // }
 
-  //   // Upload a new photo and update the submission
-  //   String newPhotoId = uploadPhoto(ctx);
-  //   submission.photoPath = newPhotoId;
+  // // Upload a new photo and update the submission
+  // String newPhotoId = uploadPhoto(ctx);
+  // submission.photoPath = newPhotoId;
 
-  //   // Update the submission in the database
-  //   submissionCollection.updateOne(eq("_id", submission._id),
-  //       new Document("$set", new Document("photoPath", newPhotoId)));
+  // // Update the submission in the database
+  // submissionCollection.updateOne(eq("_id", submission._id),
+  // new Document("$set", new Document("photoPath", newPhotoId)));
 
-  //   ctx.status(HttpStatus.OK);
-  //   ctx.json(Map.of("id", newPhotoId));
+  // ctx.status(HttpStatus.OK);
+  // ctx.json(Map.of("id", newPhotoId));
   // }
   public void replacePhoto(Context ctx) {
     String id = ctx.pathParam("id");
