@@ -1,6 +1,8 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
+import { Observable } from "rxjs";
 import { environment } from "src/environments/environment";
+import { Submission } from "./submission";
 
 @Injectable({
   providedIn: 'root'
@@ -15,8 +17,8 @@ export class SubmissionService {
     return this.httpClient.get(`${this.submissionUrl}/${id}`);
   }
 
-  getSubmissionsByTeam(teamId: string) {
-    return this.httpClient.get(`${this.submissionUrl}/team/${teamId}`);
+  getSubmissionsByTeam(teamId: string): Observable<Submission[]> {
+    return this.httpClient.get<Submission[]>(`${this.submissionUrl}/team/${teamId}`);
   }
 
   getSubmissionsByTask(taskId: string) {
@@ -32,7 +34,7 @@ export class SubmissionService {
   }
 
   getPhotoFromSubmission(id: string) {
-    return this.httpClient.get(`${this.submissionUrl}/${id}/photo`);
+    return this.httpClient.get(`${this.submissionUrl}/${id}/photo`, {responseType: 'text'});
   }
 
   deleteSubmission(id: string) {
@@ -45,9 +47,13 @@ export class SubmissionService {
     return this.httpClient.post(`${this.submissionUrl}/startedHunt/${startedHuntId}/team/${teamId}/task/${taskId}`, formData);
   }
 
-  replacePhoto(id: string, photo: File) {
+  replacePhoto(teamId: string, taskId: string, photo: File) {
     const formData = new FormData();
     formData.append('photo', photo);
-    return this.httpClient.put(`${this.submissionUrl}/${id}/photo`, formData);
+    return this.httpClient.put(`${this.submissionUrl}/team/${teamId}/task/${taskId}`, formData);
+  }
+
+  getPhotoUrl(photoPath: string) {
+    return `${environment.apiUrl}submissions/photo/${photoPath}`;
   }
 }

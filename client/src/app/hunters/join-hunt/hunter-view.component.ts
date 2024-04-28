@@ -4,7 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatButton } from '@angular/material/button';
 import { ActivatedRoute, ParamMap, Router, RouterLink } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subject, forkJoin } from 'rxjs';
 import { map, switchMap, takeUntil } from 'rxjs/operators';
 import { StartedHunt } from 'src/app/startHunt/startedHunt';
 import { Task } from 'src/app/hunts/task';
@@ -13,6 +13,10 @@ import { HostService } from 'src/app/hosts/host.service';
 import { CommonModule } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { Ng2ImgMaxService } from 'ng2-img-max';
+import { Team } from 'src/app/teams/team';
+import { StartedHuntService } from 'src/app/startHunt/startedHunt.service';
+import { SubmissionService } from 'src/app/submissions/submission.service';
+import { Submission } from 'src/app/submissions/submission';
 
 
 @Component({
@@ -27,11 +31,15 @@ export class HunterViewComponent implements OnInit, OnDestroy {
   tasks: Task[] = [];
   error: { help: string, httpResponse: string, message: string };
   imageUrls = {};
+  team: Team;
+  teamId: string;
 
   private ngUnsubscribe = new Subject<void>();
 
   constructor(
     private hostService: HostService,
+    private startedHuntService: StartedHuntService,
+    private submissionService: SubmissionService,
     private route: ActivatedRoute,
     private snackBar: MatSnackBar,
     private router: Router,
@@ -42,26 +50,58 @@ export class HunterViewComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.route.paramMap.pipe(
-      map((params: ParamMap) => params.get('accessCode')),
-      switchMap((accessCode: string) => this.hostService.getStartedHunt(accessCode)),
-
+      map((params: ParamMap) => {
+        return {
+          accessCode: params.get('accessCode'),
+          teamId: params.get('teamId')
+        };
+      }),
+      switchMap(({accessCode, teamId}) => {
+        this.teamId = teamId;
+        return forkJoin({
+          startedHunt: this.startedHuntService.getStartedHunt(accessCode),
+          submissions: this.submissionService.getSubmissionsByTeam(teamId)
+        });
+      }),
       takeUntil(this.ngUnsubscribe)
     ).subscribe({
-      next: startedHunt => {
-        for (const task of startedHunt.completeHunt.tasks) {
-          task.photos = [];
-        }
+      next: ({startedHunt, submissions}) => {
         this.startedHunt = startedHunt;
-        return;
+        this.loadPhotos(submissions);
       },
       error: _err => {
         this.error = {
-          help: 'There is an error trying to load the tasks - Please try to run the hunt again',
+          help: 'There is an error trying to load the tasks or the submissions- Please try to run the hunt again',
           httpResponse: _err.message,
           message: _err.error?.title,
         };
       }
     });
+  }
+
+  loadPhotos(submissions: Submission[]): void {
+    if (submissions.length === 0) {
+      return;
+    }
+
+    for (const submission of submissions) {
+      const task = this.startedHunt.completeHunt.tasks.find(t => t._id === submission.taskId);
+      if (task) {
+        task.status = true;
+        task.photos.push(submission.photoPath);
+        this.submissionService.getPhotoFromSubmission(submission._id).subscribe({
+          next: (photoUrl: string) => {
+            this.imageUrls[task._id] = photoUrl;
+          },
+          error: (error: Error) => {
+            console.error('Error loading photo', error);
+            this.snackBar.open('Error loading photo. Please try again', 'Close', {
+              duration: 3000
+            });
+          }
+        });
+      }
+    }
   }
 
   ngOnDestroy(): void {
@@ -88,10 +128,10 @@ export class HunterViewComponent implements OnInit, OnDestroy {
 
         if (file) {
           if (task.photos.length > 0) {
-            this.replacePhoto(file, task, this.startedHunt._id);
+            this.replacePhoto(this.teamId, task, file);
           }
           else {
-            this.submitPhoto(file, task, this.startedHunt._id);
+            this.submitPhoto(this.startedHunt._id, this.teamId, task, file);
           }
         }
       };
@@ -120,8 +160,8 @@ export class HunterViewComponent implements OnInit, OnDestroy {
     }
   }
 
-  submitPhoto(file: File, task: Task, startedHuntId: string): void {
-    this.hostService.submitPhoto(startedHuntId, task._id, file).subscribe({
+  submitPhoto(startedHuntId: string, teamId: string, task: Task, file: File ): void {
+    this.submissionService.submitPhoto(startedHuntId, teamId, task._id, file).subscribe({
       next: (photoId: string) => {
         task.status = true;
         task.photos.push(photoId);
@@ -138,8 +178,8 @@ export class HunterViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  replacePhoto(file: File, task: Task, startedHuntId: string): void {
-    this.hostService.replacePhoto(startedHuntId, task._id, task.photos[0], file).subscribe({
+  replacePhoto(teamId: string, task: Task, file: File): void {
+    this.submissionService.replacePhoto(teamId, task._id, file).subscribe({
       next: (photoId: string) => {
         task.photos[0] = photoId;
         this.snackBar.open('Photo replaced successfully', 'Close', {

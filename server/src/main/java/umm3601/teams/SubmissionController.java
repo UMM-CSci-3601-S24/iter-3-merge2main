@@ -2,6 +2,7 @@ package umm3601.teams;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -370,19 +371,10 @@ public class SubmissionController implements Controller {
 
     Submission submission = submissionCollection.find(eq("_id", new ObjectId(submissionId))).first();
 
-    File photo = new File("photos/" + submission.photoPath);
-    if (photo.exists()) {
-      try (FileInputStream fis = new FileInputStream(photo)) {
-        ctx.result(fis);
-        ctx.status(HttpStatus.OK);
-      } catch (IOException e) {
-        ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error accessing file: " + e.getMessage());
-      }
-    } else {
-      System.out.println("Server: No photo found for submissionId: " + submissionId);
-      ctx.result("");
-      ctx.status(HttpStatus.NOT_FOUND);
-    }
+    String photoUrl = getPhotoFromServer(submission);
+
+    ctx.result(photoUrl);
+    ctx.status(HttpStatus.OK);
   }
 
   /**
@@ -477,29 +469,28 @@ public class SubmissionController implements Controller {
   // ctx.json(Map.of("id", newPhotoId));
   // }
   public void replacePhoto(Context ctx) {
-    String id = ctx.pathParam("id");
+    String id = ctx.pathParam("taskId");
+    String teamId = ctx.pathParam("teamId");
 
     // Find the submission
-    Submission submission = submissionCollection.find(eq("_id", new ObjectId(id))).first();
+    Submission submission = submissionCollection.find(and(eq("taskId", id), eq("teamId", teamId))).first();
 
     if (submission == null) {
       throw new BadRequestResponse("No submission found for the given id");
     }
 
-    // Check if the submission has a photo to replace
-    File photoFile = new File(submission.photoPath);
-    if (photoFile.exists()) {
-      // Delete the old photo only if it exists
-      deletePhoto(submission.photoPath, ctx);
-    }
+    deletePhoto(submission.photoPath, ctx);
 
     // Upload a new photo and update the submission
     String newPhotoId = uploadPhoto(ctx);
     submission.photoPath = newPhotoId;
 
+    // Update the submitTime
+    submission.submitTime = new Date();
+
     // Update the submission in the database
     submissionCollection.updateOne(eq("_id", submission._id),
-        new Document("$set", new Document("photoPath", newPhotoId)));
+        new Document("$set", new Document("photoPath", newPhotoId).append("submitTime", submission.submitTime)));
 
     ctx.status(HttpStatus.OK);
     ctx.json(Map.of("id", newPhotoId));
@@ -512,10 +503,10 @@ public class SubmissionController implements Controller {
    * @return The URL of the photo.
    * @throws FileNotFoundException If the photo is not found.
    */
-  public String getPhotoFromServer(Submission submission) throws FileNotFoundException {
-    if (submission == null || submission.photoPath == null) {
-      throw new FileNotFoundException("Photo not found");
-    }
+  public String getPhotoFromServer(Submission submission) {
+    // if (submission == null || submission.photoPath == null) {
+    //   throw new FileNotFoundException("Photo not found");
+    // }
     String photoUrl = SERVER_PHOTOS + submission.photoPath;
     return photoUrl;
   }
@@ -537,7 +528,7 @@ public class SubmissionController implements Controller {
     server.delete(API_SUBMISSION, ctx -> deleteSubmission(ctx, ctx.pathParam("id")));
     server.post(API_SUBMIT_PHOTO, this::addPhoto);
     server.post(API_SUBMISSION, this::addPhoto);
-    server.put(API_SUBMISSION, this::replacePhoto);
+    server.put(API_SUBMISSIONS_BY_TEAM_AND_TASK, this::replacePhoto);
     server.get(PHOTOS, this::getPhoto);
   }
 
