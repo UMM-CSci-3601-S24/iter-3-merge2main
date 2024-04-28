@@ -8,6 +8,7 @@ import { HostService } from 'src/app/hosts/host.service';
 import { StartedHunt } from 'src/app/startHunt/startedHunt';
 import { Team } from '../team';
 import { StartedHuntService } from 'src/app/startHunt/startedHunt.service';
+import { TeamService } from '../team.service';
 
 @Component({
   selector: 'app-add-teams',
@@ -28,13 +29,32 @@ export class AddTeamsComponent implements OnInit, OnDestroy{
     private route: ActivatedRoute,
     private hostService: HostService,
     private startedHuntService: StartedHuntService,
+    private teamService: TeamService,
     private router: Router) {}
 
   ngOnInit(): void {
-    throw new Error('Method not implemented.');
+    this.route.params.subscribe(params => {
+      this.accessCode = params['accessCode'];
+      this.startedHuntService.getStartedHunt(this.accessCode).subscribe(startedHunt => {
+        this.startedHunt = startedHunt;
+        this.startedHuntId = startedHunt._id;
+      });
+    });
   }
+
   ngOnDestroy(): void {
-    throw new Error('Method not implemented.');
+    this.snackBar.dismiss();
+  }
+
+  addTeams(id: string, numTeams: number): void {
+    if (this.startedHunt) {
+      this.teamService.addTeams(id, numTeams).subscribe(() => {
+        this.snackBar.open('Teams added successfully', 'Close', {duration: 3000});
+        this.router.navigate([`/startedHunts/${this.startedHunt.accessCode}`]);
+      });
+    } else {
+      this.snackBar.open('Error adding teams', 'Close', {duration: 3000});
+    }
   }
 
 }

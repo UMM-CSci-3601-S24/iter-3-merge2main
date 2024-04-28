@@ -9,6 +9,7 @@ import { StartedHunt } from "./startedHunt";
 })
 export class StartedHuntService {
   readonly startHuntUrl: string = `${environment.apiUrl}startHunt`;
+  readonly startedHuntUrl: string = `${environment.apiUrl}startedHunt`;
   readonly startedHuntsUrl: string = `${environment.apiUrl}startedHunts`;
   readonly endHuntUrl: string = `${environment.apiUrl}endHunt`;
   readonly endedHuntsUrl: string = `${environment.apiUrl}endedHunts`;
@@ -29,7 +30,7 @@ export class StartedHuntService {
   }
 
   getStartedHuntById(id: string): Observable<StartedHunt> {
-    return this.httpClient.get<StartedHunt>(`${this.startedHuntsUrl}/${id}`);
+    return this.httpClient.get<StartedHunt>(`${this.startedHuntUrl}/${id}`);
   }
 
   endStartedHunt(id: string): Observable<void> {

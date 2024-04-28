@@ -44,15 +44,15 @@ public class HostController implements Controller {
   private static final String API_HUNTS = "/api/hunts";
   private static final String API_TASK = "/api/tasks/{id}";
   private static final String API_TASKS = "/api/tasks";
-  private static final String API_START_HUNT = "/api/startHunt/{id}";
-  private static final String API_STARTED_HUNT = "/api/startedHunts/{accessCode}";
-  private static final String API_END_HUNT = "/api/endHunt/{id}";
+ // private static final String API_START_HUNT = "/api/startHunt/{id}";
+ // private static final String API_STARTED_HUNT = "/api/startedHunts/{accessCode}";
+ // private static final String API_END_HUNT = "/api/endHunt/{id}";
   private static final String API_ENDED_HUNT = "/api/endedHunts/{id}";
-  private static final String API_ENDED_HUNTS = "/api/hosts/{id}/endedHunts";
+  //private static final String API_ENDED_HUNTS = "/api/hosts/{id}/endedHunts";
   private static final String API_DELETE_HUNT = "/api/endedHunts/{id}";
   private static final String API_PHOTO_UPLOAD = "/api/startedHunt/{startedHuntId}/tasks/{taskId}/photo";
   private static final String API_PHOTO_REPLACE = "/api/startedHunt/{startedHuntId}/tasks/{taskId}/photo/{photoId}";
-  private static final String PHOTOS = "/photos/{photoPath}";
+ //private static final String PHOTOS = "/photos/{photoPath}";
   private static final String SERVER_PHOTOS = "http://localhost:4567/photos/";
 
   public static final String HOST_KEY = "hostId";
@@ -545,14 +545,14 @@ public class HostController implements Controller {
     server.post(API_TASKS, this::addNewTask);
     server.delete(API_HUNT, this::deleteHunt);
     server.delete(API_TASK, this::deleteTask);
-    server.get(API_START_HUNT, this::startHunt);
-    server.get(API_STARTED_HUNT, this::getStartedHunt);
-    server.put(API_END_HUNT, this::endStartedHunt);
+   // server.get(API_START_HUNT, this::startHunt);
+  //  server.get(API_STARTED_HUNT, this::getStartedHunt);
+  //  server.put(API_END_HUNT, this::endStartedHunt);
     server.post(API_PHOTO_UPLOAD, this::addPhoto);
     server.put(API_PHOTO_REPLACE, this::replacePhoto);
     server.get(API_ENDED_HUNT, this::getEndedHunt);
-    server.get(API_ENDED_HUNTS, this::getEndedHunts);
+  //  server.get(API_ENDED_HUNTS, this::getEndedHunts);
     server.delete(API_DELETE_HUNT, this::deleteStartedHunt);
-    server.get(PHOTOS, this::getPhoto);
+    //server.get(PHOTOS, this::getPhoto);
   }
 }

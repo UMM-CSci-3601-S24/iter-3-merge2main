@@ -9,6 +9,7 @@ import { MatCard, MatCardActions, MatCardContent } from "@angular/material/card"
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { StartedHuntService } from "./startedHunt.service";
 
 
 @Component({
@@ -27,7 +28,12 @@ export class StartHuntComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe = new Subject<void>();
 
-  constructor(private snackBar: MatSnackBar, private route: ActivatedRoute, private hostService: HostService, private router: Router, public dialog: MatDialog) { }
+  constructor(private snackBar: MatSnackBar,
+    private route: ActivatedRoute,
+    private hostService: HostService,
+    private router: Router,
+    public dialog: MatDialog,
+    private startedHuntService: StartedHuntService) { }
 
   ngOnInit(): void {
 
@@ -35,7 +41,7 @@ export class StartHuntComponent implements OnInit, OnDestroy {
 
       map((paramMap: ParamMap) => paramMap.get('accessCode')),
 
-      switchMap((accessCode: string) => this.hostService.getStartedHunt(accessCode)),
+      switchMap((accessCode: string) => this.startedHuntService.getStartedHunt(accessCode)),
 
       takeUntil(this.ngUnsubscribe)
     ).subscribe({
@@ -71,7 +77,7 @@ export class StartHuntComponent implements OnInit, OnDestroy {
   }
 
   endHunt(): void {
-    this.hostService.endStartedHunt(this.startedHunt._id)
+    this.startedHuntService.endStartedHunt(this.startedHunt._id)
       .subscribe({
         next: () => {
           this.snackBar.open('Hunt ended successfully', 'Close', {

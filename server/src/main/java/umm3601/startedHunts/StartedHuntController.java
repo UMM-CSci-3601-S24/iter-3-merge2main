@@ -28,12 +28,12 @@ import umm3601.teams.TeamController;
 
 public class StartedHuntController implements Controller {
 
-  private static final String API_START_HUNT = "/api/startHunt/{id}";
-  private static final String API_STARTED_HUNT = "/api/startedHunts/{accessCode}";
+  private static final String API_STARTHUNT_HUNTID = "/api/startHunt/{id}";
+  private static final String API_STARTEDHUNT_ACCESSCODE = "/api/startedHunts/{accessCode}";
   private static final String API_END_HUNT = "/api/endHunt/{id}";
-  private static final String API_STARTED_HUNTS = "/api/startedHunts/host/{hostId}";
+  private static final String API_STARTEDHUNT_HOSTID = "/api/startedHunts/host/{hostId}";
   private static final String API_ENDED_HUNTS = "/api/endedHunts";
-  private static final String API_DELETE_HUNT = "/api/startedHunts/{id}";
+  private static final String API_STARTEDHUNTS_ID = "/api/startedHunts/{id}";
 
   static final String HOST_KEY = "hostId";
   static final String STARTEDHUNT_HOST_KEY = "completeHunt.hunt.hostId";
@@ -230,12 +230,12 @@ public class StartedHuntController implements Controller {
 
   @Override
   public void addRoutes(Javalin server) {
-    server.post(API_START_HUNT, this::startHunt);
-    server.get(API_STARTED_HUNT, this::getStartedHunt);
-    server.get(API_STARTED_HUNTS, this::getStartedHuntsByHostId);
+    server.get(API_STARTHUNT_HUNTID, this::startHunt);
+    server.get(API_STARTEDHUNT_ACCESSCODE, this::getStartedHunt);
+    server.get(API_STARTEDHUNT_HOSTID, this::getStartedHuntsByHostId);
     server.get(API_ENDED_HUNTS, this::getEndedHunts);
-    server.get(API_START_HUNT, this::getStartedHuntById);
-    server.delete(API_DELETE_HUNT, this::deleteStartedHunt);
+    server.get(API_STARTEDHUNTS_ID, this::getStartedHuntById);
+    server.delete(API_STARTEDHUNTS_ID, this::deleteStartedHunt);
     server.put(API_END_HUNT, this::endStartedHunt);
   }
 

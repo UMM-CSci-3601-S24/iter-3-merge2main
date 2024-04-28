@@ -29,8 +29,8 @@ export class TeamService {
     return this.httpClient.delete<void>(`${this.teamUrl}/${id}`);
   }
 
-  createTeams(startedHuntId: string, numTeams: number): Observable<void> {
-    return this.httpClient.post<void>(`${this.teamUrl}/create`, { startedHuntId, numTeams });
+  addTeams(startedHuntId: string, numTeams: number): Observable<void> {
+    return this.httpClient.post<void>(`${this.teamUrl}/addTeams/${startedHuntId}/${numTeams}`, null);
   }
 
   getAllStartedHuntTeams(startedHuntId: string): Observable<Team[]> {

@@ -19,6 +19,7 @@ import { HuntCardComponent } from "../hunts/hunt-card.component";
 import { Router } from "@angular/router";
 import { StartedHunt } from "../startHunt/startedHunt";
 import { EndedHuntCardComponent } from "../endedHunts/ended-hunt-card.component";
+import { StartedHuntService } from "../startHunt/startedHunt.service";
 
 @Component({
   selector: 'app-host-profile-component',
@@ -40,7 +41,7 @@ export class HostProfileComponent implements OnInit, OnDestroy {
   errMsg = '';
   private ngUnsubscribe = new Subject<void>();
 
-  constructor(private hostService: HostService, private snackBar: MatSnackBar, private router: Router) {
+  constructor(private hostService: HostService, private snackBar: MatSnackBar, private router: Router, private startedHuntService: StartedHuntService) {
   }
 
   getHuntsFromServer(): void {
@@ -65,7 +66,7 @@ export class HostProfileComponent implements OnInit, OnDestroy {
   }
 
   getEndedHunts(): void {
-    this.hostService.getEndedHunts(this.hostId).pipe(
+    this.startedHuntService.getEndedHunts().pipe(
       takeUntil(this.ngUnsubscribe)
     ).subscribe({
       next: (returnedEndedHunts) => {

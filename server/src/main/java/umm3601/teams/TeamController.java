@@ -21,14 +21,15 @@ import umm3601.Controller;
 
 public class TeamController implements Controller {
 
+  private static final String API_CREATE_TEAMS = "/api/teams/addTeams/{startedHuntId}/{numTeams}";
   private static final String API_SINGLE_TEAM = "/api/teams";
   private static final String API_TEAM = "/api/teams/{id}";
   private static final String API_TEAMS = "/api/teams";
-  private static final String API_CREATE_TEAMS = "/api/teams/create";
   private static final String API_STARTEDHUNT_TEAMS = "/api/teams/startedHunt/{startedHuntId}";
 
   static final int MAX_TEAMS = 10;
   static final int MIN_TEAMS = 1;
+  static final int DEFAULT_NUM_TEAMS = 1;
 
   private final JacksonMongoCollection<Team> teamCollection;
 
@@ -172,27 +173,24 @@ public class TeamController implements Controller {
    */
   public void createTeams(Context ctx) {
     String startedHuntId = ctx.pathParam("startedHuntId");
-    int numTeams = ctx.bodyAsClass(Integer.class);
+    String numTeamsParam = ctx.pathParam("numTeams");
+int numTeams = numTeamsParam != null ? Integer.parseInt(numTeamsParam) : DEFAULT_NUM_TEAMS;
 
     if (numTeams < MIN_TEAMS || numTeams > MAX_TEAMS) {
       throw new BadRequestResponse("Invalid number of teams requested");
     }
 
     List<Team> teams = new ArrayList<>();
-    for (int i = MIN_TEAMS; i <= numTeams; i++) {
-      Team newTeam = new Team();
-      newTeam.teamName = "Team " + i;
-      newTeam.startedHuntId = startedHuntId;
-      teams.add(newTeam);
+    for (int i = 1; i <= numTeams; i++) {
+      Team team = new Team();
+      team.teamName = "Team " + i;
+      team.startedHuntId = startedHuntId;
+      teams.add(team);
     }
 
-    try {
-      teamCollection.insertMany(teams);
-      ctx.status(HttpStatus.CREATED);
-      ctx.json(teams);
-    } catch (Exception e) {
-      ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error creating teams");
-    }
+    teamCollection.insertMany(teams);
+    ctx.status(HttpStatus.CREATED);
+    ctx.json(Map.of("numTeamsCreated", numTeams));
   }
 
   /**

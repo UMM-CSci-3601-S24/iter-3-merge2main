@@ -4,6 +4,9 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 
 import umm3601.host.HostController;
+import umm3601.startedHunts.StartedHuntController;
+import umm3601.teams.SubmissionController;
+import umm3601.teams.TeamController;
 
 public class Main {
 
@@ -60,7 +63,10 @@ public class Main {
       // the `Controller` interface.
       //
       // You can also remove this UserController once you don't need it.
-      new HostController(database)
+      new HostController(database),
+      new TeamController(database),
+      new SubmissionController(database),
+      new StartedHuntController(database),
     };
     return controllers;
   }
