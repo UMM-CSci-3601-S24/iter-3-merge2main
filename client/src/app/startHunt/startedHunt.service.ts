@@ -30,7 +30,7 @@ export class StartedHuntService {
   }
 
   getStartedHuntById(id: string): Observable<StartedHunt> {
-    return this.httpClient.get<StartedHunt>(`${this.startedHuntUrl}/${id}`);
+    return this.httpClient.get<StartedHunt>(`${this.startedHuntsUrl}/${id}`);
   }
 
   endStartedHunt(id: string): Observable<void> {
@@ -39,5 +39,9 @@ export class StartedHuntService {
 
   getEndedHunts(): Observable<StartedHunt[]> {
     return this.httpClient.get<StartedHunt[]>(`${this.endedHuntsUrl}`);
+  }
+
+  deleteStartedHunt(id: string): Observable<void> {
+    return this.httpClient.delete<void>(`${this.startedHuntsUrl}/${id}`);
   }
 }

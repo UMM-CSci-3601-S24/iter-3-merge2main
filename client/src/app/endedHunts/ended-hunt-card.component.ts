@@ -7,6 +7,7 @@ import { MatListModule } from "@angular/material/list";
 import { RouterLink, Router } from "@angular/router";
 import { HostService } from "../hosts/host.service";
 import { StartedHunt } from "../startHunt/startedHunt";
+import { StartedHuntService } from "../startHunt/startedHunt.service";
 
 @Component({
   selector: 'app-ended-hunt-card',
@@ -20,13 +21,15 @@ export class EndedHuntCardComponent {
   simple = input(true);
   customConfirm = 'Are you sure you want to delete this hunt?';
 
-  constructor(private hostService: HostService, private router: Router) {}
+  constructor(private hostService: HostService,
+    private router: Router,
+    private startedHuntService: StartedHuntService) {}
 
   @Output() readonly huntDeleted = new EventEmitter<string>();
 
   deleteEndedHunt(id: string): void {
     if (window.confirm(this.customConfirm)) {
-      this.hostService.deleteEndedHunt(id).subscribe(() => {
+      this.startedHuntService.deleteStartedHunt(id).subscribe(() => {
         this.huntDeleted.emit(id);
       });
     }

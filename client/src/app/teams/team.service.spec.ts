@@ -98,9 +98,9 @@ describe('TeamService', () => {
     const startedHuntId = '5678';
     const numTeams = 2;
 
-    teamService.createTeams(startedHuntId, numTeams).subscribe();
+    teamService.addTeams(startedHuntId, numTeams).subscribe();
 
-    const req = httpTestingController.expectOne(`${teamService.teamUrl}/create`);
+    const req = httpTestingController.expectOne(`${teamService.teamUrl}/addTeams/${startedHuntId}/${numTeams}`);
     expect(req.request.method).toEqual('POST');
     req.flush({});
   });

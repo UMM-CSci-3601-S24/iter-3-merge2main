@@ -174,7 +174,7 @@ public class TeamController implements Controller {
   public void createTeams(Context ctx) {
     String startedHuntId = ctx.pathParam("startedHuntId");
     String numTeamsParam = ctx.pathParam("numTeams");
-int numTeams = numTeamsParam != null ? Integer.parseInt(numTeamsParam) : DEFAULT_NUM_TEAMS;
+    int numTeams = numTeamsParam != null ? Integer.parseInt(numTeamsParam) : DEFAULT_NUM_TEAMS;
 
     if (numTeams < MIN_TEAMS || numTeams > MAX_TEAMS) {
       throw new BadRequestResponse("Invalid number of teams requested");

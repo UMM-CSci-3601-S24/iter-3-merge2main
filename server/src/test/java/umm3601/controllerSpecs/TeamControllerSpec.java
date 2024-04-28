@@ -68,6 +68,9 @@ public class TeamControllerSpec {
   @Captor
   private ArgumentCaptor<Map<String, String>> mapCaptor;
 
+  @Captor
+  private ArgumentCaptor<Map<String, Integer>> mapIntCaptor;
+
   @BeforeAll
   static void setupAll() {
     String mongoAddr = System.getenv().getOrDefault("MONGO_ADDR", "localhost");
@@ -262,22 +265,20 @@ public class TeamControllerSpec {
   @Test
   void testCreateTeams() throws IOException {
     when(ctx.pathParam("startedHuntId")).thenReturn("startedHunt1");
-    when(ctx.bodyAsClass(Integer.class)).thenReturn(2);
+    when(ctx.pathParam("numTeams")).thenReturn("2");
 
     teamController.createTeams(ctx);
 
     verify(ctx).status(HttpStatus.CREATED);
-    verify(ctx).json(teamArrayListCaptor.capture());
-    ArrayList<Team> teams = teamArrayListCaptor.getValue();
-    assertEquals(2, teams.size());
-    assertEquals("Team 1", teams.get(0).teamName);
-    assertEquals("Team 2", teams.get(1).teamName);
+    verify(ctx).json(mapIntCaptor.capture());
+    Map<String, Integer> response = mapIntCaptor.getValue();
+    assertEquals(2, response.get("numTeamsCreated"));
   }
 
   @Test
   void testCreateTeamsWithTooManyTeams() throws IOException {
     when(ctx.pathParam("startedHuntId")).thenReturn("startedHunt1");
-    when(ctx.bodyAsClass(Integer.class)).thenReturn(11);
+    when(ctx.pathParam("numTeams")).thenReturn("11");
 
     Throwable exception = assertThrows(BadRequestResponse.class, () -> {
       teamController.createTeams(ctx);
@@ -289,7 +290,7 @@ public class TeamControllerSpec {
   @Test
   void testCreateTeamsWithTooFewTeams() throws IOException {
     when(ctx.pathParam("startedHuntId")).thenReturn("startedHunt1");
-    when(ctx.bodyAsClass(Integer.class)).thenReturn(0);
+    when(ctx.pathParam("numTeams")).thenReturn("0");
 
     Throwable exception = assertThrows(BadRequestResponse.class, () -> {
       teamController.createTeams(ctx);
