@@ -43,10 +43,13 @@ describe('Join Hunt', () => {
     });
 
     page.clickBeginHunt();
-    cy.wait(2000);
-    page.getAccessCode();
+    cy.wait(1000);
+    page.selectTeamNumber(1);
+    page.clickHunterProceedButton();
+    cy.wait(1000);
 
-  //   // Those above will navigate to the Hunt, begin it
+    page.getAccessCode();
+    // Those above will navigate to the Hunt, begin it
 
     cy.get('@accessCode').then((accessCode) => {
       cy.visit(`/hunters/`);
@@ -93,10 +96,14 @@ describe('Join Hunt', () => {
     });
 
     page.clickBeginHunt();
-    cy.wait(2000);
+    cy.wait(500);
+    page.selectTeamNumber(1);
+    page.clickHunterProceedButton();
+    cy.wait(500);
+
     page.getAccessCode();
 
-//     // Those above will navigate to the Hunt, begin it
+    //     // Those above will navigate to the Hunt, begin it
 
     cy.get('@accessCode').then((accessCode) => {
       cy.visit(`/hunters/`);
@@ -107,6 +114,8 @@ describe('Join Hunt', () => {
     page.getJoinHuntButton().should('not.have.class', 'mat-mdc-button-disabled');
     page.getJoinHuntButton().click();
     // This will check if the JoinHuntButton is enabled if valid access code (6 digit) is entered.
-    cy.url().should('match', /\/hunter-view\/\d+$/)
+
+    cy.wait(500)
+    cy.url().should('match', /\/hunter-view\/\d+\/teams$/);
   });
- });
+});
