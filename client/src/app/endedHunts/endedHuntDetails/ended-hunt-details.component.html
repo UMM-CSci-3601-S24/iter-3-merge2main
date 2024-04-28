@@ -1,27 +1,25 @@
 <div class="flex-row">
   <div class="flex-1">
     <mat-card class="background">
-      @if (endedHunt) {
+      @if (startedHunt && startedHunt.status === false) {
       <mat-card class="top-name-card">
-        <mat-card-title class="hunt-name">{{ this.endedHunt.startedHunt.completeHunt.hunt.name }}</mat-card-title>
-        <mat-card-subtitle class="end-date">Ended on: {{ this.endedHunt.startedHunt.endDate | date: 'medium'
+        <mat-card-title class="hunt-name">{{ this.startedHunt.completeHunt.hunt.name }}</mat-card-title>
+        <mat-card-subtitle class="end-date">Ended on: {{ this.startedHunt.endDate | date: 'medium'
           }}</mat-card-subtitle>
-      </mat-card>
-      <div class="tasks-and-photos">
-        <mat-card-title class="tasks-title">Tasks and Photos</mat-card-title>
-        <div class="task-photos-container">
-          @for (task of this.endedHunt.finishedTasks; track task.taskId) {
-            <ul>
-          <mat-card-title class="task-list-name"> <li>{{ this.getTaskName(task.taskId) }}</li></mat-card-title></ul>
-          <div class="finishedTask-photos">
-            @for (photo of task.photos; track photo) {
-            <img src="{{ photo }}" alt="Task Photo" class="task-photo" (click)="openDialog(photo, task.photos)"
-              (keyup.enter)="openDialog(photo, task.photos)" tabindex="0">
-            }
-          </div>
-          }
-        </div>
-      </div>
+   </mat-card>
+   <mat-card-title class="tasks-title">Tasks and Photos</mat-card-title>
+   <div class="task-photos-container">
+     <div *ngFor="let task of this.startedHunt.completeHunt.tasks">
+       <mat-card-title class="task-list-name"> {{ task.name }} </mat-card-title>
+       <div class="finishedTask-photos">
+         <div *ngFor="let submission of taskSubmissions[task._id]">
+           <div class="team-name"> {{ submission.teamName }} </div>
+           <img [src]="submission.photo" alt="Task Photo" class="task-photo" (click)="openDialog(submission.photo, task.photos)"
+             (keyup.enter)="openDialog(submission.photo, task.photos)" tabindex="0">
+         </div>
+       </div>
+     </div>
+   </div>
       <button color=primary mat-raised-button class="hunts-return-button" routerLink="/hosts">Back to Hunts</button>
       } @else if (error) {
       <mat-card class="error-card">
