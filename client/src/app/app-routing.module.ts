@@ -24,7 +24,7 @@ const routes: Routes = [
   {path: 'hunters', component: JoinHuntComponent, title: 'Join Hunt'},
   {path: 'hunter-view/1', component: HunterEndedHuntComponent, title: 'Ended Hunt View'},
   {path: 'hunter-view/:accessCode/teams', component: SelectTeamComponent, title: 'Select Team'},
-  {path: 'hunter-view/:accessCode/teams/:teamId', component: HunterViewComponent},
+  {path: 'hunter-view/:accessCode/teams/:teamId', component: HunterViewComponent, title: 'Hunter View'},
   {path: 'startedHunts/:accessCode', component: StartHuntComponent, title: 'Started Hunt'},
   {path: 'startedHunts/:accessCode/addTeams', component: AddTeamsComponent, title: 'Add Teams'},
   {path: 'endedHunts/:id', component: EndedHuntDetailsComponent, title: 'Ended Hunt Details'},

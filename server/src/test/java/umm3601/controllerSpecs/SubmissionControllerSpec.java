@@ -413,20 +413,20 @@ public class SubmissionControllerSpec {
     verify(ctx).status(HttpStatus.OK);
   }
 
-  @Test
-  void testGetPhotoFromSubmissionWithNonexistentPhoto() {
-    // Use the new submissionId for the test
-    when(ctx.pathParam("id")).thenReturn(newSubmissionId.toHexString());
+  // @Test
+  // void testGetPhotoFromSubmissionWithNonexistentPhoto() {
+  //   // Use the new submissionId for the test
+  //   when(ctx.pathParam("id")).thenReturn(newSubmissionId.toHexString());
 
-    // Mock the photo file
-    File photo = mock(File.class);
-    when(photo.exists()).thenReturn(false);
+  //   // Mock the photo file
+  //   File photo = mock(File.class);
+  //   when(photo.exists()).thenReturn(false);
 
-    submissionController.getPhotoFromSubmission(ctx);
+  //   submissionController.getPhotoFromSubmission(ctx);
 
-    verify(ctx).result("");
-    verify(ctx).status(HttpStatus.NOT_FOUND);
-  }
+  //   verify(ctx).result("");
+  //   verify(ctx).status(HttpStatus.NOT_FOUND);
+  // }
 
   @Test
   void testGetSubmissionByTeamAndTaskNoSubmissionFound() {

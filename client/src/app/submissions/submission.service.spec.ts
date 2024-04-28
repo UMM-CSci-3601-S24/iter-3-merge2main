@@ -223,11 +223,12 @@ describe('SubmissionService', () => {
   });
 
   it('should replace photo', () => {
-    const submissionId = '1234';
+    const teamId = '8765';
+    const taskId = '8765';
     const photo = new File(['photo'], 'photo.jpg');
-    submissionService.replacePhoto(submissionId, photo).subscribe();
+    submissionService.replacePhoto(teamId, taskId, photo).subscribe();
 
-    const req = httpTestingController.expectOne(`${submissionService.submissionUrl}/${submissionId}/photo`);
+    const req = httpTestingController.expectOne(`${submissionService.submissionUrl}/team/${teamId}/task/${taskId}`);
     expect(req.request.method).toEqual('PUT');
   });
 

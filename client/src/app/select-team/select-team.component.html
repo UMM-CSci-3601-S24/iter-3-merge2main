@@ -4,7 +4,7 @@
   <ul>
     @for (team of teams; track team._id) {
       <li>
-        <button (click)="toggleSelection(team)">
+        <button (click)="toggleSelection(team)" class="team-select">
           {{ team.teamName }}
           @if (team.selected) {
             <span class="check-mark">✓</span>
@@ -13,7 +13,7 @@
       </li>
     }
   </ul>
-  <button (click)="proceed()" [disabled]="!isTeamSelected()">Proceed</button>
+  <button (click)="proceed()" [disabled]="!isTeamSelected()" class="hunter-proceed-button">Proceed</button>
 } @else {
   <div class="flex-1 hunt-error">
     <mat-error>

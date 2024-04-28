@@ -70,10 +70,24 @@ export class HunterViewComponent implements OnInit, OnDestroy {
         this.loadPhotos(submissions);
       },
       error: _err => {
+        let helpMessage = 'There is an error trying to load the tasks or the submissions - Please try to run the hunt again';
+        const httpResponse = _err.message;
+        let errorMessage = _err.error?.title;
+
+        if (_err.status === 404) {
+          helpMessage = 'The hunt you are trying to access does not exist. Please check the access code and try again.';
+        } else if (_err.status === 500) {
+          helpMessage = 'There is a server error. Please try again later.';
+        }
+
+        if (!_err.error?.title) {
+          errorMessage = 'An unexpected error occurred';
+        }
+
         this.error = {
-          help: 'There is an error trying to load the tasks or the submissions- Please try to run the hunt again',
-          httpResponse: _err.message,
-          message: _err.error?.title,
+          help: helpMessage,
+          httpResponse: httpResponse,
+          message: errorMessage,
         };
       }
     });
