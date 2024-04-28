@@ -109,8 +109,13 @@ export class MockStartedHuntService extends StartedHuntService {
   }
 
   getStartedHuntById(id: string): Observable<StartedHunt> {
-    if (id === MockStartedHuntService.testStartedHunts[1]._id) {
+    console.log('getStartedHuntById called with id:', id);
+    if (id === MockStartedHuntService.testStartedHunts[0]._id) {
+      return of(MockStartedHuntService.testStartedHunts[0]);
+    } else if (id === MockStartedHuntService.testStartedHunts[1]._id) {
       return of(MockStartedHuntService.testStartedHunts[1]);
+    } else {
+      return of(null);
     }
   }
 }
