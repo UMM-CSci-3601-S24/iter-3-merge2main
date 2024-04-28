@@ -126,6 +126,14 @@ export class EndedHuntDetailsComponent implements OnInit, OnDestroy {
         teamName: team.teamName,
         photo: photo,
       });
+      // Find the corresponding task and push the photo to its photos array
+      const task = this.startedHunt.completeHunt.tasks.find(task => task._id === submission.taskId);
+      if (task) {
+        if (!task.photos) {
+          task.photos = [];
+        }
+        task.photos.push(photo);
+      }
     });
   }
 

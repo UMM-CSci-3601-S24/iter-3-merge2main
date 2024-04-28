@@ -15,7 +15,7 @@
          <div *ngFor="let submission of taskSubmissions[task._id]">
            <div class="team-name"> {{ submission.teamName }} </div>
            <img [src]="submission.photo" alt="Task Photo" class="task-photo" (click)="openDialog(submission.photo, task.photos)"
-             (keyup.enter)="openDialog(submission.photo, task.photos)" tabindex="0">
+           (keyup.enter)="openDialog(submission.photo, task.photos)" tabindex="0">
          </div>
        </div>
      </div>
