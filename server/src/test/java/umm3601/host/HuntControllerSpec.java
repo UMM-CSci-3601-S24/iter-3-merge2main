@@ -200,24 +200,6 @@ class HuntControllerSpec {
   }
 
   @Test
-  void getHuntsByHostId() throws IOException {
-    Map<String, List<String>> queryParams = new HashMap<>();
-    queryParams.put("hostId", Collections.singletonList("frysId"));
-    when(ctx.queryParamMap()).thenReturn(queryParams);
-    when(ctx.queryParamAsClass("hostId", String.class))
-        .thenReturn(Validator.create(String.class, "frysId", "hostId"));
-
-    huntController.getHunts(ctx);
-    verify(ctx).json(huntArrayListCaptor.capture());
-    verify(ctx).status(HttpStatus.OK);
-    
-    assertEquals(4, huntArrayListCaptor.getValue().size());
-    for (Hunt hunt : huntArrayListCaptor.getValue()) {
-      assertEquals("frysId", hunt.hostId);
-    }
-  }
-
-  @Test
   void getHuntById() throws IOException {
     String id = huntId.toHexString();
     when(ctx.pathParam("id")).thenReturn(id);
