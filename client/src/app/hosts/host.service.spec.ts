@@ -6,6 +6,8 @@ import { Hunt } from '../hunts/hunt';
 import { Task } from '../hunts/task';
 import { HostService } from './host.service';
 import { StartedHunt } from '../startHunt/startedHunt';
+import { MockHostService } from 'src/testing/host.service.mock';
+import { EndedHunt } from '../endedHunts/endedHunt';
 
 describe('HostService', () => {
 const testHunts: Hunt[] = [
@@ -387,5 +389,41 @@ describe('When getHunts() is called', () => {
         expect(formData.get('photo')).toEqual(photo);
       });
     }));
+  });
+
+  describe('MockHostService', () => {
+    let service: MockHostService;
+
+    beforeEach(() => {
+      service = new MockHostService();
+    });
+
+    it('should return the correct StartedHunt for a given access code', (done: DoneFn) => {
+      service.getStartedHunt(MockHostService.testStartedHunts[0].accessCode).subscribe((hunt: StartedHunt) => {
+        expect(hunt).toEqual(MockHostService.testStartedHunts[0]);
+        done();
+      });
+    });
+
+    it('should return null for an unknown access code', (done: DoneFn) => {
+      service.getStartedHunt('unknown').subscribe((hunt: StartedHunt) => {
+        expect(hunt).toBeNull();
+        done();
+      });
+    });
+
+    it('should return all ended hunts', (done: DoneFn) => {
+      service.getEndedHunts().subscribe((hunts: StartedHunt[]) => {
+        expect(hunts).toEqual(MockHostService.testStartedHunts);
+        done();
+      });
+    });
+
+    it('should return the correct EndedHunt for a given id', (done: DoneFn) => {
+      service.getEndedHuntById(MockHostService.testEndedHunts[0].startedHunt._id).subscribe((hunt: EndedHunt) => {
+        expect(hunt).toEqual(MockHostService.testEndedHunts[0]);
+        done();
+      });
+    });
   });
 });

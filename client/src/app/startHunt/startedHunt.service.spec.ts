@@ -6,6 +6,7 @@ import { Hunt } from "../hunts/hunt";
 import { TestBed, waitForAsync } from "@angular/core/testing";
 import { of } from "rxjs";
 import { Task } from "../hunts/task";
+import { MockStartedHuntService } from "src/testing/startedHunt.service.mock";
 
 describe('StartedHuntService', () => {
   const testHunts: Hunt[] = [
@@ -194,5 +195,33 @@ describe('StartedHuntService', () => {
     }));
   });
 
+  describe('MockStartedHuntService', () => {
+    let service: MockStartedHuntService;
+
+    beforeEach(() => {
+      service = new MockStartedHuntService();
+    });
+
+    it('should return the correct EndedHunt for a given id', (done: DoneFn) => {
+      service.getEndedHuntById(MockStartedHuntService.testStartedHunts[0]._id).subscribe((hunt: StartedHunt) => {
+        expect(hunt).toEqual(MockStartedHuntService.testStartedHunts[0]);
+        done();
+      });
+    });
+
+    it('should return the correct StartedHunt for a given id', (done: DoneFn) => {
+      service.getStartedHuntById(MockStartedHuntService.testStartedHunts[0]._id).subscribe((hunt: StartedHunt) => {
+        expect(hunt).toEqual(MockStartedHuntService.testStartedHunts[0]);
+        done();
+      });
+    });
+
+    it('should return null for an unknown id', (done: DoneFn) => {
+      service.getStartedHuntById('unknown').subscribe((hunt: StartedHunt) => {
+        expect(hunt).toBeNull();
+        done();
+      });
+    });
+  });
 
 });
