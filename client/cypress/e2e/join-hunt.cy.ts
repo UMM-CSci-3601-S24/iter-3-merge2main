@@ -115,7 +115,7 @@ describe('Join Hunt', () => {
     page.getJoinHuntButton().click();
     // This will check if the JoinHuntButton is enabled if valid access code (6 digit) is entered.
 
-    cy.wait(500)
+    cy.wait(500);
     cy.url().should('match', /\/hunter-view\/\d+\/teams$/);
   });
 });

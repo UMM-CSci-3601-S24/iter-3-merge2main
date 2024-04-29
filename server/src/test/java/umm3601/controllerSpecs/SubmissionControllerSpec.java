@@ -413,21 +413,6 @@ public class SubmissionControllerSpec {
     verify(ctx).status(HttpStatus.OK);
   }
 
-  // @Test
-  // void testGetPhotoFromSubmissionWithNonexistentPhoto() {
-  //   // Use the new submissionId for the test
-  //   when(ctx.pathParam("id")).thenReturn(newSubmissionId.toHexString());
-
-  //   // Mock the photo file
-  //   File photo = mock(File.class);
-  //   when(photo.exists()).thenReturn(false);
-
-  //   submissionController.getPhotoFromSubmission(ctx);
-
-  //   verify(ctx).result("");
-  //   verify(ctx).status(HttpStatus.NOT_FOUND);
-  // }
-
   @Test
   void testGetSubmissionByTeamAndTaskNoSubmissionFound() {
     when(ctx.pathParam("teamId")).thenReturn("NonExistentTeam");
@@ -439,17 +424,6 @@ public class SubmissionControllerSpec {
 
     verify(ctx, Mockito.never()).json(any());
   }
-
-  // @Test
-  // void testDeleteSubmission() {
-  // when(ctx.pathParam("id")).thenReturn(submissionId.toHexString());
-  // when(ctx.pathParam("photoPath")).thenReturn("test.png");
-
-  // submissionController.deleteSubmission(ctx, submissionId.toHexString());
-
-  // verify(ctx).status(HttpStatus.NO_CONTENT);
-  // // save new test.png file to photos directory
-  // }
 
   @Test
   void testDeleteSubmissionWithNonexistentPhoto() {
@@ -479,8 +453,8 @@ public class SubmissionControllerSpec {
 
     // Verify that the submission the submission was deleted from database
     assertEquals(
-      0, db.getCollection(
-        "submissions").countDocuments(new Document("_id", submissionId)));
+        0, db.getCollection(
+            "submissions").countDocuments(new Document("_id", submissionId)));
 
   }
 
@@ -535,44 +509,6 @@ public class SubmissionControllerSpec {
     assertEquals("No photo uploaded", exception.getMessage());
   }
 
-  // @SuppressWarnings("static-access")
-  // @Test
-  // public void testUploadPhotoErrorCopyingFile() throws IOException {
-  // // Mock the uploaded file
-  // UploadedFile uploadedFile = Mockito.mock(UploadedFile.class);
-  // when(uploadedFile.content()).thenReturn(new ByteArrayInputStream("test photo
-  // content".getBytes()));
-  // when(uploadedFile.filename()).thenReturn("test.jpg");
-
-  // // Mock the context
-  // when(ctx.uploadedFile("photo")).thenReturn(uploadedFile);
-
-  // // Mock the file copy to throw an IOException
-  // Files filesMock = Mockito.mock(Files.class);
-  // doThrow(new IOException("File copy
-  // error")).when(filesMock).copy(any(InputStream.class), any(Path.class),
-  // any());
-
-  // // Call the method under test and assert the exception
-  // IOException exception = assertThrows(IOException.class, () ->
-  // submissionController.uploadPhoto(ctx));
-  // assertEquals("Error handling the uploaded file: File copy error",
-  // exception.getMessage());
-  // }
-
-  // @Test
-  // public void testUploadPhotoUnexpectedError() {
-  // // Mock the context to throw an exception
-  // when(ctx.uploadedFile("photo")).thenThrow(new RuntimeException("Unexpected
-  // error"));
-
-  // // Call the method under test and assert the exception
-  // BadRequestResponse exception = assertThrows(BadRequestResponse.class, () ->
-  // submissionController.uploadPhoto(ctx));
-  // assertEquals("Unexpected error during photo upload: Unexpected error",
-  // exception.getMessage());
-  // }
-
   @Test
   void testAddPhotoPathToSubmission() throws IOException {
     String photoPath = "test.jpg";
@@ -583,7 +519,7 @@ public class SubmissionControllerSpec {
 
     // Delete any existing submission with the same taskId and teamId
     db.getCollection("submissions").deleteMany(and(
-      eq("taskId", taskId4), eq("teamId", teamId4)));
+        eq("taskId", taskId4), eq("teamId", teamId4)));
 
     // Mock the context
     when(ctx.pathParam("taskId")).thenReturn(taskId4);

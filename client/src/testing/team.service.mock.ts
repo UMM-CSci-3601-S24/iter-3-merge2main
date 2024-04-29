@@ -40,16 +40,6 @@ export class MockTeamService extends TeamService {
     return of(MockTeamService.testTeams);
   }
 
-  deleteTeam(id: string): Observable<void> {
-    console.log('Deleting team ' + id + '...')
-    return of(undefined);
-  }
-
-  addTeams(startedHuntId: string, numTeams: number): Observable<void> {
-    console.log('Adding ' + numTeams + ' teams to started hunt ' + startedHuntId + '...');
-    return of(undefined);
-  }
-
   getAllStartedHuntTeams(startedHuntId: string): Observable<Team[]> {
     console.log('Getting all teams for started hunt ' + startedHuntId + '...');
     return of(MockTeamService.testTeams.filter(team => team.startedHuntId === startedHuntId));

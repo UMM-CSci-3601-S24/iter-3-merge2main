@@ -66,6 +66,14 @@ public class SubmissionController implements Controller {
         "startedHunts",
         StartedHunt.class,
         UuidRepresentation.STANDARD);
+
+    File directory = new File("photos");
+    if (!directory.exists()) {
+      boolean dirCreated = directory.mkdir();
+      if (!dirCreated) {
+        System.out.println("Did not create photos directory because one already exists");
+      }
+    }
   }
 
   /**
@@ -234,6 +242,12 @@ public class SubmissionController implements Controller {
     ctx.status(HttpStatus.NO_CONTENT);
   }
 
+  /**
+   * Deletes multiple submissions from the database.
+   * Takes an ArrayList of submissionIds as input, converts them to ObjectIds,
+   * and creates a filter to match the _id field to any of the submissionIds.
+   * All matching documents in the submissionCollection are then deleted.
+   */
   public void deleteSubmissions(ArrayList<String> submissionIds) {
     // Convert submissionIds to a list of ObjectId
     List<ObjectId> objectIds = submissionIds.stream()
@@ -415,11 +429,12 @@ public class SubmissionController implements Controller {
     String photoPath = ctx.pathParam("photoPath");
     File file = new File("photos/" + photoPath);
     if (file.exists()) {
-      try {
-        ctx.result(new FileInputStream(file));
-
+      try (FileInputStream fis = new FileInputStream(file)) {
+        ctx.result(fis);
       } catch (FileNotFoundException e) {
         ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error reading file: " + e.getMessage());
+      } catch (IOException e) {
+        ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error closing file: " + e.getMessage());
       }
     } else {
       ctx.status(HttpStatus.NOT_FOUND).result("Photo not found");
@@ -437,37 +452,6 @@ public class SubmissionController implements Controller {
    *            The new photo's ID is stored in the submission's photoPath field,
    *            and the submission is updated in the database.
    */
-  // public void replacePhoto(Context ctx) {
-  // String taskId = ctx.pathParam("taskId");
-  // String teamId = ctx.pathParam("teamId");
-
-  // // Find the submission
-  // Submission submission = submissionCollection.find(and(eq("taskId", taskId),
-  // eq("teamId", teamId))).first();
-
-  // if (submission == null) {
-  // throw new BadRequestResponse("No submission found for the given taskId and
-  // teamId");
-  // }
-
-  // // Check if the submission has a photo to replace
-  // File photoFile = new File(submission.photoPath);
-  // if (photoFile.exists()) {
-  // // Delete the old photo only if it exists
-  // deletePhoto(submission.photoPath, ctx);
-  // }
-
-  // // Upload a new photo and update the submission
-  // String newPhotoId = uploadPhoto(ctx);
-  // submission.photoPath = newPhotoId;
-
-  // // Update the submission in the database
-  // submissionCollection.updateOne(eq("_id", submission._id),
-  // new Document("$set", new Document("photoPath", newPhotoId)));
-
-  // ctx.status(HttpStatus.OK);
-  // ctx.json(Map.of("id", newPhotoId));
-  // }
   public void replacePhoto(Context ctx) {
     String id = ctx.pathParam("taskId");
     String teamId = ctx.pathParam("teamId");
@@ -501,12 +485,8 @@ public class SubmissionController implements Controller {
    *
    * @param submission The submission object containing the photoPath.
    * @return The URL of the photo.
-   * @throws FileNotFoundException If the photo is not found.
    */
   public String getPhotoFromServer(Submission submission) {
-    // if (submission == null || submission.photoPath == null) {
-    //   throw new FileNotFoundException("Photo not found");
-    // }
     String photoUrl = SERVER_PHOTOS + submission.photoPath;
     return photoUrl;
   }

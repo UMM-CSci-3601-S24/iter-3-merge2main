@@ -44,15 +44,10 @@ public class HostController implements Controller {
   private static final String API_HUNTS = "/api/hunts";
   private static final String API_TASK = "/api/tasks/{id}";
   private static final String API_TASKS = "/api/tasks";
- // private static final String API_START_HUNT = "/api/startHunt/{id}";
- // private static final String API_STARTED_HUNT = "/api/startedHunts/{accessCode}";
- // private static final String API_END_HUNT = "/api/endHunt/{id}";
   private static final String API_ENDED_HUNT = "/api/endedHunts/{id}";
-  //private static final String API_ENDED_HUNTS = "/api/hosts/{id}/endedHunts";
   private static final String API_DELETE_HUNT = "/api/endedHunts/{id}";
   private static final String API_PHOTO_UPLOAD = "/api/startedHunt/{startedHuntId}/tasks/{taskId}/photo";
   private static final String API_PHOTO_REPLACE = "/api/startedHunt/{startedHuntId}/tasks/{taskId}/photo/{photoId}";
- //private static final String PHOTOS = "/photos/{photoPath}";
   private static final String SERVER_PHOTOS = "http://localhost:4567/photos/";
 
   public static final String HOST_KEY = "hostId";
@@ -100,10 +95,11 @@ public class HostController implements Controller {
 
     File directory = new File("photos");
     if (!directory.exists()) {
-      directory.mkdir();
+      boolean dirCreated = directory.mkdir();
+      if (!dirCreated) {
+        System.out.println("Did not create photos directory because one already exists");
+      }
     }
-    // If you require it to make the entire directory path including parents,
-    // use directory.mkdirs(); here instead.
 
   }
 
@@ -525,11 +521,12 @@ public class HostController implements Controller {
     String photoPath = ctx.pathParam("photoPath");
     File file = new File("photos/" + photoPath);
     if (file.exists()) {
-      try {
-        ctx.result(new FileInputStream(file));
-
+      try (FileInputStream fis = new FileInputStream(file)) {
+        ctx.result(fis);
       } catch (FileNotFoundException e) {
         ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error reading file: " + e.getMessage());
+      } catch (IOException e) {
+        ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error closing file: " + e.getMessage());
       }
     } else {
       ctx.status(HttpStatus.NOT_FOUND).result("Photo not found");
@@ -545,14 +542,9 @@ public class HostController implements Controller {
     server.post(API_TASKS, this::addNewTask);
     server.delete(API_HUNT, this::deleteHunt);
     server.delete(API_TASK, this::deleteTask);
-   // server.get(API_START_HUNT, this::startHunt);
-  //  server.get(API_STARTED_HUNT, this::getStartedHunt);
-  //  server.put(API_END_HUNT, this::endStartedHunt);
     server.post(API_PHOTO_UPLOAD, this::addPhoto);
     server.put(API_PHOTO_REPLACE, this::replacePhoto);
     server.get(API_ENDED_HUNT, this::getEndedHunt);
-  //  server.get(API_ENDED_HUNTS, this::getEndedHunts);
     server.delete(API_DELETE_HUNT, this::deleteStartedHunt);
-    //server.get(PHOTOS, this::getPhoto);
   }
 }

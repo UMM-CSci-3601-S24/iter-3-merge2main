@@ -4,11 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { MatSelect } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HostService } from 'src/app/hosts/host.service';
 import { StartedHunt } from 'src/app/startHunt/startedHunt';
 import { Team } from '../team';
 import { StartedHuntService } from 'src/app/startHunt/startedHunt.service';
 import { TeamService } from '../team.service';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-add-teams',
@@ -24,10 +24,11 @@ export class AddTeamsComponent implements OnInit, OnDestroy{
   accessCode: string;
   startedHuntId: string;
 
+  private ngUnsubscribe: Subject<void> = new Subject<void>();
+
   constructor(
     private snackBar: MatSnackBar,
     private route: ActivatedRoute,
-    private hostService: HostService,
     private startedHuntService: StartedHuntService,
     private teamService: TeamService,
     private router: Router) {}
@@ -43,6 +44,7 @@ export class AddTeamsComponent implements OnInit, OnDestroy{
   }
 
   ngOnDestroy(): void {
+
     this.snackBar.dismiss();
   }
 
