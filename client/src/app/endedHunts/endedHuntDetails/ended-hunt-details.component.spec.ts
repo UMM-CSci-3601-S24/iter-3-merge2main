@@ -12,6 +12,7 @@ import { ActivatedRouteStub } from 'src/testing/activated-route-stub';
 import { EndedHunt } from '../endedHunt';
 import { MatDialog } from '@angular/material/dialog';
 import { PhotoDialogComponent } from './photo-dialog/photo-dialog.component';
+import { of } from 'rxjs';
 
 describe('EndedHuntDetailsComponent', () => {
   let component: EndedHuntDetailsComponent;
@@ -103,5 +104,44 @@ describe('EndedHuntDetailsComponent', () => {
         photos: mockPhotos,
       },
     });
+  });
+  it('should set endedHunt on ngOnInit', () => {
+    const mockEndedHunt: EndedHunt = {
+      startedHunt: {
+        _id: 'some_id',
+        accessCode: 'some_access_code',
+        completeHunt: {
+          hunt: {
+            _id: 'hunt_id',
+            hostId: 'host_id',
+            name: 'hunt_name',
+            description: 'hunt_description',
+            est: 20,
+            numberOfTasks: 4
+          },
+          tasks: [
+            {
+              _id: 'task1', name: 'Task 1',
+              huntId: '',
+              status: false,
+              photos: []
+            },
+            {
+              _id: 'task2', name: 'Task 2',
+              huntId: '',
+              status: false,
+              photos: []
+            },
+          ],
+        },
+      },
+      finishedTasks: [],
+    };
+
+    spyOn(mockHostService, 'getEndedHuntById').and.returnValue(of(mockEndedHunt));
+
+    component.ngOnInit();
+
+    expect(component.endedHunt).toEqual(mockEndedHunt);
   });
 });
