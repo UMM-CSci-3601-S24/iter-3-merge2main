@@ -42,6 +42,6 @@ export class StartedHuntService {
   }
 
   deleteStartedHunt(id: string): Observable<void> {
-    return this.httpClient.delete<void>(`${this.startedHuntsUrl}/${id}`);
+    return this.httpClient.delete<void>(`${this.startedHuntUrl}/${id}`);
   }
 }
