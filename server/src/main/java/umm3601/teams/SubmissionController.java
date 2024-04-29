@@ -44,7 +44,8 @@ public class SubmissionController implements Controller {
   private static final String API_SUBMISSIONS_BY_TASK = "/api/submissions/task/{taskId}";
   private static final String API_SUBMISSIONS_BY_TEAM_AND_TASK = "/api/submissions/team/{teamId}/task/{taskId}";
   private static final String API_SUBMISSIONS_BY_STARTEDHUNT = "/api/submissions/startedHunt/{startedHuntId}";
-  private static final String API_SUBMIT_PHOTO = "/api/submissions/startedHunt/{startedHuntId}/team/{teamId}/task/{taskId}";
+  private static final String API_SUBMIT_PHOTO =
+  "/api/submissions/startedHunt/{startedHuntId}/team/{teamId}/task/{taskId}";
   private static final String API_SUBMISSION_GET_PHOTO = "/api/submissions/{id}/photo";
   private static final String PHOTOS = "/photos/{photoPath}";
   private static final String SERVER_PHOTOS = "http://localhost:4567/photos/";
