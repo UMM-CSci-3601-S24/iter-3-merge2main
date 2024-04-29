@@ -8,6 +8,7 @@
 
 route {
     reverse_proxy /api* server:4567
+    reverse_proxy /ws* localhost:4567 #delete this line if everything breaks
     try_files {path} {path}/ /
     file_server
 }
