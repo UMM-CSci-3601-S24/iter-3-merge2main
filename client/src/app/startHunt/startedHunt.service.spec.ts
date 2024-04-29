@@ -135,7 +135,7 @@ describe('StartedHuntService', () => {
       startedHunt => expect(startedHunt).toEqual(expectedStartedHunt)
     );
 
-    const req = httpTestingController.expectOne(`${startedHuntService.startedHuntsUrl}/${startedHuntId}`);
+    const req = httpTestingController.expectOne(`${startedHuntService.startedHuntUrl}/${startedHuntId}`);
     expect(req.request.method).toEqual('GET');
     req.flush(expectedStartedHunt);
   });

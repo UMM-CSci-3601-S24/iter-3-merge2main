@@ -9,14 +9,17 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { EndedHuntCardComponent } from '../ended-hunt-card.component';
 import { ActivatedRoute } from '@angular/router';
 import { ActivatedRouteStub } from 'src/testing/activated-route-stub';
-import { EndedHunt } from '../endedHunt';
 import { MatDialog } from '@angular/material/dialog';
 import { PhotoDialogComponent } from './photo-dialog/photo-dialog.component';
+import { StartedHunt } from 'src/app/startHunt/startedHunt';
+import { StartedHuntService } from 'src/app/startHunt/startedHunt.service';
+import { MockStartedHuntService } from 'src/testing/startedHunt.service.mock';
 
 describe('EndedHuntDetailsComponent', () => {
   let component: EndedHuntDetailsComponent;
   let fixture: ComponentFixture<EndedHuntDetailsComponent>;
   const mockHostService = new MockHostService();
+  const mockStartedHuntService = new MockStartedHuntService();
   const chrisId = 'chris_id';
   const activatedRoute: ActivatedRouteStub = new ActivatedRouteStub({
     id: chrisId,
@@ -37,6 +40,7 @@ describe('EndedHuntDetailsComponent', () => {
       ],
       providers: [
         { provide: HostService, useValue: mockHostService },
+        { provide: StartedHuntService, useValue: mockStartedHuntService},
         { provide: ActivatedRoute, useValue: activatedRoute },
         { provide: MatDialog, useValue: { open: jasmine.createSpy('open') } },
       ],
@@ -57,38 +61,36 @@ describe('EndedHuntDetailsComponent', () => {
   });
 
   it('should get task name', () => {
-    const mockEndedHunt: EndedHunt = {
-      startedHunt: {
-        _id: 'some_id',
-        accessCode: 'some_access_code',
-        completeHunt: {
-          hunt: {
-            _id: 'hunt_id',
-            hostId: 'host_id',
-            name: 'hunt_name',
-            description: 'hunt_description',
-            est: 20,
-            numberOfTasks: 4
-          },
-          tasks: [
-            {
-              _id: 'task1', name: 'Task 1',
-              huntId: '',
-              status: false,
-              photos: []
-            },
-            {
-              _id: 'task2', name: 'Task 2',
-              huntId: '',
-              status: false,
-              photos: []
-            },
-          ],
+    const mockStartedHunt: StartedHunt = {
+      _id: 'some_id',
+      accessCode: 'some_access_code',
+      completeHunt: {
+        hunt: {
+          _id: 'hunt_id',
+          hostId: 'host_id',
+          name: 'hunt_name',
+          description: 'hunt_description',
+          est: 20,
+          numberOfTasks: 4
         },
+        tasks: [
+          {
+            _id: 'task1', name: 'Task 1',
+            huntId: '',
+            status: false,
+            photos: []
+          },
+          {
+            _id: 'task2', name: 'Task 2',
+            huntId: '',
+            status: false,
+            photos: []
+          },
+        ],
       },
-      finishedTasks: [],
+        submissionIds: [ 'submission1', 'submission2' ],
     };
-    component.endedHunt = mockEndedHunt;
+    component.startedHunt = mockStartedHunt;
     expect(component.getTaskName('task1')).toEqual('Task 1');
     expect(component.getTaskName('task2')).toEqual('Task 2');
   });
