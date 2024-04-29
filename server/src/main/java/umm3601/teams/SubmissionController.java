@@ -45,7 +45,7 @@ public class SubmissionController implements Controller {
   private static final String API_SUBMISSIONS_BY_TEAM_AND_TASK = "/api/submissions/team/{teamId}/task/{taskId}";
   private static final String API_SUBMISSIONS_BY_STARTEDHUNT = "/api/submissions/startedHunt/{startedHuntId}";
   private static final String API_SUBMIT_PHOTO =
-  "/api/submissions/startedHunt/{startedHuntId}/team/{teamId}/task/{taskId}";
+   "/api/submissions/startedHunt/{startedHuntId}/team/{teamId}/task/{taskId}";
   private static final String API_SUBMISSION_GET_PHOTO = "/api/submissions/{id}/photo";
   private static final String PHOTOS = "/photos/{photoPath}";
   private static final String SERVER_PHOTOS = "http://localhost:4567/photos/";
@@ -385,9 +385,15 @@ public class SubmissionController implements Controller {
 
     Submission submission = submissionCollection.find(eq("_id", new ObjectId(submissionId))).first();
 
-    String photoUrl = getPhotoFromServer(submission);
+    if (submission == null) {
+      ctx.status(HttpStatus.NOT_FOUND);
+      throw new BadRequestResponse("Submission with ID " + submissionId + " does not exist");
+    }
 
-    ctx.result(photoUrl);
+    String photoPath = submission.photoPath;
+    String encodedPhoto = encodePhoto(photoPath);
+
+    ctx.result(encodedPhoto);
     ctx.status(HttpStatus.OK);
   }
 
@@ -487,6 +493,25 @@ public class SubmissionController implements Controller {
   public String getPhotoFromServer(Submission submission) {
     String photoUrl = SERVER_PHOTOS + submission.photoPath;
     return photoUrl;
+  }
+
+  /**
+   * Encodes a photo as a base64 string.
+   *
+   * @param photoPath The path to the photo to encode.
+   * @return The base64-encoded photo.
+   */
+  public String encodePhoto(String photoPath) {
+    try {
+      File file = new File("photos/" + photoPath);
+      try (InputStream inputStream = new FileInputStream(file)) {
+        byte[] bytes = inputStream.readAllBytes();
+        return java.util.Base64.getEncoder().encodeToString(bytes);
+      }
+    } catch (IOException e) {
+      System.err.println("Error reading the photo file: " + e);
+      return "";
+    }
   }
 
   /*

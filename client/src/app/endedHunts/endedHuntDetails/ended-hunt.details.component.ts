@@ -52,7 +52,7 @@ export class EndedHuntDetailsComponent implements OnInit, OnDestroy {
     private teamService: TeamService,
     public dialog: MatDialog,
 
-  ) {}
+  ) { }
 
   taskSubmissions: { [taskId: string]: { teamName: string, photo: string }[] } = {};
 
@@ -120,7 +120,8 @@ export class EndedHuntDetailsComponent implements OnInit, OnDestroy {
       this.taskSubmissions[submission.taskId] = [];
     }
     console.log('Fetching photo from submission:', submission._id);
-    this.submissionService.getPhotoFromSubmission(submission._id).subscribe(photo => {
+    this.submissionService.getPhotoFromSubmission(submission._id).subscribe(photoBase64 => {
+      const photo = this.decodeImage(photoBase64);
       console.log('Received photo:', photo);
       this.taskSubmissions[submission.taskId].push({
         teamName: team.teamName,
@@ -135,6 +136,11 @@ export class EndedHuntDetailsComponent implements OnInit, OnDestroy {
         task.photos.push(photo);
       }
     });
+  }
+
+  //Decode photo from base64 to display it
+  decodeImage(image: string): string {
+    return `data:image/jpeg;base64,${image}`;
   }
 
   getTeamName(teamId: string): void {

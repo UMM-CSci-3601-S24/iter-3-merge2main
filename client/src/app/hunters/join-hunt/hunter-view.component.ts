@@ -56,7 +56,7 @@ export class HunterViewComponent implements OnInit, OnDestroy {
           teamId: params.get('teamId')
         };
       }),
-      switchMap(({accessCode, teamId}) => {
+      switchMap(({ accessCode, teamId }) => {
         this.teamId = teamId;
         return forkJoin({
           startedHunt: this.startedHuntService.getStartedHunt(accessCode),
@@ -65,7 +65,7 @@ export class HunterViewComponent implements OnInit, OnDestroy {
       }),
       takeUntil(this.ngUnsubscribe)
     ).subscribe({
-      next: ({startedHunt, submissions}) => {
+      next: ({ startedHunt, submissions }) => {
         this.startedHunt = startedHunt;
         this.loadPhotos(submissions);
       },
@@ -98,14 +98,15 @@ export class HunterViewComponent implements OnInit, OnDestroy {
       return;
     }
 
+
     for (const submission of submissions) {
       const task = this.startedHunt.completeHunt.tasks.find(t => t._id === submission.taskId);
       if (task) {
         task.status = true;
         task.photos.push(submission.photoPath);
         this.submissionService.getPhotoFromSubmission(submission._id).subscribe({
-          next: (photoUrl: string) => {
-            this.imageUrls[task._id] = photoUrl;
+          next: (photoBase64: string) => {
+            this.imageUrls[task._id] = this.decodeImage(photoBase64);
           },
           error: (error: Error) => {
             console.error('Error loading photo', error);
@@ -116,6 +117,11 @@ export class HunterViewComponent implements OnInit, OnDestroy {
         });
       }
     }
+  }
+
+  //Decode the image from base64 to display it
+  decodeImage(image: string): string {
+    return `data:image/jpeg;base64,${image}`;
   }
 
   ngOnDestroy(): void {
@@ -174,7 +180,7 @@ export class HunterViewComponent implements OnInit, OnDestroy {
     }
   }
 
-  submitPhoto(startedHuntId: string, teamId: string, task: Task, file: File ): void {
+  submitPhoto(startedHuntId: string, teamId: string, task: Task, file: File): void {
     this.submissionService.submitPhoto(startedHuntId, teamId, task._id, file).subscribe({
       next: (photoId: string) => {
         task.status = true;
@@ -209,7 +215,7 @@ export class HunterViewComponent implements OnInit, OnDestroy {
     });
   }
 
-/*   allTasksCompleted(): boolean {
-    return this.tasks.every(task => task.status);
-  } */
+  /*   allTasksCompleted(): boolean {
+      return this.tasks.every(task => task.status);
+    } */
 }
