@@ -23,6 +23,8 @@ services:
       WAIT_HOSTS: mongo:27017 # wait for mongo to start up before starting the server
     depends_on:
       - mongo
+    volumes:
+      - ./server:/photos
   mongo:
       image: mongo:5
       restart: always
