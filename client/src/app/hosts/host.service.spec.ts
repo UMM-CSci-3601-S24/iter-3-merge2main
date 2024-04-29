@@ -388,4 +388,28 @@ describe('When getHunts() is called', () => {
       });
     }));
   });
+
+  describe('Deleting a photo using `deletePhoto()`', () => {
+    it('talks to the right endpoint and is called once', waitForAsync(() => {
+      const startedHuntId = 'startedHunt_id';
+      const taskId = 'task_id';
+      const photoPath = 'photo.jpg';
+
+      const mockedMethod = spyOn(httpClient, 'delete')
+        .and
+        .returnValue(of(null));
+
+      hostService.deletePhoto(startedHuntId, taskId, photoPath).subscribe(() => {
+        expect(mockedMethod)
+          .withContext('one call')
+          .toHaveBeenCalledTimes(1);
+
+        const args = mockedMethod.calls.first().args;
+
+        expect(args[0])
+        .withContext('talks to the correct endpoint')
+        .toEqual(`${hostService.endedHuntUrl}/${startedHuntId}/tasks/${taskId}/photo/${photoPath}`);
+      });
+    }));
+  });
 });
