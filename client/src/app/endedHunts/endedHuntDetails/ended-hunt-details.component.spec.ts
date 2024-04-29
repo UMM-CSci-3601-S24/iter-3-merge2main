@@ -14,6 +14,11 @@ import { PhotoDialogComponent } from './photo-dialog/photo-dialog.component';
 import { StartedHunt } from 'src/app/startHunt/startedHunt';
 import { StartedHuntService } from 'src/app/startHunt/startedHunt.service';
 import { MockStartedHuntService } from 'src/testing/startedHunt.service.mock';
+//import { of } from 'rxjs';
+import { SubmissionService } from 'src/app/submissions/submission.service';
+import { TeamService } from 'src/app/teams/team.service';
+//import { MockTeamService } from 'src/testing/team.service.mock';
+import { Submission } from 'src/app/submissions/submission';
 
 describe('EndedHuntDetailsComponent', () => {
   let component: EndedHuntDetailsComponent;
@@ -26,6 +31,24 @@ describe('EndedHuntDetailsComponent', () => {
   });
   let dialog: MatDialog;
   let dialogSpy: jasmine.Spy;
+ // const teams = [{ _id: 'team1' }, { _id: 'team2' }];
+ // const submissions = [{ _id: 'submission1', taskId: 'task1' }, { _id: 'submission2', taskId: 'task2' }];
+ // const photo = 'photo1';
+  const team = { _id: 'teamId1', teamName: 'team1', startedHuntId: 'some_started_hunt_id' };
+  // const mockSubmissionService = {
+  //   getSubmissionsByTeam: (teamId: string) => of([
+  //     { _id: 'submission1_id', taskId: 'task1_id' },
+  //     { _id: 'submission2_id', taskId: 'task2_id' },
+  //   ]),
+  //   getPhotoFromSubmission: (submissionId: string) => of('photo_url')
+  // };
+
+  // const mockTeamService = {
+  //   getAllStartedHuntTeams: (startedHuntuntId: string) => of([
+  //     { _id: 'team1_id', teamName: 'Team 1' },
+  //     { _id: 'team2_id', teamName: 'Team 2' },
+  //   ])
+  // };
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
@@ -43,9 +66,11 @@ describe('EndedHuntDetailsComponent', () => {
         { provide: StartedHuntService, useValue: mockStartedHuntService},
         { provide: ActivatedRoute, useValue: activatedRoute },
         { provide: MatDialog, useValue: { open: jasmine.createSpy('open') } },
+       // { provide: SubmissionService, useValue: mockSubmissionService },
+        //{ provide: TeamService, useValue: mockTeamService },
       ],
-    }).compileComponents();
-
+    })
+    .compileComponents();
   }));
 
   beforeEach(() => {
@@ -105,5 +130,33 @@ describe('EndedHuntDetailsComponent', () => {
         photos: mockPhotos,
       },
     });
+  });
+
+  it('should call getAllStartedHuntTeams with the correct teamId', () => {
+    const teamId = 'team1_id';
+    const teamService = TestBed.inject(TeamService);
+    const spy = spyOn(teamService, 'getAllStartedHuntTeams').and.callThrough();
+
+    // Initialize startedHunt before calling getTeamName
+    component.startedHunt = MockStartedHuntService.testStartedHunts[0];
+
+    component.getTeamName(teamId);
+
+    expect(spy).toHaveBeenCalledWith(component.startedHunt._id);
+  });
+
+  it('should call getPhotoFromSubmission with the correct submissionId', () => {
+    const submission: Submission = {
+      _id: 'submission1_id',
+      taskId: 'task1_id',
+      teamId: 'team1_id',
+      photoPath: 'path/to/photo.jpg'
+    };
+    const submissionService = TestBed.inject(SubmissionService);
+    const spy = spyOn(submissionService, 'getPhotoFromSubmission').and.callThrough();
+
+    component.fetchPhoto(submission, team);
+
+    expect(spy).toHaveBeenCalledWith(submission._id);
   });
 });

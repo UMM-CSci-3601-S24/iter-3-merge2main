@@ -34,7 +34,6 @@ describe('SelectTeamComponent', () => {
       submissionIds: ['1234', '5432'],
     })
   };
-
   const mockActivatedRoute = {
     params: of({ accessCode: 'accessCode1' })
   };
