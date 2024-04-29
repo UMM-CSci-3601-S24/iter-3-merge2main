@@ -48,7 +48,7 @@ public class SubmissionController implements Controller {
   "/api/submissions/startedHunt/{startedHuntId}/team/{teamId}/task/{taskId}";
   private static final String API_SUBMISSION_GET_PHOTO = "/api/submissions/{id}/photo";
   private static final String PHOTOS = "/photos/{photoPath}";
-  private static final String SERVER_PHOTOS = "http://localhost:4567/photos/";
+  private static final String SERVER_PHOTOS = System.getenv("SERVER_URL") + "/photos/";
 
   private final JacksonMongoCollection<Submission> submissionCollection;
   private final JacksonMongoCollection<StartedHunt> startedHuntCollection;
