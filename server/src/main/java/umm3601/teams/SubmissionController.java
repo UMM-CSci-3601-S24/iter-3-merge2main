@@ -44,8 +44,7 @@ public class SubmissionController implements Controller {
   private static final String API_SUBMISSIONS_BY_TASK = "/api/submissions/task/{taskId}";
   private static final String API_SUBMISSIONS_BY_TEAM_AND_TASK = "/api/submissions/team/{teamId}/task/{taskId}";
   private static final String API_SUBMISSIONS_BY_STARTEDHUNT = "/api/submissions/startedHunt/{startedHuntId}";
-  private static final String API_SUBMIT_PHOTO =
-  "/api/submissions/startedHunt/{startedHuntId}/team/{teamId}/task/{taskId}";
+  private static final String API_SUBMIT_PHOTO = "/api/submissions/startedHunt/{startedHuntId}/team/{teamId}/task/{taskId}";
   private static final String API_SUBMISSION_GET_PHOTO = "/api/submissions/{id}/photo";
   private static final String PHOTOS = "/photos/{photoPath}";
   private static final String SERVER_PHOTOS = "http://localhost:4567/photos/";
@@ -429,12 +428,10 @@ public class SubmissionController implements Controller {
     String photoPath = ctx.pathParam("photoPath");
     File file = new File("photos/" + photoPath);
     if (file.exists()) {
-      try (FileInputStream fis = new FileInputStream(file)) {
-        ctx.result(fis);
+      try {
+        ctx.result(new FileInputStream(file));
       } catch (FileNotFoundException e) {
         ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error reading file: " + e.getMessage());
-      } catch (IOException e) {
-        ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error closing file: " + e.getMessage());
       }
     } else {
       ctx.status(HttpStatus.NOT_FOUND).result("Photo not found");
