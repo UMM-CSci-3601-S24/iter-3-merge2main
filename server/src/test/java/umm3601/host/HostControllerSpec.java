@@ -77,6 +77,7 @@ class HostControllerSpec {
         .append("email", "fry@email");
 
     hostDocuments.insertOne(fry);
+    hostController = new HostController(db);
   }
 
   @Test

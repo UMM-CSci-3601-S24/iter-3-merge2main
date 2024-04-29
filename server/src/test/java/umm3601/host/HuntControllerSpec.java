@@ -15,6 +15,8 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +47,7 @@ import io.javalin.http.NotFoundResponse;
 import io.javalin.json.JavalinJackson;
 import io.javalin.validation.BodyValidator;
 import io.javalin.validation.ValidationException;
+import io.javalin.validation.Validator;
 
 @SuppressWarnings({ "MagicNumber" })
 class HuntControllerSpec {
@@ -198,14 +201,16 @@ class HuntControllerSpec {
 
   @Test
   void getHuntsByHostId() throws IOException {
-
-    when(ctx.pathParam("id")).thenReturn("frysId");
+    Map<String, List<String>> queryParams = new HashMap<>();
+    queryParams.put("hostId", Collections.singletonList("frysId"));
+    when(ctx.queryParamMap()).thenReturn(queryParams);
+    when(ctx.queryParamAsClass("hostId", String.class))
+        .thenReturn(Validator.create(String.class, "frysId", "hostId"));
 
     huntController.getHunts(ctx);
-
     verify(ctx).json(huntArrayListCaptor.capture());
     verify(ctx).status(HttpStatus.OK);
-
+    
     assertEquals(4, huntArrayListCaptor.getValue().size());
     for (Hunt hunt : huntArrayListCaptor.getValue()) {
       assertEquals("frysId", hunt.hostId);
