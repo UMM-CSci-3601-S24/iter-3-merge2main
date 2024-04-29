@@ -309,6 +309,21 @@ describe('HunterViewComponent', () => {
       startedHuntId = '';
     });
 
+    it('should handle successful photo deletion', () => {
+      // Arrange: Set up the deletePhoto method to return an observable that completes.
+      mockHostService.deletePhoto.and.returnValue(of(null));
+
+      // Act: Call the method that triggers the deletion.
+      component.deletePhoto(task, startedHuntId);
+
+      // Assert: Check that the success message was shown.
+      expect(mockSnackBar.open).toHaveBeenCalledWith('Photo deleted successfully', 'Close', { duration: 3000 });
+
+      // Assert: Check that the task status was set to false and photos array was emptied.
+      expect(task.status).toBeFalse();
+      expect(task.photos).toEqual([]);
+    });
+
     it('should handle error when deleting photo', () => {
       // Arrange: Set up the deletePhoto method to return an observable that throws an error.
       const error = new Error('Test error');
