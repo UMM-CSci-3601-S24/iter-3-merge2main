@@ -9,29 +9,41 @@ import { TeamService } from '../team.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { StartedHunt } from 'src/app/startHunt/startedHunt';
-import { ActivatedRouteStub } from 'src/testing/activated-route-stub';
-import { MockStartedHuntService } from 'src/testing/startedHunt.service.mock';
-import { MockTeamService } from 'src/testing/team.service.mock';
 import { HttpClientModule } from '@angular/common/http';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatCardModule } from '@angular/material/card';
 import { RouterTestingModule } from '@angular/router/testing';
+import { of } from 'rxjs';
+import { MockStartedHuntService } from 'src/testing/startedHunt.service.mock';
 
 describe('AddTeamsComponent', () => {
   let component: AddTeamsComponent;
   let fixture: ComponentFixture<AddTeamsComponent>;
-  const mockStartedHuntService = new MockStartedHuntService();
-  const mockTeamService = new MockTeamService();
-  const accessCode = "123456"
-  const activatedRoute: ActivatedRouteStub = new ActivatedRouteStub({
-    accessCode : accessCode
-  });
   const snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open', 'dismiss']);
   const hostServiceSpy = jasmine.createSpyObj('HostService', ['getHost']);
   const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+  const mockTeamService = {
+    addTeams: () => of(null)
+  };
+  const mockStartedHuntService = {
+    getStartedHunt: () => of({
+      _id: 'startedHunt1_id',
+      accessCode: '123456',
+      completeHunt: {
+        hunt: MockStartedHuntService.testHunts[0],
+        tasks: MockStartedHuntService.testTasks
+      },
+      status: true,
+      submissionIds: ['1234', '5432'],
+    })
+  };
+
+  const mockActivatedRoute = {
+    params: of({ accessCode: 'accessCode1' })
+  };
 
   beforeEach(waitForAsync(() => {
-     TestBed.configureTestingModule({
+    TestBed.configureTestingModule({
       imports: [
         FormsModule,
         CommonModule,
@@ -43,7 +55,7 @@ describe('AddTeamsComponent', () => {
       ],
       providers: [
         { provide: MatSnackBar, useValue: snackBarSpy },
-        { provide: ActivatedRoute, useValue: activatedRoute },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute },
         { provide: HostService, useValue: hostServiceSpy },
         { provide: StartedHuntService, useValue: mockStartedHuntService },
         { provide: TeamService, useValue: mockTeamService },
@@ -51,7 +63,7 @@ describe('AddTeamsComponent', () => {
       ]
     })
 
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {
@@ -66,10 +78,20 @@ describe('AddTeamsComponent', () => {
 
   it('should initialize component properties', () => {
     expect(component.numTeams).toBe(1);
-    expect(component.startedHunt).toBeUndefined();
+    expect(component.startedHunt).toEqual({
+      _id: 'startedHunt1_id',
+      accessCode: '123456',
+      completeHunt: {
+        hunt: MockStartedHuntService.testHunts[0],
+        tasks: MockStartedHuntService.testTasks
+      },
+      status: true,
+      submissionIds: ['1234', '5432'],
+    }
+    );
     expect(component.teams).toEqual([]);
-    expect(component.accessCode).toBeUndefined();
-    expect(component.startedHuntId).toBeUndefined();
+    expect(component.accessCode).toEqual('accessCode1');
+    expect(component.startedHuntId).toEqual('startedHunt1_id');
   });
 
   it('should call open method on error adding teams', () => {

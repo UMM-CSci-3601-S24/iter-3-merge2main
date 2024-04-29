@@ -44,4 +44,9 @@ export class MockTeamService extends TeamService {
     console.log('Getting all teams for started hunt ' + startedHuntId + '...');
     return of(MockTeamService.testTeams.filter(team => team.startedHuntId === startedHuntId));
   }
+
+  addTeams(startedHuntId: string, numTeams: number): Observable<void> {
+    console.log('Adding ' + numTeams + ' teams for started hunt ' + startedHuntId + '...');
+    return of(null);
+  }
 }

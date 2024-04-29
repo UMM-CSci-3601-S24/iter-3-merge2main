@@ -44,7 +44,6 @@ export class AddTeamsComponent implements OnInit, OnDestroy{
   }
 
   ngOnDestroy(): void {
-
     this.snackBar.dismiss();
   }
 

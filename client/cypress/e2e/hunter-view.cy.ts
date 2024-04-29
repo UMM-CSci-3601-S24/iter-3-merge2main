@@ -37,7 +37,7 @@ describe('Hunter View', () => {
     }).then(() => {
       cy.wait(500);
       page.clickJoinHuntButton();
-    })
+    });
 
     // navigate to the select team page.
     cy.wait(500);

@@ -55,8 +55,11 @@ export class SelectTeamComponent implements OnInit {
   }
 
   proceed(): void {
-    const selectedTeamId = this.teams.find(team => team.selected)._id;
-    this.router.navigate(['/hunter-view', this.accessCode, 'teams', selectedTeamId]);
+    const selectedTeam = this.teams.find(team => team.selected);
+    if (selectedTeam) {
+      const selectedTeamId = selectedTeam._id;
+      this.router.navigate(['/hunter-view', this.accessCode, 'teams', selectedTeamId]);
+    }
   }
 
   trackById(index: number, item: Team): string {
