@@ -54,6 +54,5 @@ public class HostController implements Controller {
 
   @Override
   public void addRoutes(Javalin server) {
-  
   }
 }
