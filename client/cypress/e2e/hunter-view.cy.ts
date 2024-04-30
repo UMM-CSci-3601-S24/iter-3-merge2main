@@ -1,4 +1,5 @@
 import { HunterViewPage } from "cypress/support/hunter-view.po";
+/// <reference types="cypress-file-upload" />
 
 const page = new HunterViewPage();
 
@@ -13,7 +14,7 @@ describe('Hunter View', () => {
   it('should navigate to the right hunter view page with the captured access code', () => {
     page.getHostButton().click();
     page.getHuntCards().first().then(() => {
-      page.clickViewProfile(page.getHuntCards().first());
+      page.clickViewProfile(page.getHuntCards().first());/// <reference types="cypress-file-upload" />
       cy.url().should('match', /\/hunts\/[0-9a-fA-F]{24}$/);
     });
 
@@ -69,8 +70,8 @@ describe('Hunter View', () => {
     cy.wait(2000);
     page.getAccessCode();
 
-//     // Those above will navigate to the Hunt, begin it
-//     // and capture the access code.
+    //     // Those above will navigate to the Hunt, begin it
+    //     // and capture the access code.
 
     cy.get('@accessCode').then((accessCode) => {
       cy.visit(`/hunters/`);
@@ -82,7 +83,7 @@ describe('Hunter View', () => {
       page.clickJoinHuntButton();
     })
 
-//     // navigate to the hunter view page with access code.
+    //     // navigate to the hunter view page with access code.
 
     page.getHuntTaskList().should('exist');
   });
@@ -111,7 +112,7 @@ describe('Hunter View', () => {
       page.clickJoinHuntButton();
     })
 
-//     // navigate to the hunter view page with access code.
+    //     // navigate to the hunter view page with access code.
 
     page.getHunterUploadImage().should('exist');
   });
@@ -144,4 +145,84 @@ describe('Hunter View', () => {
 
     page.clickUploadImage();
   })
+
+  it('should be able to delete the uploaded image and upload a new image in it\'s space', () => {
+    page.getHostButton().click();
+    page.getHuntCards().first().then(() => {
+      page.clickViewProfile(page.getHuntCards().first());/// <reference types="cypress-file-upload" />
+      cy.url().should('match', /\/hunts\/[0-9a-fA-F]{24}$/);
+    });
+
+    page.clickBeginHunt();
+    cy.wait(2000);
+    page.getAccessCode();
+
+    // Those above will navigate to the Hunt, begin it
+    // and capture the access code.
+
+    cy.get('@accessCode').then((accessCode) => {
+      cy.visit(`/hunters/`);
+      for (let i = 0; i < accessCode.length; i++) {
+        page.getAccessCodeInput(i + 1).type(accessCode.toString().charAt(i));
+      }
+    }).then(() => {
+      cy.wait(1000);
+      page.clickJoinHuntButton();
+    })
+
+    // submits an image to the task
+
+    cy.fixture('your-image.jpg').then(fileContent => {
+      cy.get('input[type="file"]').attachFile({
+        fileContent: fileContent.toString(),
+        fileName: 'your-image.jpg',
+        mimeType: 'image/jpg'
+      });
+    });
+
+    // deletes the image
+
+    page.clickDeleteImage();
+
+    // checks that the delete button is not visible
+
+    page.getDeleteImageButton().should('not.exist');
+
+    // submits another image to the task
+
+    cy.fixture('your-image.jpg').then(fileContent => {
+      cy.get('input[type="file"]').attachFile({
+        fileContent: fileContent.toString(),
+        fileName: 'your-image.jpg',
+        mimeType: 'image/jpg'
+      });
+    });
+
+    // deletes the image
+
+    page.clickDeleteImage();
+
+    // checks that the delete button is not visible
+
+    page.getDeleteImageButton().should('not.exist');
+
+    //submits a third image to the task
+
+    cy.fixture('your-image2.jpg').then(fileContent => {
+      cy.get('input[type="file"]').attachFile({
+        fileContent: fileContent.toString(),
+        fileName: 'your-image.jpg',
+        mimeType: 'image/jpg'
+      });
+    });
+
+    // deletes the image
+
+    page.clickDeleteImage();
+
+    // checks that the delete button is not visible
+
+    page.getDeleteImageButton().should('not.exist');
+  })
+
 });

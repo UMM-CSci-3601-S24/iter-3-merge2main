@@ -19,7 +19,7 @@
   white-space: normal;
   overflow: auto;
   color: #00ccff;
-  background-color: rgb(80,80,80);
+  background-color: rgb(80, 80, 80);
 }
 
 .image-upload {
@@ -48,7 +48,7 @@
   white-space: normal;
   overflow: auto;
   color: #00ccff;
-  background-color: rgb(80,80,80);
+  background-color: rgb(80, 80, 80);
 }
 
 .task-list {
@@ -86,6 +86,7 @@ label {
   width: auto;
   height: auto;
   display: flex;
+
   .upload-text {
     text-align: center;
     text-wrap: nowrap;
@@ -150,6 +151,36 @@ label {
   }
 }
 
+.delete-button {
+  background-color: white;
+  color: black;
+  text-shadow: white;
+  border: red;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.delete {
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background-color: rgb(255, 255, 255);
+  border: solid 4px red;
+  border-radius: 10px;
+  width: auto;
+  height: auto;
+  display: flex;
+
+  .upload-text {
+    text-align: center;
+    text-wrap: nowrap;
+    font-weight: bold;
+    font-size: 12px;
+    position: relative;
+  }
+}
+
 .end-button-container {
   display: flex;
   justify-content: center;
@@ -162,5 +193,4 @@ label {
   height: 100px;
   font-size: 25px;
 }
-
 

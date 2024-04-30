@@ -78,6 +78,10 @@ export class HostService {
     return this.httpClient.post<{id: string}>(`${this.endedHuntUrl}/${startedHuntId}/tasks/${taskId}/photo`, formData).pipe(map(result => result.id));
   }
 
+  deletePhoto(startedHuntId: string, taskId: string, photoPath: string): Observable<void> {
+    return this.httpClient.delete<void>(`${this.endedHuntUrl}/${startedHuntId}/tasks/${taskId}/photo/${photoPath}`);
+  }
+
   replacePhoto(startedHuntId: string, taskId: string, photoPath: string, photo: File): Observable<string> {
     const formData = new FormData();
     formData.append('photo', photo);
