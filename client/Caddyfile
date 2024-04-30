@@ -4,13 +4,22 @@
   {$CADDY_GLOBAL_OPTIONS}
 }
 
-{$CADDY_HOST}  # Set host with environment variable
+{
+  {$CADDY_GLOBAL_OPTIONS}
+}
+
+{$CADDY_HOST}
 
 route {
     reverse_proxy /api* server:4567
-    reverse_proxy @websockets server:4567 #delete this line if everything breaks
+    reverse_proxy @websockets server:4567
     try_files {path} {path}/ /
     file_server
+}
+
+@websockets {
+    header Connection *Upgrade*
+    header Upgrade websocket
 }
 
 @static {
@@ -21,4 +30,3 @@ route {
 header @static Cache-Control max-age=5184000
 
 encode zstd gzip
-
