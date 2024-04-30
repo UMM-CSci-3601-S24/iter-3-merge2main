@@ -10,7 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { WebSocketService } from '../web-socket.service';
-import { Task } from "../hunts/task";
+//import { Task } from "../hunts/task";
 
 @Component({
   selector: 'app-start-hunt-component',
