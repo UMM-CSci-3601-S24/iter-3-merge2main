@@ -186,8 +186,10 @@ public class TeamController implements Controller {
       throw new BadRequestResponse("Invalid number of teams requested");
     }
 
+    int existingTeams = countTeamsByStartedHuntId(startedHuntId);
+
     List<Team> teams = new ArrayList<>();
-    for (int i = 1; i <= numTeams; i++) {
+    for (int i = existingTeams + 1; i <= existingTeams + numTeams; i++) {
       Team team = new Team();
       team.teamName = "Team " + i;
       team.startedHuntId = startedHuntId;
@@ -197,6 +199,16 @@ public class TeamController implements Controller {
     teamCollection.insertMany(teams);
     ctx.status(HttpStatus.CREATED);
     ctx.json(Map.of("numTeamsCreated", numTeams));
+  }
+
+  /**
+   * Counts the number of teams for a given startedHunt
+   *
+   * @param startedHuntId the ID of the started hunt
+   * @return the number of teams associated with the given started hunt
+   */
+  public int countTeamsByStartedHuntId(String startedHuntId) {
+    return (int) teamCollection.countDocuments(eq("startedHuntId", startedHuntId));
   }
 
   /**

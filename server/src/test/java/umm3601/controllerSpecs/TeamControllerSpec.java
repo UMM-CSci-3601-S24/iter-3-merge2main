@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -320,5 +321,42 @@ public class TeamControllerSpec {
     assertEquals(2, teams.size());
     assertEquals("Team 1", teams.get(0).teamName);
     assertEquals("Team 4", teams.get(1).teamName);
+  }
+
+  @Test
+  void testCountTeams() {
+    TeamController mockTeamController = new TeamController(db);
+    String startedHuntId = "startedHunt1";
+
+    int count = mockTeamController.countTeamsByStartedHuntId(startedHuntId);
+
+    assertEquals(2, count);
+  }
+
+  @Test
+  void testCreateTeamsCalledTwice() {
+    when(ctx.pathParam("startedHuntId")).thenReturn("startedHunt1");
+    when(ctx.pathParam("numTeams")).thenReturn("2");
+
+    MongoCollection<Document> teamDocuments = db.getCollection("teams");
+    long initialTeamCount = teamDocuments.countDocuments(eq("startedHuntId", "startedHunt1"));
+
+    teamController.createTeams(ctx);
+    verify(ctx, times(1)).status(HttpStatus.CREATED);
+
+    teamController.createTeams(ctx);
+    verify(ctx, times(2)).status(HttpStatus.CREATED);
+
+    List<Document> allTeams = teamDocuments.find(eq("startedHuntId", "startedHunt1")).into(new ArrayList<>());
+
+    assertEquals(initialTeamCount + 4, allTeams.size()); // initial teams + 2 new teams per each call
+
+    Document team5 = allTeams.get((int) initialTeamCount);
+    assertEquals("Team 3", team5.getString("teamName"));
+    assertEquals("startedHunt1", team5.getString("startedHuntId"));
+
+    Document team6 = allTeams.get((int) initialTeamCount + 1);
+    assertEquals("Team 4", team6.getString("teamName"));
+    assertEquals("startedHunt1", team6.getString("startedHuntId"));
   }
 }
