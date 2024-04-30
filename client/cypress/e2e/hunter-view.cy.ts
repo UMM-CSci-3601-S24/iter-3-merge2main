@@ -123,7 +123,13 @@ describe('Hunter View', () => {
       page.clickJoinHuntButton();
     })
 
-//     // navigate to the hunter view page with access code.
+    // navigate to the select team page.
+    cy.wait(500);
+
+    page.clickTeamButton();
+    cy.wait(500);
+    page.clickProceedButton();
+    cy.wait(500);
 
     page.getHuntTaskList().should('exist');
   });
@@ -215,12 +221,16 @@ describe('Hunter View', () => {
   it('should be able to delete the uploaded image and upload a new image in it\'s space', () => {
     page.getHostButton().click();
     page.getHuntCards().first().then(() => {
-      page.clickViewProfile(page.getHuntCards().first());/// <reference types="cypress-file-upload" />
+      page.clickViewProfile(page.getHuntCards().first());
       cy.url().should('match', /\/hunts\/[0-9a-fA-F]{24}$/);
     });
 
     page.clickBeginHunt();
-    cy.wait(2000);
+    cy.wait(500);
+    page.selectTeamNumber(1);
+    page.clickHunterProceedButton();
+    cy.wait(500);
+
     page.getAccessCode();
 
     // Those above will navigate to the Hunt, begin it
@@ -232,9 +242,17 @@ describe('Hunter View', () => {
         page.getAccessCodeInput(i + 1).type(accessCode.toString().charAt(i));
       }
     }).then(() => {
-      cy.wait(1000);
+      cy.wait(500);
       page.clickJoinHuntButton();
     })
+
+    // navigate to the select team page.
+    cy.wait(500);
+
+    page.clickTeamButton();
+    cy.wait(500);
+    page.clickProceedButton();
+    cy.wait(500);
 
     // submits an image to the task
 

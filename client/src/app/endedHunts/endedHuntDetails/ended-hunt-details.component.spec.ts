@@ -133,44 +133,45 @@ describe('EndedHuntDetailsComponent', () => {
     });
   });
   it('should set endedHunt on ngOnInit', () => {
-    const mockEndedHunt: EndedHunt = {
-      startedHunt: {
-        _id: 'some_id',
-        accessCode: 'some_access_code',
-        completeHunt: {
-          hunt: {
-            _id: 'hunt_id',
-            hostId: 'host_id',
-            name: 'hunt_name',
-            description: 'hunt_description',
-            est: 20,
-            numberOfTasks: 4
-          },
-          tasks: [
-            {
-              _id: 'task1', name: 'Task 1',
-              huntId: '',
-              status: false,
-              photos: []
-            },
-            {
-              _id: 'task2', name: 'Task 2',
-              huntId: '',
-              status: false,
-              photos: []
-            },
-          ],
+    const mockStartedHunt: StartedHunt = {
+      _id: 'some_id',
+      completeHunt: {
+        hunt: {
+          _id: 'hunt_id',
+          hostId: 'host_id',
+          name: 'hunt_name',
+          description: 'hunt_description',
+          est: 20,
+          numberOfTasks: 4
         },
+        tasks: [
+          {
+            _id: 'task1', name: 'Task 1',
+            huntId: '',
+            status: false,
+            photos: []
+          },
+          {
+            _id: 'task2', name: 'Task 2',
+            huntId: '',
+            status: false,
+            photos: []
+          },
+        ],
       },
-      finishedTasks: [],
+      accessCode: 'some_access_code',
+      endDate: new Date(), // or any other date
+      status: true, // or false
+      submissionIds: [], // or any array of string ids
     };
 
-    spyOn(mockHostService, 'getEndedHuntById').and.returnValue(of(mockEndedHunt));
+    spyOn(mockStartedHuntService, 'getStartedHuntById').and.returnValue(of(mockStartedHunt));
 
     component.ngOnInit();
 
-    expect(component.endedHunt).toEqual(mockEndedHunt);
-  });
+    expect(component.startedHunt).toEqual(mockStartedHunt);
+  }
+  );
 
   it('should call getAllStartedHuntTeams with the correct teamId', () => {
     const teamId = 'team1_id';

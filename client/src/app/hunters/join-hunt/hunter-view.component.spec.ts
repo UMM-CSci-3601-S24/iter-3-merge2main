@@ -305,6 +305,8 @@ describe('HunterViewComponent', () => {
     let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
     let task: Task;
     let startedHuntId: string;
+    let mockSubmissionService: jasmine.SpyObj<SubmissionService>;
+    let mockStartedHuntService: jasmine.SpyObj<StartedHuntService>;
     const mockRoute = jasmine.createSpyObj('ActivatedRoute', ['snapshot']);
     const mockRouter = jasmine.createSpyObj('Router', ['navigate']);
     const mockDialog = jasmine.createSpyObj('MatDialog', ['open']);
@@ -313,7 +315,7 @@ describe('HunterViewComponent', () => {
     beforeEach(() => {
       mockHostService = jasmine.createSpyObj('HostService', ['deletePhoto']);
       mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
-      component = new HunterViewComponent(mockHostService, mockRoute, mockSnackBar, mockRouter, mockDialog, mockNg2ImgMax);
+      component = new HunterViewComponent(mockHostService, mockStartedHuntService, mockSubmissionService, mockRoute, mockSnackBar, mockNg2ImgMax, mockDialog, mockRouter);
       task = { _id: '1', huntId: '1', name: 'Task 1', status: true, photos: ['photoId']};
       startedHuntId = '';
     });

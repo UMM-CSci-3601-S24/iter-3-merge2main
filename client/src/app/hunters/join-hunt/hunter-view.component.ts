@@ -33,6 +33,7 @@ export class HunterViewComponent implements OnInit, OnDestroy {
   imageUrls = {};
   team: Team;
   teamId: string;
+  submission: Submission;
 
   private ngUnsubscribe = new Subject<void>();
 
@@ -198,26 +199,39 @@ export class HunterViewComponent implements OnInit, OnDestroy {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   deletePhoto(task: Task, startedHuntId: string): void {
-    this.hostService.deletePhoto(startedHuntId, task._id, task.photos[0]).subscribe({
-      next: () => {
-        task.status = false;
-        task.photos = [];
-        this.snackBar.open('Photo deleted successfully', 'Close', {
-          duration: 3000
+    this.submissionService.getSubmissionsByTeamAndTask(this.teamId, task._id).subscribe({
+      next: (submission: Submission) => {
+        console.log('submissionId', submission._id);
+        this.submissionService.deleteSubmission(submission._id).subscribe({
+          next: () => {
+            task.status = false;
+            task.photos = [];
+            this.snackBar.open('Photo deleted successfully', 'Close', {
+              duration: 3000
+            });
+          },
+          error: (error: Error) => {
+            console.error('Error deleting photo', error);
+            this.snackBar.open('Error deleting photo. Please try again', 'Close', {
+              duration: 3000
+            });
+          },
         });
       },
       error: (error: Error) => {
-        console.error('Error deleting photo', error);
-        this.snackBar.open('Error deleting photo. Please try again', 'Close', {
+        console.error('Error getting submission', error);
+        this.snackBar.open('Error getting submission. Please try again', 'Close', {
           duration: 3000
         });
       },
     });
   }
 
-  replacePhoto(file: File, task: Task, startedHuntId: string): void {
-    this.hostService.replacePhoto(startedHuntId, task._id, task.photos[0], file).subscribe({
+
+  replacePhoto(teamId: string, task: Task, file: File): void {
+    this.submissionService.replacePhoto(teamId, task._id, file).subscribe({
       next: (photoId: string) => {
         task.photos[0] = photoId;
         this.snackBar.open('Photo replaced successfully', 'Close', {

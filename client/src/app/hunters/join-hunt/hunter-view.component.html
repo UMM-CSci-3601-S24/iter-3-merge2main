@@ -21,10 +21,10 @@
     <div class="upload-text">Upload Image</div>
   </label>
     <!--Button to delete photos (only appears if a photo has been submitted)-->
-      <div class="delete" *ngIf="imageUrls[task._id]">
-        <button class="delete-button" *ngIf="imageUrls[task._id]"
-          (click)="deletePhoto(task, task.huntId); imageUrls[task._id] = null">Delete Photo</button>
-      </div>
+    <div class="delete" *ngIf="imageUrls[task._id]">
+      <button class="delete-button" *ngIf="imageUrls[task._id]"
+        (click)="deletePhoto(task, task.huntId); imageUrls[task._id] = null">Delete Photo</button>
+    </div>
   </div>
   <div class="task-list" [ngClass]="{'task-completed': task.status}">{{ task.name }}</div>
 </div>
