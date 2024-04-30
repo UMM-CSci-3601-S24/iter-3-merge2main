@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -47,8 +46,6 @@ public class SubmissionController implements Controller {
   private static final String API_SUBMIT_PHOTO =
    "/api/submissions/startedHunt/{startedHuntId}/team/{teamId}/task/{taskId}";
   private static final String API_SUBMISSION_GET_PHOTO = "/api/submissions/{id}/photo";
-  private static final String PHOTOS = "/photos/{photoPath}";
-  private static final String SERVER_PHOTOS = "http://localhost:4567/photos/";
 
   private final JacksonMongoCollection<Submission> submissionCollection;
   private final JacksonMongoCollection<StartedHunt> startedHuntCollection;
@@ -423,30 +420,6 @@ public class SubmissionController implements Controller {
   }
 
   /**
-   * Retrieves a photo from the server and returns it as a response.
-   *
-   * @param ctx a Javalin Context object containing the HTTP request information.
-   *            Expects a "photoPath" path parameter.
-   *            If a photo with the given photoPath is found, it is sent as a
-   *            response with an HTTP status of OK.
-   *            If the photo is not found, the HTTP status is set to NOT_FOUND.
-   */
-  public void getPhoto(Context ctx) {
-    String photoPath = ctx.pathParam("photoPath");
-    File file = new File("photos/" + photoPath);
-    if (file.exists()) {
-      try {
-        ctx.result(new FileInputStream(file));
-        ctx.status(HttpStatus.OK);
-      } catch (FileNotFoundException e) {
-        ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error reading file: " + e.getMessage());
-      }
-    } else {
-      ctx.status(HttpStatus.NOT_FOUND).result("Photo not found");
-    }
-  }
-
-  /**
    * Replaces the photo associated with a submission.
    *
    * @param ctx a Javalin Context object containing the HTTP request information.
@@ -486,17 +459,6 @@ public class SubmissionController implements Controller {
   }
 
   /**
-   * Retrieves a photo from the server and returns the URL.
-   *
-   * @param submission The submission object containing the photoPath.
-   * @return The URL of the photo.
-   */
-  public String getPhotoFromServer(Submission submission) {
-    String photoUrl = SERVER_PHOTOS + submission.photoPath;
-    return photoUrl;
-  }
-
-  /**
    * Encodes a photo as a base64 string.
    *
    * @param photoPath The path to the photo to encode.
@@ -533,7 +495,6 @@ public class SubmissionController implements Controller {
     server.post(API_SUBMIT_PHOTO, this::addPhoto);
     server.post(API_SUBMISSION, this::addPhoto);
     server.put(API_SUBMISSIONS_BY_TEAM_AND_TASK, this::replacePhoto);
-    server.get(PHOTOS, this::getPhoto);
   }
 
 }

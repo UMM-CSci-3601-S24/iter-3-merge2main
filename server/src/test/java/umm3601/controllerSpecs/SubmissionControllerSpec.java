@@ -659,19 +659,6 @@ public class SubmissionControllerSpec {
   }
 
   @Test
-  void testGetPhoto() {
-    when(ctx.pathParam("photoPath")).thenReturn("test.jpg");
-
-    // Mock the photo file
-    File photo = mock(File.class);
-    when(photo.exists()).thenReturn(true);
-
-    submissionController.getPhoto(ctx);
-
-    verify(ctx).status(HttpStatus.OK);
-  }
-
-  @Test
   void testDeletePhoto() {
     String photoPath = "test.jpg";
 

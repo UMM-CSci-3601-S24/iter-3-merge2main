@@ -53,7 +53,4 @@ export class SubmissionService {
     return this.httpClient.put(`${this.submissionUrl}/team/${teamId}/task/${taskId}`, formData);
   }
 
-  getPhotoUrl(photoPath: string) {
-    return `${environment.apiUrl}submissions/photo/${photoPath}`;
-  }
 }
