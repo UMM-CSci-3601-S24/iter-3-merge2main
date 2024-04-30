@@ -17,8 +17,6 @@ import umm3601.Controller;
 
 public class HostController implements Controller {
 
-  private static final String API_HOST = "/api/hosts/{id}";
-
   static final String HOST_KEY = "hostId";
   static final String HUNT_KEY = "huntId";
 
@@ -56,6 +54,6 @@ public class HostController implements Controller {
 
   @Override
   public void addRoutes(Javalin server) {
-    server.get(API_HOST, this::getHost);
+  
   }
 }
