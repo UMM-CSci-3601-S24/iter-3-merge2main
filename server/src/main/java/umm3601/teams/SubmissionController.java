@@ -437,6 +437,7 @@ public class SubmissionController implements Controller {
     if (file.exists()) {
       try {
         ctx.result(new FileInputStream(file));
+        ctx.status(HttpStatus.OK);
       } catch (FileNotFoundException e) {
         ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error reading file: " + e.getMessage());
       }

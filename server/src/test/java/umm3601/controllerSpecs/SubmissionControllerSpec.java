@@ -59,6 +59,9 @@ public class SubmissionControllerSpec {
   private ObjectId teamId;
   private ObjectId taskId;
   private ObjectId huntId;
+  private ObjectId aSubmissionId;
+  private ObjectId aTaskId;
+  private ObjectId aTeamId;
 
   private static MongoClient mongoClient;
   private static MongoDatabase db;
@@ -131,9 +134,18 @@ public class SubmissionControllerSpec {
         .append("photoPath", "nonexistent.png") // This photo does not exist
         .append("submitTime", new Date());
 
+    aSubmissionId = new ObjectId();
+    Document aSubmission = new Document()
+        .append("_id", aSubmissionId.toHexString())
+        .append("taskId", aTaskId.toHexString())
+        .append("teamId", aTeamId.toHexString())
+        .append("photoPath", "test.jpg")
+        .append("submitTime", new Date());
+
     submissionDocuments.insertMany(testSubmissions);
     submissionDocuments.insertOne(submission);
     submissionDocuments.insertOne(newSubmission);
+    submissionDocuments.insertOne(aSubmission);
 
     MongoCollection<Document> startedHuntDocuments = db.getCollection("startedHunts");
     startedHuntDocuments.drop();
@@ -223,8 +235,16 @@ public class SubmissionControllerSpec {
         .append("teamName", "Team 4")
         .append("startedHuntId", "startedHunt1");
 
+    aTeamId = new ObjectId();
+    Document aTeam = new Document()
+        .append("_id", aTeamId.toHexString())
+        .append("teamName", "Team 4")
+        .append("startedHuntId", "startedHunt1");
+
     teamDocuments.insertMany(testTeams);
     teamDocuments.insertOne(team);
+    teamDocuments.insertOne(aTeam);
+
     MongoCollection<Document> taskDocuments = db.getCollection("tasks");
     taskDocuments.drop();
     huntId = new ObjectId();
@@ -262,8 +282,17 @@ public class SubmissionControllerSpec {
         .append("status", false)
         .append("photos", new ArrayList<String>());
 
+    aTaskId = new ObjectId();
+    Document aTask = new Document()
+        .append("_id", aTaskId.toHexString())
+        .append("huntId", "someId")
+        .append("name", "Best Task")
+        .append("status", false)
+        .append("photos", new ArrayList<String>());
+
     taskDocuments.insertMany(testTasks);
     taskDocuments.insertOne(task);
+    taskDocuments.insertOne(aTask);
 
   }
 
@@ -620,4 +649,40 @@ public class SubmissionControllerSpec {
     assertNotNull(updatedSubmission);
     assertEquals(photoPath, updatedSubmission.get("photoPath"));
   }
+
+  @Test
+  void testReplacePhotoSubmissionDoesNotExist() {
+    when(ctx.pathParam("taskId")).thenReturn("Nonexistent Task");
+    when(ctx.pathParam("teamId")).thenReturn("Nonexistent Team");
+
+    assertThrows(BadRequestResponse.class, () -> submissionController.replacePhoto(ctx));
+  }
+
+  @Test
+  void testGetPhoto() {
+    when(ctx.pathParam("photoPath")).thenReturn("test.jpg");
+
+    // Mock the photo file
+    File photo = mock(File.class);
+    when(photo.exists()).thenReturn(true);
+
+    submissionController.getPhoto(ctx);
+
+    verify(ctx).status(HttpStatus.OK);
+  }
+
+  @Test
+  void testDeletePhoto() {
+    String photoPath = "test.jpg";
+
+    // Mock the photo file
+    File photo = mock(File.class);
+    when(photo.exists()).thenReturn(true);
+
+    submissionController.deletePhoto(photoPath, ctx);
+
+    verify(ctx).status(HttpStatus.OK);
+    // ** THIS ACTUALLY DELETES THE TEST.JPG FILE ** it will fail if ran twice
+  }
+
 }
