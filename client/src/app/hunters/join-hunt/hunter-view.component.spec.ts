@@ -313,16 +313,19 @@ describe('HunterViewComponent', () => {
     const mockNg2ImgMax = jasmine.createSpyObj('Ng2ImgMaxService', ['compressImage']);
 
     beforeEach(() => {
+      mockSubmissionService = jasmine.createSpyObj('SubmissionService', ['getSubmissionsByTeamAndTask', 'deleteSubmission']);
       mockHostService = jasmine.createSpyObj('HostService', ['deletePhoto']);
       mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
       component = new HunterViewComponent(mockHostService, mockStartedHuntService, mockSubmissionService, mockRoute, mockSnackBar, mockNg2ImgMax, mockDialog, mockRouter);
       task = { _id: '1', huntId: '1', name: 'Task 1', status: true, photos: ['photoId']};
       startedHuntId = '';
+
     });
 
     it('should handle successful photo deletion', () => {
-      // Arrange: Set up the deletePhoto method to return an observable that completes.
-      mockHostService.deletePhoto.and.returnValue(of(null));
+      // Arrange: Set up the getSubmissionsByTeamAndTask and deleteSubmission methods to return observables that complete.
+      mockSubmissionService.getSubmissionsByTeamAndTask.and.returnValue(of({ _id: 'submissionId' }));
+      mockSubmissionService.deleteSubmission.and.returnValue(of(null));
 
       // Act: Call the method that triggers the deletion.
       component.deletePhoto(task, startedHuntId);
@@ -336,15 +339,15 @@ describe('HunterViewComponent', () => {
     });
 
     it('should handle error when deleting photo', () => {
-      // Arrange: Set up the deletePhoto method to return an observable that throws an error.
+      // Arrange: Set up the getSubmissionsByTeamAndTask method to return an observable that throws an error.
       const error = new Error('Test error');
-      mockHostService.deletePhoto.and.returnValue(throwError(error));
+      mockSubmissionService.getSubmissionsByTeamAndTask.and.returnValue(throwError(error));
 
       // Act: Call the method that triggers the deletion.
       component.deletePhoto(task, startedHuntId);
 
       // Assert: Check that the error message was shown.
-      expect(mockSnackBar.open).toHaveBeenCalledWith('Error deleting photo. Please try again', 'Close', { duration: 3000 });
+      expect(mockSnackBar.open).toHaveBeenCalledWith('Error getting submission. Please try again', 'Close', { duration: 3000 });
     });
   });
 
