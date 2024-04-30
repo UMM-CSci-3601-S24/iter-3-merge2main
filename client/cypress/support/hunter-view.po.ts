@@ -154,6 +154,14 @@ export class HunterViewPage {
     return cy.get(this.joinHuntButtonSelector).click();
   }
 
+  clickDeleteImage() {
+    return cy.get('.delete-button').click();
+  }
+
+  getDeleteImageButton() {
+    return cy.get('.delete-button');
+  }
+
   clickTeamButton() {
     return cy.get(this.teamSelectButton).click();
   }
