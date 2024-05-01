@@ -16,6 +16,27 @@
       <h5 class="tracked-access-code-number">{{ startedHunt?.accessCode }}</h5>
     </mat-card-content>
 
+    <div class="flex-row">
+      @if (serverSubmissions) {
+        <div class="flex-1">
+          <div class="submission-cards-container">
+            @for (submission of serverSubmissions; track submission._id) {
+              <app-submission-card [context]="'host-view'" [submission]="submission"></app-submission-card>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="flex-1" class="submission-error">
+          <mat-error>
+            There was a problem loading the submissions. Possibly the server is down or perhaps there are network issues.
+          </mat-error>
+          <mat-error>
+            Please wait a bit and try again or start the server.
+          </mat-error>
+        </div>
+      }
+    </div>
+
     <div class="task-table">
       <div class="flex-row header-row">
         <div class="flex-1"> Tasks For Hunter </div>

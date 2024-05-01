@@ -11,7 +11,7 @@ import { StartedHuntService } from 'src/app/startHunt/startedHunt.service';
 import { TeamService } from 'src/app/teams/team.service';
 import { SubmissionService } from '../submission.service';
 import { StartedHunt } from 'src/app/startHunt/startedHunt';
-import { Observable, map } from 'rxjs';
+import { Observable, map, of } from 'rxjs';
 
 @Component({
   selector: 'app-submission-card',
@@ -30,12 +30,13 @@ export class SubmissionCardComponent {
 
   submission = input.required<Submission>();
   simple = input(true);
+  private photosCache: { [id: string]: string } = {};
 
   @Input() startedHunt: StartedHunt;
   taskId: string;
   teamId: string;
 
-  @Input() context: 'start-hunt';
+  @Input() context: 'host-view';
 
   constructor(
     private submissionService: SubmissionService,
@@ -62,9 +63,17 @@ export class SubmissionCardComponent {
 
   // this retrieves the photo from the submission
   getPhoto(submissionId: string): Observable<string> {
-    return this.submissionService.getPhotoFromSubmission(submissionId).pipe(
-      map(photoBase64 => this.decodeImage(photoBase64))
-    );
+    if (this.photosCache[submissionId]) {
+      return of(this.photosCache[submissionId]);
+    } else {
+      return this.submissionService.getPhotoFromSubmission(submissionId).pipe(
+        map(photoBase64 => {
+          const photo = this.decodeImage(photoBase64);
+          this.photosCache[submissionId] = photo;
+          return photo;
+        })
+      );
+    }
   }
 
   //Decode the image from base64 to display it
