@@ -1,4 +1,4 @@
-package umm3601.host;
+package umm3601.teams;
 
 import java.util.Date;
 
@@ -6,14 +6,15 @@ import org.mongojack.Id;
 import org.mongojack.ObjectId;
 
 @SuppressWarnings({ "VisibilityModifier" })
-public class StartedHunt {
+public class Submission {
 
   @ObjectId
   @Id
   @SuppressWarnings({ "MemberName" })
   public String _id;
-  public String accessCode;
-  public CompleteHunt completeHunt;
-  public Boolean status;
-  public Date endDate;
+
+  public String taskId;
+  public String teamId;
+  public String photoPath;
+  public Date submitTime;
 }

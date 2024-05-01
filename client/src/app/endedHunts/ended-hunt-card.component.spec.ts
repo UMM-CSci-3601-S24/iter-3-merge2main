@@ -3,21 +3,25 @@ import { Router } from "@angular/router";
 import { of } from "rxjs";
 import { HostService } from "../hosts/host.service";
 import { EndedHuntCardComponent } from "./ended-hunt-card.component";
+import { StartedHuntService } from "../startHunt/startedHunt.service";
 
 describe('EndedHuntCardComponent', () => {
   let component: EndedHuntCardComponent;
   let hostService: HostService;
+  let startedHuntService: StartedHuntService;
   let router: Router;
 
   beforeEach(() => {
     hostService = jasmine.createSpyObj('HostService', ['deleteEndedHunt']);
     router = jasmine.createSpyObj('Router', ['navigate']);
+    startedHuntService = jasmine.createSpyObj('StartedHuntService', ['deleteStartedHunt']);
 
     TestBed.configureTestingModule({
       providers: [
         EndedHuntCardComponent,
         { provide: HostService, useValue: hostService },
-        { provide: Router, useValue: router }
+        { provide: Router, useValue: router },
+        { provide: StartedHuntService, useValue: startedHuntService}
       ]
     });
 
@@ -26,7 +30,7 @@ describe('EndedHuntCardComponent', () => {
 
   it('should call hostService.deleteEndedHunt and huntDeleted.emit when deleteEndedHunt is called', () => {
     const id = 'testId';
-    (hostService.deleteEndedHunt as jasmine.Spy).and.returnValue(of(undefined));
+    (startedHuntService.deleteStartedHunt as jasmine.Spy).and.returnValue(of(undefined));
 
     spyOn(window, 'confirm').and.returnValue(true); // Add this line
 
@@ -35,7 +39,7 @@ describe('EndedHuntCardComponent', () => {
 
     component.deleteEndedHunt(id);
 
-    expect(hostService.deleteEndedHunt).toHaveBeenCalledWith(id);
+    expect(startedHuntService.deleteStartedHunt).toHaveBeenCalledWith(id);
     expect(component.huntDeleted.emit).toHaveBeenCalledWith(id);
   });
 });

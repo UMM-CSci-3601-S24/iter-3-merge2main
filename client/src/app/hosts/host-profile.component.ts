@@ -16,9 +16,9 @@ import { Subject, takeUntil } from "rxjs";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { HostService } from "./host.service";
 import { HuntCardComponent } from "../hunts/hunt-card.component";
-import { Router } from "@angular/router";
 import { StartedHunt } from "../startHunt/startedHunt";
 import { EndedHuntCardComponent } from "../endedHunts/ended-hunt-card.component";
+import { StartedHuntService } from "../startHunt/startedHunt.service";
 
 @Component({
   selector: 'app-host-profile-component',
@@ -26,7 +26,20 @@ import { EndedHuntCardComponent } from "../endedHunts/ended-hunt-card.component"
   styleUrls: ['./host-profile.component.scss'],
   providers: [],
   standalone: true,
-  imports: [EndedHuntCardComponent, MatCardModule, MatFormFieldModule, MatInputModule, FormsModule, MatSelectModule, MatOptionModule, MatRadioModule, MatListModule, RouterLink, MatButtonModule, MatTooltipModule, MatIconModule, HuntCardComponent]
+  imports: [EndedHuntCardComponent,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    FormsModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatRadioModule,
+    MatListModule,
+    RouterLink,
+    MatButtonModule,
+    MatTooltipModule,
+    MatIconModule,
+    HuntCardComponent]
 })
 
 export class HostProfileComponent implements OnInit, OnDestroy {
@@ -40,7 +53,9 @@ export class HostProfileComponent implements OnInit, OnDestroy {
   errMsg = '';
   private ngUnsubscribe = new Subject<void>();
 
-  constructor(private hostService: HostService, private snackBar: MatSnackBar, private router: Router) {
+  constructor(private hostService: HostService,
+    private snackBar: MatSnackBar,
+    private startedHuntService: StartedHuntService) {
   }
 
   getHuntsFromServer(): void {
@@ -65,7 +80,7 @@ export class HostProfileComponent implements OnInit, OnDestroy {
   }
 
   getEndedHunts(): void {
-    this.hostService.getEndedHunts(this.hostId).pipe(
+    this.startedHuntService.getEndedHunts().pipe(
       takeUntil(this.ngUnsubscribe)
     ).subscribe({
       next: (returnedEndedHunts) => {

@@ -12,11 +12,14 @@ import { HuntCardComponent } from "../hunts/hunt-card.component";
 import { StartedHunt } from "./startedHunt";
 import { of, throwError } from "rxjs";
 import { MatSnackBar } from "@angular/material/snack-bar";
+import { StartedHuntService } from "./startedHunt.service";
+import { MockStartedHuntService } from "src/testing/startedHunt.service.mock";
 
 describe('StartHuntComponent', () => {
   let component: StartHuntComponent;
   let fixture: ComponentFixture<StartHuntComponent>;
   const mockHostService = new MockHostService();
+  const mockStartedHuntService = new MockStartedHuntService();
   const accessCode = 'access_code';
   const activatedRoute: ActivatedRouteStub = new ActivatedRouteStub({
     accessCode: accessCode
@@ -32,7 +35,8 @@ describe('StartHuntComponent', () => {
     ],
     providers: [
         { provide: HostService, useValue: mockHostService },
-        { provide: ActivatedRoute, useValue: activatedRoute }
+        { provide: ActivatedRoute, useValue: activatedRoute },
+        { provide: StartedHuntService, useValue: mockStartedHuntService }
     ]
 })
       .compileComponents();
@@ -49,17 +53,17 @@ describe('StartHuntComponent', () => {
   });
 
   it('should navigate to a specific started hunt', () => {
-    const expectedStartedHunt: StartedHunt = MockHostService.testStartedHunts[0];
+    const expectedStartedHunt: StartedHunt = MockStartedHuntService.testStartedHunts[0];
     activatedRoute.setParamMap({ accessCode: expectedStartedHunt.accessCode });
     expect(component.startedHunt).toEqual(expectedStartedHunt);
   });
 
   it('should navigate to correct startedHunt when the accessCode parameter changes', () => {
-    let expectedStartedHunt: StartedHunt = MockHostService.testStartedHunts[0];
+    let expectedStartedHunt: StartedHunt = MockStartedHuntService.testStartedHunts[0];
     activatedRoute.setParamMap({ accessCode: expectedStartedHunt.accessCode });
     expect(component.startedHunt).toEqual(expectedStartedHunt);
 
-    expectedStartedHunt = MockHostService.testStartedHunts[1];
+    expectedStartedHunt = MockStartedHuntService.testStartedHunts[1];
     activatedRoute.setParamMap({ accessCode: expectedStartedHunt.accessCode });
     expect(component.startedHunt).toEqual(expectedStartedHunt);
   });
@@ -78,7 +82,7 @@ describe('StartHuntComponent', () => {
     activatedRoute.setParamMap({ accessCode: accessCode });
 
     const mockError = { message: 'Test Error', error: { title: 'Error Title' } };
-    const getStartedHuntSpy = spyOn(mockHostService, 'getStartedHunt')
+    const getStartedHuntSpy = spyOn(mockStartedHuntService, 'getStartedHunt')
       .and
       .returnValue(throwError(() => mockError));
 
@@ -95,7 +99,7 @@ describe('StartHuntComponent', () => {
   it('should end the hunt successfully', () => {
     const id = 'fran_id'; // Use the accessCode from the mock data
     const accessCode = 'fran_code'; // Use the accessCode from the mock data
-    const endStartedHuntSpy = spyOn(mockHostService, 'endStartedHunt').and.returnValue(of(null));
+    const endStartedHuntSpy = spyOn(mockStartedHuntService, 'endStartedHunt').and.returnValue(of(null));
     const router = TestBed.inject(Router); // Get the router from the testing module
     const navigateSpy = spyOn(router, 'navigate');
     const snackBar = TestBed.inject(MatSnackBar); // Get the snackBar from the testing module
@@ -116,7 +120,7 @@ describe('StartHuntComponent', () => {
     const id = 'fran_id';
     const accessCode = 'fran_code'; // Use the accessCode from the mock data
     const errorResponse = { message: 'Test Error', error: { title: 'Error Title' } };
-    const endStartedHuntSpy = spyOn(mockHostService, 'endStartedHunt').and.returnValue(throwError(() => errorResponse));
+    const endStartedHuntSpy = spyOn(mockStartedHuntService, 'endStartedHunt').and.returnValue(throwError(() => errorResponse));
 
     component.startedHunt = {_id: id, accessCode: accessCode, completeHunt: {
       hunt: undefined,
@@ -136,7 +140,7 @@ describe('StartHuntComponent', () => {
     const event = new Event('click');
     const id = 'fran_id'; // Use the accessCode from the mock data
     const accessCode = 'fran_code'; // Use the accessCode from the mock data
-    const endStartedHuntSpy = spyOn(mockHostService, 'endStartedHunt').and.returnValue(of(null));
+    const endStartedHuntSpy = spyOn(mockStartedHuntService, 'endStartedHunt').and.returnValue(of(null));
     const router = TestBed.inject(Router); // Get the router from the testing module
     const navigateSpy = spyOn(router, 'navigate');
     const snackBar = TestBed.inject(MatSnackBar); // Get the snackBar from the testing module

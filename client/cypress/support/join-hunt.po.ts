@@ -11,6 +11,11 @@ export class JoinHuntPage {
   private readonly profileButtonSelector = '[data-test=viewProfileButton]';
   private readonly beginHuntButton = '.begin-hunt';
   private readonly huntAccessCode = '.access-code-number';
+  private readonly teamSelectButton = '.team-select';
+  private readonly hunterProceedButton = '.hunter-proceed-button';
+  private readonly teamNumberSelector = '.team-number';
+  private readonly proceedButton = '.proceed-button';
+
 
   navigateTo() {
     return cy.visit(this.baseUrl);
@@ -128,5 +133,29 @@ export class JoinHuntPage {
    */
   getAccessCode() {
     return cy.get(this.huntAccessCode).invoke('text').as('accessCode');
+  }
+
+  clickTeamButton() {
+    return cy.get(this.teamSelectButton).click();
+  }
+
+  clickProceedButton() {
+    return cy.get(this.hunterProceedButton).click();
+  }
+
+  /**
+   * Select the team number for the hunt.
+   *
+   * @param teamNumber
+   */
+  selectTeamNumber(teamNumber: number) {
+    return cy.get(this.teamNumberSelector).select(teamNumber.toString());
+  }
+
+  /**
+   * Click the proceed button.
+   */
+  clickHunterProceedButton() {
+    return cy.get(this.proceedButton).click();
   }
 }

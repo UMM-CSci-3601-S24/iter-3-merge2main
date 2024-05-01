@@ -8,6 +8,7 @@
       "html"
     ],
     "cSpell.words": [
+      "ACCESSCODE",
       "Anns",
       "Bson",
       "Checkstyle",
@@ -20,6 +21,8 @@
       "frys",
       "gradlew",
       "helloworld",
+      "HOSTID",
+      "HUNTID",
       "Ibmers",
       "invalidemail",
       "invalidrole",
@@ -40,6 +43,9 @@
       "setupdroplet",
       "sidenav",
       "sortorder",
+      "STARTEDHUNT",
+      "STARTEDHUNTS",
+      "STARTHUNT",
       "todos",
       "Walbran"
     ],

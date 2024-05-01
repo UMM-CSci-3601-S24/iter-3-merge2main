@@ -1,7 +1,8 @@
 import { HuntProfilePage } from "cypress/support/hunt-profile.po";
-
+import { BeginHuntPage } from "cypress/support/begin-hunt.po";
 
 const page = new HuntProfilePage();
+const beginHuntPage = new BeginHuntPage();
 
 describe('Hunt Profile', () => {
   beforeEach(() => {
@@ -35,13 +36,19 @@ describe('Hunt Profile', () => {
     cy.url().should('match', /\/hosts/);
   })
 
-  it('should display the Begin Hunt button and click it go to the started hunt page', () => {
+  it('should display the Begin Hunt button, click it, go to the add teams page, select teams, and then go to the started hunt page', () => {
     page.getHuntCardBeginHuntButton().should('exist');
     page.getHuntCardBeginHuntButton().click();
+    cy.wait(1000);
+    // Update the URL assertion to match the actual URL
+    cy.url().should('include', `http://localhost:4200/startedHunts/`, `/addTeams`);
+    beginHuntPage.selectTeamNumber(2);
+    beginHuntPage.clickProceedButton();
+    cy.wait(1000);
     page.getAccessCode().then((accessCode) => {
       cy.url().should('eq', `http://localhost:4200/startedHunts/${accessCode}`);
     });
-  })
+  });
 
   describe('Adding a new task and deleting hunts and tasks', () => {
 

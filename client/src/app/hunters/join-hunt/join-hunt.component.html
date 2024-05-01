@@ -10,7 +10,7 @@
     <input type="tel" inputmode="numeric" pattern="\d*" maxlength="1" (keyup)="onKeyUp($event, 6)" (keydown)="onKeyDown($event, 6)" (keypress)="numericOnly($event)" (paste)="onPaste($event)" #input6>
   </div>
 
-    <a mat-raised-button [ngClass]="{'join-button-enabled': isAccessCodeValid}" class="link-button center-button" name="join-button" [routerLink]="['/hunter-view', this.accessCode]"
+    <a mat-raised-button [ngClass]="{'join-button-enabled': isAccessCodeValid}" class="link-button center-button" name="join-button" [routerLink]="['/hunter-view', this.accessCode, 'teams']"
       routerLinkActive="drawer-list-item-active" [disabled]="!isAccessCodeValid">
       <span class="button-text">Join Hunt</span>
     </a>

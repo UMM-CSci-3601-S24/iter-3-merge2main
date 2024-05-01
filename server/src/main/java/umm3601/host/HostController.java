@@ -6,16 +6,18 @@ import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
 import umm3601.Controller;
+import umm3601.startedHunts.StartedHunt;
 
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Date;
 import java.util.ArrayList;
@@ -34,7 +36,6 @@ import org.mongojack.JacksonMongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Sorts;
 import com.mongodb.client.result.DeleteResult;
-import java.util.Base64;
 
 public class HostController implements Controller {
 
@@ -43,23 +44,20 @@ public class HostController implements Controller {
   private static final String API_HUNTS = "/api/hunts";
   private static final String API_TASK = "/api/tasks/{id}";
   private static final String API_TASKS = "/api/tasks";
-  private static final String API_START_HUNT = "/api/startHunt/{id}";
-  private static final String API_STARTED_HUNT = "/api/startedHunts/{accessCode}";
-  private static final String API_END_HUNT = "/api/endHunt/{id}";
   private static final String API_ENDED_HUNT = "/api/endedHunts/{id}";
-  private static final String API_ENDED_HUNTS = "/api/hosts/{id}/endedHunts";
   private static final String API_DELETE_HUNT = "/api/endedHunts/{id}";
   private static final String API_PHOTO_UPLOAD = "/api/startedHunt/{startedHuntId}/tasks/{taskId}/photo";
   private static final String API_PHOTO_REPLACE = "/api/startedHunt/{startedHuntId}/tasks/{taskId}/photo/{photoId}";
+  private static final String SERVER_PHOTOS = "http://localhost:4567/photos/";
 
-  static final String HOST_KEY = "hostId";
+  public static final String HOST_KEY = "hostId";
   static final String HUNT_KEY = "huntId";
 
   static final int REASONABLE_NAME_LENGTH_HUNT = 50;
-  static final int REASONABLE_DESCRIPTION_LENGTH_HUNT = 200;
+  public static final int REASONABLE_DESCRIPTION_LENGTH_HUNT = 200;
   private static final int REASONABLE_EST_LENGTH_HUNT = 240;
 
-  static final int REASONABLE_NAME_LENGTH_TASK = 150;
+  public static final int REASONABLE_NAME_LENGTH_TASK = 150;
 
   private static final int ACCESS_CODE_MIN = 100000;
   private static final int ACCESS_CODE_RANGE = 900000;
@@ -97,10 +95,11 @@ public class HostController implements Controller {
 
     File directory = new File("photos");
     if (!directory.exists()) {
-        directory.mkdir();
+      boolean dirCreated = directory.mkdir();
+      if (!dirCreated) {
+        System.out.println("Did not create photos directory because one already exists");
+      }
     }
-        // If you require it to make the entire directory path including parents,
-        // use directory.mkdirs(); here instead.
 
   }
 
@@ -191,13 +190,13 @@ public class HostController implements Controller {
 
   public void addNewHunt(Context ctx) {
     Hunt newHunt = ctx.bodyValidator(Hunt.class)
-    .check(hunt -> hunt.hostId != null && hunt.hostId.length() > 0, "Invalid hostId")
-    .check(hunt -> hunt.name.length() <= REASONABLE_NAME_LENGTH_HUNT, "Name must be less than 50 characters")
-    .check(hunt -> hunt.name.length() > 0, "Name must be at least 1 character")
-    .check(hunt -> hunt.description.length() <= REASONABLE_DESCRIPTION_LENGTH_HUNT,
-     "Description must be less than 200 characters")
-    .check(hunt -> hunt.est <= REASONABLE_EST_LENGTH_HUNT, "Estimated time must be less than 4 hours")
-    .get();
+        .check(hunt -> hunt.hostId != null && hunt.hostId.length() > 0, "Invalid hostId")
+        .check(hunt -> hunt.name.length() <= REASONABLE_NAME_LENGTH_HUNT, "Name must be less than 50 characters")
+        .check(hunt -> hunt.name.length() > 0, "Name must be at least 1 character")
+        .check(hunt -> hunt.description.length() <= REASONABLE_DESCRIPTION_LENGTH_HUNT,
+            "Description must be less than 200 characters")
+        .check(hunt -> hunt.est <= REASONABLE_EST_LENGTH_HUNT, "Estimated time must be less than 4 hours")
+        .get();
 
     huntCollection.insertOne(newHunt);
     ctx.json(Map.of("id", newHunt._id));
@@ -206,10 +205,10 @@ public class HostController implements Controller {
 
   public void addNewTask(Context ctx) {
     Task newTask = ctx.bodyValidator(Task.class)
-    .check(task -> task.huntId != null && task.huntId.length() > 0, "Invalid huntId")
-    .check(task -> task.name.length() <= REASONABLE_NAME_LENGTH_TASK, "Name must be less than 150 characters")
-    .check(task -> task.name.length() > 0, "Name must be at least 1 character")
-    .get();
+        .check(task -> task.huntId != null && task.huntId.length() > 0, "Invalid huntId")
+        .check(task -> task.name.length() <= REASONABLE_NAME_LENGTH_TASK, "Name must be less than 150 characters")
+        .check(task -> task.name.length() > 0, "Name must be at least 1 character")
+        .get();
 
     newTask.photos = new ArrayList<String>();
 
@@ -353,7 +352,7 @@ public class HostController implements Controller {
           "Was unable to delete ID "
               + id
               + "; perhaps illegal ID or an ID for an item not in the system?");
-     }
+    }
     ctx.status(HttpStatus.OK);
 
     for (Task task : startedHunt.completeHunt.tasks) {
@@ -443,7 +442,7 @@ public class HostController implements Controller {
     if (!Files.exists(filePath)) {
       ctx.status(HttpStatus.NOT_FOUND);
       throw new BadRequestResponse("Photo with ID " + id + " does not exist");
-  }
+    }
 
     try {
       Files.delete(filePath);
@@ -529,20 +528,29 @@ public class HostController implements Controller {
   }
 
   public List<String> getPhotosFromTask(Task task) {
-    List<String> encodedPhotos = new ArrayList<>();
+    List<String> photoPaths = new ArrayList<>();
     for (String photoPath : task.photos) {
-      File photo = new File("photos/" + photoPath);
-      if (photo.exists()) {
-        try {
-          byte[] bytes = Files.readAllBytes(Paths.get(photo.getPath()));
-          String encoded = "data:image/png;base64," + Base64.getEncoder().encodeToString(bytes);
-          encodedPhotos.add(encoded);
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      }
+      // Construct the full photo URL using the base URL and the photo path
+      String photoUrl = SERVER_PHOTOS + photoPath;
+      photoPaths.add(photoUrl);
     }
-    return encodedPhotos;
+    return photoPaths;
+  }
+
+  public void getPhoto(Context ctx) {
+    String photoPath = ctx.pathParam("photoPath");
+    File file = new File("photos/" + photoPath);
+    if (file.exists()) {
+      try (FileInputStream fis = new FileInputStream(file)) {
+        ctx.result(fis);
+      } catch (FileNotFoundException e) {
+        ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error reading file: " + e.getMessage());
+      } catch (IOException e) {
+        ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("Error closing file: " + e.getMessage());
+      }
+    } else {
+      ctx.status(HttpStatus.NOT_FOUND).result("Photo not found");
+    }
   }
 
   @Override
@@ -554,14 +562,10 @@ public class HostController implements Controller {
     server.post(API_TASKS, this::addNewTask);
     server.delete(API_HUNT, this::deleteHunt);
     server.delete(API_TASK, this::deleteTask);
-    server.get(API_START_HUNT, this::startHunt);
-    server.get(API_STARTED_HUNT, this::getStartedHunt);
-    server.put(API_END_HUNT, this::endStartedHunt);
     server.post(API_PHOTO_UPLOAD, this::addPhoto);
     server.delete(API_PHOTO_REPLACE, this::deletePhoto);
     server.put(API_PHOTO_REPLACE, this::replacePhoto);
     server.get(API_ENDED_HUNT, this::getEndedHunt);
-    server.get(API_ENDED_HUNTS, this::getEndedHunts);
     server.delete(API_DELETE_HUNT, this::deleteStartedHunt);
   }
 }

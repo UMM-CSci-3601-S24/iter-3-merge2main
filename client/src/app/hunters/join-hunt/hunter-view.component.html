@@ -10,7 +10,7 @@
 <div class="flex-row" *ngFor="let task of startedHunt?.completeHunt?.tasks">
   <div class="image-upload">
     <label for="img-{{task._id}}">
-    <img class="image" [src]="imageUrls[task._id] || 'assets/icons8-upload-picture-64.png'" alt="Upload Picture" title="Upload Picture"/>
+    <img class="image" [src]="imageUrls[task._id]  || 'assets/icons8-upload-picture-64.png'" style="width: 150px; height: 120px; object-fit: cover;" alt="Upload Picture" title="Upload Picture"/>
     <input
       type="file"
       id="img-{{task._id}}"
@@ -21,10 +21,10 @@
     <div class="upload-text">Upload Image</div>
   </label>
     <!--Button to delete photos (only appears if a photo has been submitted)-->
-      <div class="delete" *ngIf="imageUrls[task._id]">
-        <button class="delete-button" *ngIf="imageUrls[task._id]"
-          (click)="deletePhoto(task, task.huntId); imageUrls[task._id] = null">Delete Photo</button>
-      </div>
+    <div class="delete" *ngIf="imageUrls[task._id]">
+      <button class="delete-button" *ngIf="imageUrls[task._id]"
+        (click)="deletePhoto(task, task.huntId); imageUrls[task._id] = null">Delete Photo</button>
+    </div>
   </div>
   <div class="task-list" [ngClass]="{'task-completed': task.status}">{{ task.name }}</div>
 </div>

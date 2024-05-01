@@ -10,6 +10,8 @@ export class BeginHuntPage {
   private readonly tableTaskTitle = '.flex-1';
   private readonly progressTeamTile = '.flex-2';
   private readonly teamCard = '.team-card';
+  private readonly teamNumberSelector = '.team-number';
+  private readonly proceedButton = '.proceed-button';
 
   navigateTo() {
     return cy.visit(this.baseUrl);
@@ -114,5 +116,21 @@ export class BeginHuntPage {
         throw new Error('No started hunt found');
       }
     });
+  }
+
+  /**
+   * Select the number of teams
+   *
+   * @param number the number of teams to select
+   */
+  selectTeamNumber(number: number) {
+    return cy.get(this.teamNumberSelector).select(number.toString());
+  }
+
+  /**
+   * Click the proceed button
+   */
+  clickProceedButton() {
+    return cy.get(this.proceedButton).click();
   }
 }

@@ -21,7 +21,8 @@ import { HostService } from "./host.service";
 import { MockHostService } from "src/testing/host.service.mock";
 import { throwError } from "rxjs";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
-import { Router } from "@angular/router";
+import { StartedHuntService } from "../startHunt/startedHunt.service";
+import { MockStartedHuntService } from "src/testing/startedHunt.service.mock";
 
 const COMMON_IMPORTS: unknown[] = [
   FormsModule,
@@ -51,7 +52,9 @@ describe("Hunt list", () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
     imports: [COMMON_IMPORTS, HostProfileComponent, HuntCardComponent],
-    providers: [{provide: HostService, useValue: new MockHostService()}]
+    providers: [{provide: HostService, useValue: new MockHostService()},
+                {provide: StartedHuntService, useValue: new MockStartedHuntService()}
+    ]
     });
   });
 
@@ -96,12 +99,13 @@ describe('Misbehaving Hunt List', () => {
   let component: HostProfileComponent;
   let hostService: HostService;
   let snackBar: MatSnackBar;
+  let startedHuntService: StartedHuntService;
 
   beforeEach(() => {
     hostService = jasmine.createSpyObj('HostService', ['getHunts']);
     snackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
 
-    component = new HostProfileComponent(hostService, snackBar, null);
+    component = new HostProfileComponent(hostService, snackBar, startedHuntService);
   });
 
   it('should set errMsg and call snackBar.open when getHunts throws a client error', () => {
@@ -132,7 +136,7 @@ describe('Ended Hunt List', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [COMMON_IMPORTS, HostProfileComponent, HuntCardComponent],
-      providers: [{ provide: HostService, useValue: new MockHostService() }]
+      providers: [ {provide: StartedHuntService, useValue: new MockStartedHuntService()}]
     });
   });
 
@@ -146,7 +150,7 @@ describe('Ended Hunt List', () => {
   }));
 
   it('contains all the ended hunts', () => {
-    expect(startedHuntList.serverEndedHunts.length).toBe(4);
+    expect(startedHuntList.serverEndedHunts.length).toBe(2);
   });
 
 });
@@ -155,17 +159,18 @@ describe('Misbehaving Ended Hunt List', () => {
   let component: HostProfileComponent;
   let hostService: HostService;
   let snackBar: MatSnackBar;
+  let startedHuntService: StartedHuntService;
 
   beforeEach(() => {
-    hostService = jasmine.createSpyObj('HostService', ['getEndedHunts']);
+    startedHuntService = jasmine.createSpyObj('StartedHuntService', ['getEndedHunts']);
     snackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
 
-    component = new HostProfileComponent(hostService, snackBar, null);
+    component = new HostProfileComponent(hostService, snackBar, startedHuntService);
   });
 
   it('should set errMsg and call snackBar.open when getEndedHunts throws a client error', () => {
     const errorEvent = new ErrorEvent('Test Error');
-    (hostService.getEndedHunts as jasmine.Spy).and.returnValue(throwError({ error: errorEvent }));
+    (startedHuntService.getEndedHunts as jasmine.Spy).and.returnValue(throwError({ error: errorEvent }));
 
     component.getEndedHunts();
 
@@ -175,7 +180,7 @@ describe('Misbehaving Ended Hunt List', () => {
 
   it('should set errMsg and call snackBar.open when getEndedHunts throws a server error', () => {
     const error = { status: 500, message: 'Server Error' };
-    (hostService.getEndedHunts as jasmine.Spy).and.returnValue(throwError(error));
+    (startedHuntService.getEndedHunts as jasmine.Spy).and.returnValue(throwError(error));
 
     component.getEndedHunts();
 
@@ -188,15 +193,14 @@ describe('When onHuntDeleted() is called', () => {
   let component: HostProfileComponent;
   let mockHostService: jasmine.SpyObj<HostService>;
   let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
-  let mockRouter: jasmine.SpyObj<Router>;
+  let mockStartedHuntService: jasmine.SpyObj<StartedHuntService>
 
   beforeEach(() => {
     mockHostService = jasmine.createSpyObj('HostService', ['getHunts', 'getEndedHunts']);
     mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
-    mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
-    component = new HostProfileComponent(mockHostService, mockSnackBar, mockRouter);
-    component.serverEndedHunts = MockHostService.testStartedHunts;
+    component = new HostProfileComponent(mockHostService, mockSnackBar, mockStartedHuntService);
+    component.serverEndedHunts = MockStartedHuntService.testStartedHunts;
   });
 
   it('should remove the hunt with the given id from serverEndedHunts when onHuntDeleted is called', () => {
@@ -204,7 +208,7 @@ describe('When onHuntDeleted() is called', () => {
 
     component.onHuntDeleted(huntIdToDelete);
 
-    expect(component.serverEndedHunts).toEqual(MockHostService.testStartedHunts.filter(hunt => hunt._id !== huntIdToDelete));
+    expect(component.serverEndedHunts).toEqual(MockStartedHuntService.testStartedHunts.filter(hunt => hunt._id !== huntIdToDelete));
   });
 });
 

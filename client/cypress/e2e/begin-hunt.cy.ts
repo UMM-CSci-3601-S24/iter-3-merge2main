@@ -15,6 +15,9 @@ describe('Begin Hunt', () => {
     page.beginHuntButton().should('exist');
     page.beginHuntButton().click();
     cy.wait(2000);
+    page.selectTeamNumber(5);
+    page.clickProceedButton();
+    cy.wait(1000);
     page.getAccessCode().then((accessCode) => {
       cy.wait(2000);
       cy.url().should('eq', `http://localhost:4200/startedHunts/${accessCode}`);
@@ -25,6 +28,9 @@ describe('Begin Hunt', () => {
     page.beginHuntButton().should('exist');
     page.beginHuntButton().click();
     cy.wait(2000);
+    page.selectTeamNumber(5);
+    page.clickProceedButton();
+    cy.wait(1000);
     page.getAccessCode().then((accessCode) => {
       cy.wait(1000);
       cy.url().should('eq', `http://localhost:4200/startedHunts/${accessCode}`);
@@ -36,6 +42,9 @@ describe('Begin Hunt', () => {
     page.beginHuntButton().should('exist');
     page.beginHuntButton().click();
     cy.wait(2000);
+    page.selectTeamNumber(5);
+    page.clickProceedButton();
+    cy.wait(1000);
     page.getAccessCode().then((accessCode) => {
       cy.wait(1000);
       cy.url().should('eq', `http://localhost:4200/startedHunts/${accessCode}`);
@@ -52,6 +61,9 @@ describe('Begin Hunt', () => {
     page.beginHuntButton().should('exist');
     page.beginHuntButton().click();
     cy.wait(2000);
+    page.selectTeamNumber(5);
+    page.clickProceedButton();
+    cy.wait(1000);
     page.getAccessCode().then((accessCode) => {
       page.getStartedHuntId(accessCode).then((id) => {
         const startedHuntId = id;

@@ -6,13 +6,17 @@ import { MatDivider } from '@angular/material/divider';
 import { MatIcon } from '@angular/material/icon';
 import { AddTaskComponent } from 'src/app/hunts/addTask/add-task.component';
 import { EndedHuntCardComponent } from '../ended-hunt-card.component';
-import { EndedHunt } from '../endedHunt';
-import { Subject, map, switchMap, takeUntil } from 'rxjs';
+import { Observable, Subject, map, switchMap, takeUntil } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
-import { ActivatedRoute, ParamMap, Router, RouterLink } from '@angular/router';
-import { HostService } from 'src/app/hosts/host.service';
+import { ActivatedRoute, ParamMap, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { PhotoDialogComponent } from './photo-dialog/photo-dialog.component';
+import { StartedHunt } from 'src/app/startHunt/startedHunt';
+import { StartedHuntService } from 'src/app/startHunt/startedHunt.service';
+import { Submission } from 'src/app/submissions/submission';
+import { SubmissionService } from 'src/app/submissions/submission.service';
+import { TeamService } from 'src/app/teams/team.service';
+import { Team } from 'src/app/teams/team';
 
 @Component({
   selector: 'app-ended-hunt-details',
@@ -33,47 +37,132 @@ import { PhotoDialogComponent } from './photo-dialog/photo-dialog.component';
 })
 export class EndedHuntDetailsComponent implements OnInit, OnDestroy {
   confirmDeleteHunt: boolean = false;
-  endedHunt: EndedHunt;
+  startedHunt: StartedHunt;
+  submissions: Submission[];
+  teams: Team[];
+  team: Team;
   error: { help: string; httpResponse: string; message: string };
 
   private ngUnsubscribe = new Subject<void>();
 
   constructor(
     private route: ActivatedRoute,
-    private hostService: HostService,
-    private router: Router,
+    private startedHuntService: StartedHuntService,
+    private submissionService: SubmissionService,
+    private teamService: TeamService,
     public dialog: MatDialog,
 
-  ) {}
+  ) { }
+
+  taskSubmissions: { [taskId: string]: { teamName: string, photo: string }[] } = {};
 
   ngOnInit(): void {
-    this.route.paramMap
-      .pipe(
-        map((paramMap: ParamMap) => paramMap.get('id')),
+    console.log('ngOnInit started');
+    this.route.paramMap.pipe(
+      map((paramMap: ParamMap) => {
+        console.log('Getting id from paramMap:', paramMap.get('id'));
+        return paramMap.get('id');
+      }),
+      switchMap((id: string) => {
+        console.log('Fetching ended hunt by id:', id);
+        return this.startedHuntService.getStartedHuntById(id);
+      }),
+      takeUntil(this.ngUnsubscribe)
+    ).subscribe({
+      next: (startedHunt) => {
+        console.log('Received started hunt:', startedHunt);
+        this.startedHunt = startedHunt;
+        if (this.startedHunt) {
+          this.loadTaskSubmissions();
+        } else {
+          console.error('Started hunt is null');
+        }
+      },
+      error: (err) => {
+        console.error('Error occurred while fetching started hunt:', err);
+      }
+    });
+  }
 
-        switchMap((id: string) => this.hostService.getEndedHuntById(id)),
+  loadTaskSubmissions(): void {
+    console.log('loadTaskSubmissions started');
+    this.fetchTeams().subscribe({
+      next: (teams) => {
+        console.log('Received teams:', teams);
+        teams.forEach(team => this.fetchSubmissions(team));
+      },
+      error: (err) => {
+        console.error('Error occurred while fetching teams:', err);
+      }
+    });
+  }
 
-        takeUntil(this.ngUnsubscribe)
-      )
-      .subscribe({
-        next: (endedHunt) => {
-          this.endedHunt = endedHunt;
-          return;
-        },
-        error: (_err) => {
-          this.error = {
-            help: 'There was a problem loading the endedHunt – try again.',
-            httpResponse: _err.message,
-            message: _err.error?.title,
-          };
-        },
+  fetchTeams(): Observable<Team[]> {
+    return this.teamService.getAllStartedHuntTeams(this.startedHunt._id);
+  }
+
+  fetchSubmissions(team: Team): void {
+    console.log('Fetching submissions by team:', team._id);
+    this.submissionService.getSubmissionsByTeam(team._id).subscribe({
+      next: (submissions) => {
+        console.log('Received submissions:', submissions);
+        this.submissions = submissions; // Use the submissions array
+        submissions.forEach(submission => this.fetchPhoto(submission, team));
+      },
+      error: (err) => {
+        console.error('Error occurred while fetching submissions:', err);
+      }
+    });
+  }
+
+  fetchPhoto(submission: Submission, team: Team): void {
+    if (!this.taskSubmissions[submission.taskId]) {
+      this.taskSubmissions[submission.taskId] = [];
+    }
+    console.log('Fetching photo from submission:', submission._id);
+    this.submissionService.getPhotoFromSubmission(submission._id).subscribe(photoBase64 => {
+      const photo = this.decodeImage(photoBase64);
+      console.log('Received photo:', photo);
+      this.taskSubmissions[submission.taskId].push({
+        teamName: team.teamName,
+        photo: photo,
       });
+      // Find the corresponding task and push the photo to its photos array
+      const task = this.startedHunt.completeHunt.tasks.find(task => task._id === submission.taskId);
+      if (task) {
+        if (!task.photos) {
+          task.photos = [];
+        }
+        task.photos.push(photo);
+      }
+    });
+  }
+
+  //Decode photo from base64 to display it
+  decodeImage(image: string): string {
+    return `data:image/jpeg;base64,${image}`;
+  }
+
+  getTeamName(teamId: string): void {
+    this.teamService.getAllStartedHuntTeams(this.startedHunt._id).subscribe({
+      next: (teams) => {
+        const team = teams.find(team => team._id === teamId);
+        if (team) {
+          return team.teamName;
+        } else {
+          console.error(`Team with id ${teamId} not found.`);
+        }
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
   }
 
   getTaskName(taskId: string): string {
-    return this.endedHunt.startedHunt.completeHunt.tasks.find(
+    return this.startedHunt.completeHunt.tasks.find(
       (task) => task._id === taskId
-    )?.name;
+    ).name;
   }
 
   ngOnDestroy(): void {

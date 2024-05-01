@@ -13,6 +13,10 @@ export class HunterViewPage {
   private readonly huntAccessCode = '.access-code-number';
   private readonly UploadImageButton = '.image-upload input[type="file"]';
   private readonly joinHuntButtonSelector = '[name="join-button"]';
+  private readonly teamSelectButton = '.team-select';
+  private readonly hunterProceedButton = '.hunter-proceed-button';
+  private readonly teamNumberSelector = '.team-number';
+  private readonly proceedButton = '.proceed-button';
 
   navigateTo() {
     return cy.visit(this.baseUrl);
@@ -156,5 +160,29 @@ export class HunterViewPage {
 
   getDeleteImageButton() {
     return cy.get('.delete-button');
+  }
+
+  clickTeamButton() {
+    return cy.get(this.teamSelectButton).click();
+  }
+
+  clickProceedButton() {
+    return cy.get(this.hunterProceedButton).click();
+  }
+
+  /**
+   * Select the team number for the hunt.
+   *
+   * @param teamNumber
+   */
+  selectTeamNumber(teamNumber: number) {
+    return cy.get(this.teamNumberSelector).select(teamNumber.toString());
+  }
+
+  /**
+   * Click the proceed button.
+   */
+  clickHunterProceedButton() {
+    return cy.get(this.proceedButton).click();
   }
 }

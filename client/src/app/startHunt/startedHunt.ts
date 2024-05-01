@@ -5,4 +5,6 @@ export interface StartedHunt {
   completeHunt: CompleteHunt;
   accessCode: string;
   endDate?: Date;
+  status?: boolean;
+  submissionIds?: string[];
 }
