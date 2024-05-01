@@ -48,21 +48,13 @@
       <div class="flex-row header-row">
         <div class="flex-2"> Hunter Team and Their Progress </div>
       </div>
+      <br>
 
       <div class="team-box">
-        <mat-card class="team-card">
+        <mat-card class="team-card" *ngFor="let team of teams; let i = index">
           <mat-card-content>
-            <h2 class="team-one">Team duran</h2>
-            <h3 class ="hunter-progress"> Team Hunting Progress: </h3>
-            <mat-progress-bar class="progress-hunt-bar" mode="determinate" value="80"></mat-progress-bar>
-          </mat-card-content>
-        </mat-card>
-
-        <mat-card class="team-card">
-          <mat-card-content>
-            <h2 class="team-two">Team dussan</h2>
-            <h3 class ="hunter-progress"> Team Hunting Progress: </h3>
-            <mat-progress-bar class="progress-hunt-bar" mode="determinate" value="30"></mat-progress-bar>
+            <h1>Team {{i + 1}}</h1>
+            <mat-progress-bar class="progress-hunt-bar" mode="determinate" [value]="8"></mat-progress-bar>
           </mat-card-content>
         </mat-card>
       </div>

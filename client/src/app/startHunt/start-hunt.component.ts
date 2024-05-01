@@ -14,7 +14,8 @@ import { SubmissionService } from "../submissions/submission.service";
 import { Submission } from "../submissions/submission";
 import { SubmissionCardComponent } from "../submissions/submission-card/submission-card.component";
 import { MatFormFieldModule } from "@angular/material/form-field";
-
+import { TeamService } from "../teams/team.service";
+import { Team } from "../teams/team"; // Import the 'Team' class from the appropriate module
 
 @Component({
   selector: 'app-start-hunt-component',
@@ -41,6 +42,8 @@ export class StartHuntComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe = new Subject<void>();
 
+  teams: Team[];
+
   constructor(private snackBar: MatSnackBar,
     private route: ActivatedRoute,
     private hostService: HostService,
@@ -48,11 +51,19 @@ export class StartHuntComponent implements OnInit, OnDestroy {
     public dialog: MatDialog,
     private startedHuntService: StartedHuntService,
     private submissionService: SubmissionService,
+    private teamService: TeamService
   ) { }
 
-    ngOnInit(): void {
-      this.getHunt();
-    }
+  ngOnInit(): void {
+    this.getHunt();
+    this.getTeams();
+  }
+
+  getTeams(): void {
+    this.teamService.getTeams().subscribe(teams => {
+      this.teams = teams;
+    });
+  }
 
     getHunt(): void {
       this.route.paramMap.pipe(
