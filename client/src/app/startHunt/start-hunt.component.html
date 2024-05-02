@@ -5,63 +5,52 @@
     <h1 class="access-code-number">{{ startedHunt?.accessCode }}</h1>
   </mat-card-content>
   <mat-card-actions>
-    <button mat-raised-button class = "begin-hunt-button" (click)="beginHunt()">Begin Hunt!</button>
+    <button mat-raised-button class="begin-hunt-button" (click)="beginHunt()">Begin Hunt!</button>
   </mat-card-actions>
 </mat-card>
 } @else {
-  <mat-card class="running-hunt-card">
-    <mat-card-content class="running-hunt-content">
-      <h2 class="running-hunt-title">Hunt Is Started</h2>
-      <h3 class="tracking-hunt-title">Access Code</h3>
-      <h5 class="tracked-access-code-number">{{ startedHunt?.accessCode }}</h5>
-    </mat-card-content>
+<mat-card class="running-hunt-card">
+  <mat-card-content class="running-hunt-content">
+    <h2 class="running-hunt-title">Hunt Is Started</h2>
+    <h3 class="tracking-hunt-title">Access Code</h3>
+    <h5 class="tracked-access-code-number">{{ startedHunt?.accessCode }}</h5>
+  </mat-card-content>
 
-    <div class="flex-row">
-      @if (serverSubmissions) {
-        <div class="flex-1">
-          <div class="submission-cards-container">
-            @for (submission of serverSubmissions; track submission._id) {
-              <app-submission-card [context]="'host-view'" [submission]="submission"></app-submission-card>
-            }
-          </div>
-        </div>
-      } @else {
-        <div class="flex-1" class="submission-error">
-          <mat-error>
-            There was a problem loading the submissions. Possibly the server is down or perhaps there are network issues.
-          </mat-error>
-          <mat-error>
-            Please wait a bit and try again or start the server.
-          </mat-error>
-        </div>
-      }
+  <div class="task-table">
+    <div class="flex-row header-row">
+      <div class="flex-1"> Tasks For Hunter </div>
     </div>
-
-    <div class="task-table">
-      <div class="flex-row header-row">
-        <div class="flex-1"> Tasks For Hunter </div>
-      </div>
-      <div class="flex-row" *ngFor="let task of startedHunt?.completeHunt?.tasks">
+    <div *ngFor="let task of startedHunt?.completeHunt?.tasks">
+      <div class="flex-row">
         <div class="task-list">{{ task.name }}</div>
       </div>
-
-      <div class="flex-row header-row">
-        <div class="flex-2"> Hunter Team and Their Progress </div>
-      </div>
-      <br>
-
-      <div class="team-box">
-        <mat-card class="team-card" *ngFor="let team of teams; let i = index">
-          <mat-card-content>
-            <h1>Team {{i + 1}}</h1>
-            <mat-progress-bar class="progress-hunt-bar" mode="determinate" [value]="8"></mat-progress-bar>
-          </mat-card-content>
-        </mat-card>
+      <div class="flex-row center-row">
+        <div class="submission-cards-container center-cards">
+          <ng-container *ngFor="let submission of serverSubmissions; trackBy: trackById">
+            <app-submission-card *ngIf="submission.taskId === task._id" [context]="'host-view'"
+              [submission]="submission"></app-submission-card>
+          </ng-container>
+        </div>
       </div>
     </div>
 
-    <mat-card-actions>
-      <button mat-raised-button class = "end-hunt-button" (click)="onEndHuntClick($event)">End Hunt</button>
-    </mat-card-actions>
-  </mat-card>
+    <div class="flex-row header-row">
+      <div class="flex-2"> Hunter Team and Their Progress </div>
+    </div>
+    <br>
+
+    <div class="team-box">
+      <mat-card class="team-card" *ngFor="let team of teams; let i = index">
+        <mat-card-content>
+          <h1>Team {{i + 1}}</h1>
+          <mat-progress-bar class="progress-hunt-bar" mode="determinate" [value]="8"></mat-progress-bar>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <mat-card-actions>
+    <button mat-raised-button class="end-hunt-button" (click)="onEndHuntClick($event)">End Hunt</button>
+  </mat-card-actions>
+</mat-card>
 }
