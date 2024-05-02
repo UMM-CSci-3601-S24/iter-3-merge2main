@@ -10,6 +10,11 @@
   }
 }
 
+.center-row {
+  display: flex;
+  justify-content: center;
+}
+
 .access-content {
   display: flex;
   flex-direction: column;
@@ -67,7 +72,7 @@
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  height: 50vh;
+  height: 100%;
   background-color: white;
   @media (prefers-color-scheme: dark) {
     background-color: white;
@@ -195,14 +200,15 @@
 
 .team-box {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  margin-top: 20px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .team-card {
+  width: 80%;
   flex: 1 0 auto;
-  margin: 10px;
+  margin: 0 auto;
   margin-bottom: 40px;
   background-color: white;
   border: thick solid black;

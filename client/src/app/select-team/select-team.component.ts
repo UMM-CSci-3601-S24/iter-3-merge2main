@@ -1,4 +1,4 @@
-
+import { FormsModule } from '@angular/forms';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { StartedHuntService } from '../startHunt/startedHunt.service';
@@ -10,7 +10,7 @@ import { MatError } from '@angular/material/form-field';
 @Component({
   selector: 'app-select-team',
   standalone: true,
-  imports: [MatError, CommonModule],
+  imports: [MatError, CommonModule, FormsModule],
   templateUrl: './select-team.component.html',
   styleUrl: './select-team.component.scss'
 })

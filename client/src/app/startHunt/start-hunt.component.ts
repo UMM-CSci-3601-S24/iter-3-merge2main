@@ -10,7 +10,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { StartedHuntService } from "./startedHunt.service";
-
+import { SubmissionService } from "../submissions/submission.service";
+import { Submission } from "../submissions/submission";
+import { SubmissionCardComponent } from "../submissions/submission-card/submission-card.component";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { TeamService } from "../teams/team.service";
+import { Team } from "../teams/team"; // Import the 'Team' class from the appropriate module
 
 @Component({
   selector: 'app-start-hunt-component',
@@ -18,47 +23,85 @@ import { StartedHuntService } from "./startedHunt.service";
   styleUrls: ['./start-hunt.component.scss'],
   providers: [],
   standalone: true,
-  imports: [MatCard, MatCardContent, MatCardActions, MatIconModule, CommonModule, MatProgressBarModule]
+  imports: [
+    MatCard,
+    MatCardContent,
+    MatCardActions,
+    MatIconModule,
+    CommonModule,
+    MatProgressBarModule,
+    SubmissionCardComponent,
+    MatFormFieldModule]
 })
 
 export class StartHuntComponent implements OnInit, OnDestroy {
   startedHunt: StartedHunt;
   huntBegun = false;
   error: { help: string, httpResponse: string, message: string };
+  public serverSubmissions: Submission[];
 
   private ngUnsubscribe = new Subject<void>();
+
+  teams: Team[];
 
   constructor(private snackBar: MatSnackBar,
     private route: ActivatedRoute,
     private hostService: HostService,
     private router: Router,
     public dialog: MatDialog,
-    private startedHuntService: StartedHuntService) { }
+    private startedHuntService: StartedHuntService,
+    private submissionService: SubmissionService,
+    private teamService: TeamService
+  ) { }
 
   ngOnInit(): void {
+    this.getHunt();
+    this.getTeams();
 
-    this.route.paramMap.pipe(
+    setInterval(() => {
+      this.getSubmissionsFromServer();
+    }, 2000);
+  }
 
-      map((paramMap: ParamMap) => paramMap.get('accessCode')),
-
-      switchMap((accessCode: string) => this.startedHuntService.getStartedHunt(accessCode)),
-
-      takeUntil(this.ngUnsubscribe)
-    ).subscribe({
-      next: startedHunt => {
-        this.startedHunt = startedHunt;
-        console.log(this.startedHunt);
-        return ;
-      },
-      error: _err => {
-        this.error = {
-          help: 'There was a problem starting the hunt – try again.',
-          httpResponse: _err.message,
-          message: _err.error?.title,
-        };
-      }
+  getTeams(): void {
+    this.teamService.getTeams().subscribe(teams => {
+      const huntTeams = teams.filter(team => team.startedHuntId === this.startedHunt._id);
+      const highestTeamName = Math.max(...huntTeams.map(team => {
+        const lastChar = team.teamName[team.teamName.length - 1];
+        const parsed = parseInt(lastChar);
+        return isNaN(parsed) ? 0 : parsed;
+      }));
+      this.teams = new Array(highestTeamName).fill({});
     });
   }
+
+  trackById(index, item) {
+    return item._id;
+  }
+
+    getHunt(): void {
+      this.route.paramMap.pipe(
+        map((paramMap: ParamMap) => paramMap.get('accessCode')),
+        switchMap((accessCode: string) => this.startedHuntService.getStartedHunt(accessCode)),
+        takeUntil(this.ngUnsubscribe)
+      ).subscribe({
+        next: startedHunt => {
+          this.startedHunt = startedHunt;
+          console.log(this.startedHunt);
+          if (this.startedHunt) {
+            this.getSubmissionsFromServer();
+          }
+          return ;
+        },
+        error: _err => {
+          this.error = {
+            help: 'There was a problem starting the hunt – try again.',
+            httpResponse: _err.message,
+            message: _err.error?.title,
+          };
+        }
+      });
+    }
 
   beginHunt() {
     this.huntBegun = true;
@@ -74,6 +117,7 @@ export class StartHuntComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+
   }
 
   endHunt(): void {
@@ -93,5 +137,34 @@ export class StartHuntComponent implements OnInit, OnDestroy {
           };
         }
       });
+  }
+
+  getSubmissionsFromServer(): void {
+    this.submissionService.getSubmissionsByStartedHunt(this.startedHunt._id).pipe(
+      takeUntil(this.ngUnsubscribe)
+    ).subscribe({
+      next: (returnedSubmissions: Submission[]) => {
+        this.serverSubmissions = returnedSubmissions;
+      },
+      error: (err) => {
+        if (err.error instanceof ErrorEvent) {
+          this.error = {
+            help: `Problem in the client – Error: ${err.error.message}`,
+            httpResponse: '',
+            message: '',
+          };
+        } else {
+          this.error = {
+            help: `Problem contacting the server – Error Code: ${err.status}\nMessage: ${err.message}`,
+            httpResponse: '',
+            message: '',
+          };
+        }
+        this.snackBar.open(
+          this.error.help,
+          'OK',
+          { duration: 6000 });
+      },
+    });
   }
 }
