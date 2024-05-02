@@ -88,7 +88,9 @@ export class StartHuntComponent implements OnInit, OnDestroy {
         next: startedHunt => {
           this.startedHunt = startedHunt;
           console.log(this.startedHunt);
-          this.getSubmissionsFromServer();
+          if (this.startedHunt) {
+            this.getSubmissionsFromServer();
+          }
           return ;
         },
         error: _err => {
@@ -138,7 +140,6 @@ export class StartHuntComponent implements OnInit, OnDestroy {
   }
 
   getSubmissionsFromServer(): void {
-    console.log('Started Hunt ID:', this.startedHunt._id);
     this.submissionService.getSubmissionsByStartedHunt(this.startedHunt._id).pipe(
       takeUntil(this.ngUnsubscribe)
     ).subscribe({
