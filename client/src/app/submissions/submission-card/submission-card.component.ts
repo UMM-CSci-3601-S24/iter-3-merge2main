@@ -11,7 +11,7 @@ import { StartedHuntService } from 'src/app/startHunt/startedHunt.service';
 import { TeamService } from 'src/app/teams/team.service';
 import { SubmissionService } from '../submission.service';
 import { StartedHunt } from 'src/app/startHunt/startedHunt';
-import { Observable, map, of } from 'rxjs';
+import { Observable, catchError, map, of } from 'rxjs';
 
 @Component({
   selector: 'app-submission-card',
@@ -54,12 +54,27 @@ export class SubmissionCardComponent {
 
   // this retrieves the team name via the teamId in the submission
   // If the team name call fails, it will return an empty string
-  getTeamName(teamId: string): string {
-    let teamName = '';
-    this.teamService.getTeam(teamId).subscribe(
-      team => teamName = team.teamName);
-    return teamName;
+  getTeamName(teamId: string): Observable<string> {
+    console.log(`Fetching team name for teamId: ${teamId}`);
+    return this.teamService.getTeam(teamId).pipe(
+      map(team => {
+        console.log(`Fetched team: ${JSON.stringify(team)}`);
+        return team.teamName;
+      }),
+      catchError((error) => {
+        console.log(`Error fetching team: ${error}`);
+        return of('Unknown team');
+      })
+    );
   }
+
+  // this version doesn't have console logs
+/* getTeamName(teamId: string): Observable<string> {
+  return this.teamService.getTeam(teamId).pipe(
+    map(team => team.teamName),
+    catchError(() => of('Unknown team'))
+  );
+} */
 
   // this retrieves the photo from the submission
   getPhoto(submissionId: string): Observable<string> {
