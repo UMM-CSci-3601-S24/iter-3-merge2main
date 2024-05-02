@@ -1,4 +1,75 @@
+.submission-card {
+  max-width: 200px;
+  height: auto;
+  margin: 20px auto;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+.card-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.delete-button {
+  margin-left: auto;
+}
+
+.mat-card-header {
+  margin-bottom: 15px;
+}
+
+.submission-card-team {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.submission-card-task,
+.submission-card-date {
+  font-size: 16px;
+  color: #757575;
+}
+
+.card-image {
+  width: 100%;
+  overflow: hidden;
+}
+
 .submission-card-image {
-  height: 100px;
-  width: auto;
+  width: 150px;
+  height: 150px;
+  padding: 15px;
+  padding-bottom: 0;
+  justify-content: center;
+  align-items: center;
+}
+
+.actions-container {
+  display: flex;
+  justify-content: flex-end;
+  padding: 5px;
+}
+
+button.remove-submission-fab {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 10px !important;
+  width: 100px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+button.remove-submission-fab:hover {
+  background-color: #d32f2f;
+}
+
+button.remove-submission-fab .delete {
+  font-size: 24px;
 }

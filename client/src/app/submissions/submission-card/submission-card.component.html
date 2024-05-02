@@ -2,9 +2,9 @@
 <mat-card class="submission-card">
   <div class="card-container">
     <mat-card-header>
-      <mat-card-title class="submission-card-team">{{ this.submission().teamId }}</mat-card-title>
+      <!-- <mat-card-title class="submission-card-team">{{ this.submission().teamId }}</mat-card-title>
       <mat-card-subtitle class="submission-card-task">{{ this.submission().taskId }}</mat-card-subtitle>
-      <mat-card-subtitle class="submission-card-date">{{ this.submission().submitTime }}</mat-card-subtitle>
+      <mat-card-subtitle class="submission-card-date">{{ this.submission().submitTime }}</mat-card-subtitle> -->
     </mat-card-header>
     <div class="card-image">
       <img class="submission-card-image" [src]="getPhoto(submission()._id) | async" alt="Submission Image"
@@ -18,10 +18,8 @@
       <mat-card-actions>
         <button mat-fab class="remove-submission-fab" matTooltip="Delete Submission" matTooltipPosition="left"
           (click)="deleteSubmission(submission()._id)" data-test="deleteSubmissionButton">
-          <mat-icon class="md-24" aria-label="Delete Submission">delete</mat-icon>
+          <mat-icon class="delete" aria-label="Delete Submission">delete</mat-icon>
         </button>
-        <button mat-raised-button data-test=viewProfileButton [routerLink]="['/submissions', this.submission()._id]"
-          class="submission-profile-button">Submission Details</button>
       </mat-card-actions>
       }
     </div>
