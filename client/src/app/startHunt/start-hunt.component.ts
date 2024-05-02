@@ -65,7 +65,13 @@ export class StartHuntComponent implements OnInit, OnDestroy {
 
   getTeams(): void {
     this.teamService.getTeams().subscribe(teams => {
-      this.teams = teams;
+      const huntTeams = teams.filter(team => team.startedHuntId === this.startedHunt._id);
+      const highestTeamName = Math.max(...huntTeams.map(team => {
+        const lastChar = team.teamName[team.teamName.length - 1];
+        const parsed = parseInt(lastChar);
+        return isNaN(parsed) ? 0 : parsed;
+      }));
+      this.teams = new Array(highestTeamName).fill({});
     });
   }
 
