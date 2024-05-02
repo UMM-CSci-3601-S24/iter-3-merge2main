@@ -57,6 +57,10 @@ export class StartHuntComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.getHunt();
     this.getTeams();
+
+    setInterval(() => {
+      this.getSubmissionsFromServer();
+    }, 2000);
   }
 
   getTeams(): void {
