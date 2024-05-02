@@ -1,7 +1,11 @@
-<h1>How many teams?</h1>
-<select [(ngModel)]="numTeams" class="team-number">
-  <option *ngFor="let number of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]" [value]="number" >
-    {{ number }}
-  </option>
-</select>
-<button (click)="addTeams(startedHunt._id, numTeams)" class="proceed-button">Proceed</button>
+<div class="container">
+  <h1>How many teams?</h1>
+  <div class="select-container">
+    <select [(ngModel)]="numTeams" class="team-number">
+      <option *ngFor="let number of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]" [value]="number" >
+        {{ number }}
+      </option>
+    </select>
+  </div>
+  <button (click)="addTeams(startedHunt._id, numTeams)" class="proceed-button">Proceed</button>
+</div>
