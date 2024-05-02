@@ -10,6 +10,11 @@
   }
 }
 
+.center-row {
+  display: flex;
+  justify-content: center;
+}
+
 .access-content {
   display: flex;
   flex-direction: column;

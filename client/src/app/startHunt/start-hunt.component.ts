@@ -75,6 +75,10 @@ export class StartHuntComponent implements OnInit, OnDestroy {
     });
   }
 
+  trackById(index, item) {
+    return item._id;
+  }
+
     getHunt(): void {
       this.route.paramMap.pipe(
         map((paramMap: ParamMap) => paramMap.get('accessCode')),
