@@ -13,7 +13,7 @@
 
 ## What is Scav-a-Snap
 
-Scav-a-Snap is a scavenger hunt game for hosts and hunters to design and play their own created scavenger hunt. Scav-a-Snap is designed to a child-friendly, creative-oriented game.
+Scav-a-Snap is a scavenger hunt game for hosts and hunters to design and play their own created scavenger hunt. Scav-a-Snap is designed to be a child-friendly, creative-oriented game.
 
 In a hunt of Scav-a-Snap there are two types of players - hosts and hunters. The host is responsible for creating a scavenger hunt and adding individual tasks to the hunt (for example "take a picture of a Stop Sign).
 
