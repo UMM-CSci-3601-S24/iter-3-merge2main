@@ -13,6 +13,7 @@
 - [Testing and Continuous Integration](#testing-and-continuous-integration)
 - [Authors](#authors)
 - [Built With](#built-with)
+- [Roadmap](#roadmap-for-the-future)
 
 ## What is Scav-a-Snap
 
@@ -83,3 +84,9 @@ Tools:
 - [TypeScript](https://www.typescriptlang.org/)
 - [Karma](https://karma-runner.github.io/1.0/index.html)
 - [Jasmine](https://jasmine.github.io/)
+
+## Roadmap For The Future
+
+Please see this document for a list of known issues and a list of features to implement in the future: [Roadmap](ROADMAP.md)
+
+
