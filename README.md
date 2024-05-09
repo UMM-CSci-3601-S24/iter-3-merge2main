@@ -13,7 +13,8 @@
 - [Testing and Continuous Integration](#testing-and-continuous-integration)
 - [Authors](#authors)
 - [Built With](#built-with)
-- [Roadmap](#roadmap-for-the-future)
+- [Roadmap For The Future](#roadmap-for-the-future)
+- [Pamphlet For Advertising](#pamphlet-for-advertising)
 
 ## What is Scav-a-Snap
 
@@ -89,4 +90,6 @@ Tools:
 
 Please see this document for a list of known issues and a list of features to implement in the future: [Roadmap](ROADMAP.md)
 
+## Pamphlet For Advertising
 
+If sharing this project, please print out a copy of the brochure to see a brief overview of the purpose and features of the project: [Pamphlet](pamphlet.pdf) 
