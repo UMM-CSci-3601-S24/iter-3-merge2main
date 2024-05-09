@@ -1,97 +1,92 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-24ddc0f5d75046c5622901739e7c5dd533143b0c8e959d652212380cedb1ea36.svg)](https://classroom.github.com/a/dHAoGXRx)
-# CSCI 3601 Iteration Template <!-- omit in toc -->
+<img width="2061" alt="scavasnap_title" src="https://github.com/UMM-CSci-3601-S24/iter-3-merge2main/assets/143017587/3f517e82-c4a9-4a0c-8368-10e166587b78">
 
-- [Development](#development)
-  - [Common commands](#common-commands)
-- [Deployment](#deployment)
-- [Resources](#resources)
-- [Changing the name](#changing-the-name)
-- [Contributors](#contributors)
 
-This is your starter code for Iteration 1.
+## Table of Contents
 
-There is quite a lot of example code in this production template that you don't
-want or need down the road, but is included to help you get started.
-As you work on your project, you should replace these pieces with
-elements of your project and _remove whatever you don't need_ (e.g., markdown
-files, JSON data files, or any remnants of the labs). We include, for example,
-the `User` parts of the previous labs. These are almost certainly not relevant
-to your project and should be removed once you've started.
+- [Table of Contents](#table-of-contents)
+- [What is Scav-a-Snap](#what-is-scav-a-snap)
+  - [How to Play Scav-a-Snap](#how-to-play-scav-a-snap)
+- [Using Scav-a-Snap](#using-scav-a-snap)
+  - [As a host](#as-a-host)
+  - [As a hunter](#as-a-hunter)
+- [Documentation](#documentation)
+- [Testing and Continuous Integration](#testing-and-continuous-integration)
+- [Authors](#authors)
+- [Built With](#built-with)
+- [Roadmap](#roadmap-for-the-future)
 
-:bangbang: Keeping things like the support for our `User` types will
-artificially inflate your test coverage results, making it look like you have
-much better coverage than you actually do. This is neither cool nor helpful,
-so you really should remove our code fairly early in your iteration.
+## What is Scav-a-Snap
 
-:exclamation: You should remove this sentence and the text above, and
-replace them with at least an elevator pitch description of your project so that
-if someone comes to this repo they'll know what the project is about.
+Scav-a-Snap is a scavenger hunt game for hosts and hunters to design and play their own created scavenger hunt. Scav-a-Snap is designed to be a child-friendly, creative-oriented game.
 
-## [Development](DEVELOPMENT.md)
+In a hunt of Scav-a-Snap there are two types of players - hosts and hunters. The host is responsible for creating a scavenger hunt and adding individual tasks to the hunt (for example "take a picture of a Stop Sign).
 
-Instructions on setting up the development environment and working with the code are in [the development guide](DEVELOPMENT.md).
+The game requires at least two people - a host and a hunter. However, ideally each hunt should have a few different hunters competing.
 
-### Common commands
+### How to Play Scav-a-Snap
 
-From the `server` directory:
+A game of Scav-a-Snap consists of the host and the hunters.
 
-- `./gradlew run` to start the server
-- `./gradlew test` to test the server
-- `./gradlew checkstyleMain` to run Checkstyle on the server Java code in the `src/main` folder
-- `./gradlew checkstyleTest` to run Checkstyle on the server Java code in the `src/test` folder
-- `./gradlew check` will run the tests, run the Checkstyle checks, and generate coverage reports in one command
+The host is the one creates the hunt, adds tasks to the hunt for the hunters to do, and is responsible for moderating photos that the hunters submit.
 
-From the `client` directory:
+The hunters are responsible for doing the tasks (which requires uploading photos for each task) in the least amount of time possible. The goal is to finish the hunt before the other hunters.
 
-- `ng serve` to run the client
-- `ng test` to test the client
-  - Or `ng test --no-watch --code-coverage` to run the client tests once and
-    also compute the code coverage.
-- `ng e2e` and `ng e2e --watch` to run end-to-end tests
+Each Scav-a-Snap hunt can contain an indefinite number of tasks. Each time the hunters upload a photo for each task, a green check mark will appear by said task. Once all the tasks are completed, the hunters will return back to where the host is. There, the host can go through all the photos that every hunter submitted. The host also as the option to delete photos that have been submitted if they would like to.
 
-From the `database` directory:
+## Using Scav-a-Snap
 
-- `./mongoseed.sh` (or `.\mongoseed.bat` on Windows) to seed the database
+### As a host
 
-## [Deployment](DEPLOYMENT.md)
+The first thing a host will want to do is click the "host" icon on the home page. This will bring them to the host page where they can create a new hunt, give it a name, and begin adding tasks to it.
 
-Instructions on how to create a DigitalOcean Droplet and setup your project are in [the deployment guide](DEPLOYMENT.md).
+Once they have added all the tasks they want to add, they can click "begin hunt". This will show an access code which the host will have to give to the hunters for them to join the created hunt.
 
-## [Resources](RESOURCES.md)
+### As a hunter
 
-Additional resources on tooling and techniques are in [the resources list](RESOURCES.md).
+The first thing a hunter will want to do is click the "hunter" icon on the home page. This will allow them to type in an access code which will take them to a hunt. They will have to get this access code from the host. Once they type in the given access code, they will be brought to the started hunt with a list of tasks to do.  
 
-## Changing the name
+## Documentation
 
-The project by default has the name "CSCI 3601 Iteration Template". There are a few places you need to change to make this the name you want:
+- [Deployment Instructions](DEPLOYMENT.md)
+- [Development Instructions](DEVELOPMENT.md)
 
-- The title in this README.md
-- [`client/src/app/app.component.ts`](client/src/app/app.component.ts)
-  - The `title` variable
-  - Also the associated unit and E2E tests will need to be changed.
-- [`client/src/app/app.component.html`](client/src/app/app.component.html)
-  - The `mat-toolbar` element for the navigation drawer is just "Client" by default.
-- [`client/src/index.html`](client/src/index.html)
-  - The `title` element
+## Testing and Continuous Integration
 
-You can go ahead and remove this section of the README once you have changed the name.
+Scav-a-Snap uses Jasmine and Karma for unit testing through the Angular CLI. TravisCI is configured to run these tests.
 
-## Contributors
+## Authors
 
-The contributors to this project can be seen [here](../../graphs/contributors).
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-<table>
-  <tr>
-    <td align="center"><a href="https://floogulinc.com/"><img src="https://avatars.githubusercontent.com/u/1300395?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Paul Friederichsen</b></sub></a><br /><a href="https://github.com/UMM-CSci-3601/3601-iteration-template/commits?author=floogulinc" title="Code">💻</a> <a href="#content-floogulinc" title="Content">🖋</a> <a href="https://github.com/UMM-CSci-3601/3601-iteration-template/commits?author=floogulinc" title="Documentation">📖</a> <a href="#ideas-floogulinc" title="Ideas, Planning, & Feedback">🤔</a> <a href="#mentoring-floogulinc" title="Mentoring">🧑‍🏫</a> <a href="#question-floogulinc" title="Answering Questions">💬</a> <a href="https://github.com/UMM-CSci-3601/3601-iteration-template/pulls?q=is%3Apr+reviewed-by%3Afloogulinc" title="Reviewed Pull Requests">👀</a> <a href="#security-floogulinc" title="Security">🛡️</a> <a href="https://github.com/UMM-CSci-3601/3601-iteration-template/commits?author=floogulinc" title="Tests">⚠️</a> <a href="#a11y-floogulinc" title="Accessibility">️️️️♿️</a> <a href="#infra-floogulinc" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="#maintenance-floogulinc" title="Maintenance">🚧</a></td>
-    <td align="center"><a href="https://github.com/helloworld12321"><img src="https://avatars.githubusercontent.com/u/56209343?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Joe Moonan Walbran</b></sub></a><br /><a href="https://github.com/UMM-CSci-3601/3601-iteration-template/issues?q=author%3Ahelloworld12321" title="Bug reports">🐛</a> <a href="https://github.com/UMM-CSci-3601/3601-iteration-template/commits?author=helloworld12321" title="Code">💻</a> <a href="#content-helloworld12321" title="Content">🖋</a> <a href="https://github.com/UMM-CSci-3601/3601-iteration-template/commits?author=helloworld12321" title="Documentation">📖</a> <a href="#ideas-helloworld12321" title="Ideas, Planning, & Feedback">🤔</a> <a href="#infra-helloworld12321" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="#maintenance-helloworld12321" title="Maintenance">🚧</a> <a href="#mentoring-helloworld12321" title="Mentoring">🧑‍🏫</a> <a href="#projectManagement-helloworld12321" title="Project Management">📆</a> <a href="#question-helloworld12321" title="Answering Questions">💬</a> <a href="https://github.com/UMM-CSci-3601/3601-iteration-template/pulls?q=is%3Apr+reviewed-by%3Ahelloworld12321" title="Reviewed Pull Requests">👀</a> <a href="#tool-helloworld12321" title="Tools">🔧</a> <a href="https://github.com/UMM-CSci-3601/3601-iteration-template/commits?author=helloworld12321" title="Tests">⚠️</a></td>
-    <td align="center"><a href="https://github.com/kklamberty"><img src="https://avatars.githubusercontent.com/u/2751987?v=4?s=100" width="100px;" alt=""/><br /><sub><b>K.K. Lamberty</b></sub></a><br /><a href="https://github.com/UMM-CSci-3601/3601-iteration-template/commits?author=kklamberty" title="Code">💻</a> <a href="#content-kklamberty" title="Content">🖋</a> <a href="#design-kklamberty" title="Design">🎨</a> <a href="https://github.com/UMM-CSci-3601/3601-iteration-template/commits?author=kklamberty" title="Documentation">📖</a> <a href="#ideas-kklamberty" title="Ideas, Planning, & Feedback">🤔</a> <a href="#mentoring-kklamberty" title="Mentoring">🧑‍🏫</a> <a href="#projectManagement-kklamberty" title="Project Management">📆</a> <a href="#question-kklamberty" title="Answering Questions">💬</a> <a href="https://github.com/UMM-CSci-3601/3601-iteration-template/commits?author=kklamberty" title="Tests">⚠️</a> <a href="#tutorial-kklamberty" title="Tutorials">✅</a> <a href="#a11y-kklamberty" title="Accessibility">️️️️♿️</a></td>
-    <td align="center"><a href="http://www.morris.umn.edu/~mcphee"><img src="https://avatars.githubusercontent.com/u/302297?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Nic McPhee</b></sub></a><br /><a href="#infra-NicMcPhee" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/UMM-CSci-3601/3601-iteration-template/commits?author=NicMcPhee" title="Tests">⚠️</a> <a href="https://github.com/UMM-CSci-3601/3601-iteration-template/issues?q=author%3ANicMcPhee" title="Bug reports">🐛</a> <a href="#content-NicMcPhee" title="Content">🖋</a> <a href="https://github.com/UMM-CSci-3601/3601-iteration-template/commits?author=NicMcPhee" title="Documentation">📖</a> <a href="#design-NicMcPhee" title="Design">🎨</a> <a href="#maintenance-NicMcPhee" title="Maintenance">🚧</a> <a href="#projectManagement-NicMcPhee" title="Project Management">📆</a> <a href="#question-NicMcPhee" title="Answering Questions">💬</a> <a href="https://github.com/UMM-CSci-3601/3601-iteration-template/pulls?q=is%3Apr+reviewed-by%3ANicMcPhee" title="Reviewed Pull Requests">👀</a> <a href="https://github.com/UMM-CSci-3601/3601-iteration-template/commits?author=NicMcPhee" title="Code">💻</a></td>
-  </tr>
-</table>
+Scav-a-Snap was built over a semester by a team of students at the University of Minnesota Morris for a software design class.. See the GitHub (<https://github.com/orgs/UMM-CSci-3601-S24/teams/iteration3-merge2main>).
 
-<!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->
+## Built With
 
-<!-- ALL-CONTRIBUTORS-LIST:END -->
+Scav-a-Snap is powered by:
+
+- [Angular](https://angular.io/)
+- [Angular Material](https://material.angular.io/)
+- [MongoDB](https://www.mongodb.com/)
+- [Javalin](https://javalin.io/)
+- [Digital Ocean](https://www.digitalocean.com/)
+
+Other libraries used:
+
+- [ng2-page-slider](https://github.com/KeatonTech/Angular-2-Page-Slider)
+- [ng2-rx-componentdestroyed](https://github.com/w11k/ng2-rx-componentdestroyed)
+- [ngx-qrcode2](https://github.com/techiediaries/ngx-qrcode)
+- [ngx-pipes](https://github.com/danrevah/ngx-pipes)
+- [ngx-clipboard](https://github.com/maxisam/ngx-clipboard)
+- [time-ago-pipe](https://github.com/AndrewPoyntz/time-ago-pipe)
+
+Tools:
+
+- [Angular CLI](https://cli.angular.io/)
+- [Node Package Manager](https://www.npmjs.com/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Karma](https://karma-runner.github.io/1.0/index.html)
+- [Jasmine](https://jasmine.github.io/)
+
+## Roadmap For The Future
+
+Please see this document for a list of known issues and a list of features to implement in the future: [Roadmap](ROADMAP.md)
+
+
