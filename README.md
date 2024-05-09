@@ -1,3 +1,6 @@
+<img width="2061" alt="scavasnap_title" src="https://github.com/UMM-CSci-3601-S24/iter-3-merge2main/assets/143017587/3f517e82-c4a9-4a0c-8368-10e166587b78">
+
+
 ## Table of Contents
 
 - [Table of Contents](#table-of-contents)
